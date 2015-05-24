@@ -447,6 +447,9 @@ static const uint8_t interleave_voice_UHF[] = {
     21, 94, 54, 127, 33, 109, 72, 145,
 };
 
+// PAS 0001-2 6.2.3.1
+static const uint8_t *interleave_data_VHF = interleave_voice_VHF;
+
 // PAS 0001-2 6.2.4.1
 static const uint8_t interleave_data_UHF[] = {
     1, 77, 38, 114, 20, 96, 59, 135,
@@ -550,8 +553,7 @@ static void detect_scr(phys_ch_t *phys_ch, const frame_t *f)
 
         frame_descramble(&f_, scr);
         if (phys_ch->band == TETRAPOL_BAND_VHF) {
-            // TODO: deinterleave for VHF
-            // frame_deinterleave(&f_, interleave_data_VHF);
+            frame_deinterleave(&f_, interleave_data_VHF);
         } else {
             frame_diff_dec(&f_);
             frame_deinterleave(&f_, interleave_data_UHF);
@@ -619,8 +621,7 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
 
     frame_descramble(f, scr);
     if (phys_ch->band == TETRAPOL_BAND_VHF) {
-        // TODO
-        // frame_deinterleave(&f_, interleave_data_VHF);
+        frame_deinterleave(f, interleave_data_VHF);
         LOG(ERR, "process_control_radio_ch VHF processing not implemented");
         return -1;
     } else {
