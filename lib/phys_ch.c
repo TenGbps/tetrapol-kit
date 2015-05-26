@@ -622,8 +622,6 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
     frame_descramble(f, scr);
     if (phys_ch->band == TETRAPOL_BAND_VHF) {
         frame_deinterleave(f, interleave_data_VHF);
-        LOG(ERR, "process_control_radio_ch VHF processing not implemented");
-        return -1;
     } else {
         frame_diff_dec(f);
         frame_deinterleave(f, interleave_data_UHF);
