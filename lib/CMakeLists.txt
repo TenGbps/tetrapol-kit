@@ -33,6 +33,7 @@ add_library (tetrapol
     tetrapol/rch.h
     tetrapol/sdch.h
     tetrapol/system_config.h
+    tetrapol/terminal.h
     tetrapol/timer.h
     tetrapol/tpdu.h
     tetrapol/tsdu.h
