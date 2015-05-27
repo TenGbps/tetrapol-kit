@@ -1,6 +1,8 @@
 find_library(CMOCKA_LIBRARY
     NAMES
     cmocka)
+find_package(PkgConfig)
+pkg_check_modules(GLIB2 REQUIRED glib-2.0)
 
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -39,6 +41,8 @@ add_library (tetrapol
     tetrapol/tpdu.h
     tetrapol/tsdu.h
 )
+target_link_libraries (tetrapol ${GLIB2_LIBRARIES})
+include_directories(${GLIB2_INCLUDE_DIRS})
 
 add_executable (test_data_block
     log.c

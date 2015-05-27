@@ -1,6 +1,8 @@
 #include <tetrapol/terminal.h>
 #include <stdlib.h>
 
+#include <glib.h>
+
 struct _terminal_t {
 };
 
