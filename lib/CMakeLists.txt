@@ -17,6 +17,7 @@ add_library (tetrapol
     pch.c
     rch.c
     sdch.c
+    terminal.c
     timer.c
     tpdu.c
     tsdu.c
