@@ -1,5 +1,6 @@
 *.o
 apps/tetrapol_dump
+build/
 CMakeCache.txt
 CMakeFiles
 cmake_install.cmake

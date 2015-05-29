@@ -1,14 +1,29 @@
 TETRAPOL receiver
 
-For lisensing see COPYING file.
+For lisense see file COPYING.
 
-set of tool which shloud allow its user
+This is set of software tool which together with SDR receiver allows:
   - find TETRAPOL control channels and identify base stations
-  - recieve TETRAPOL downlink transmissions
-  - TODO: deltect and decode uplink transmission
+  - TODO: recieve TETRAPOL downlink transmissions
+  - TODO: detect and decode uplink transmission
   - TODO: decode recieved audio
 
-features wich are not planned are:
-  - Tx of signals
-  - killing cats
+== Installation
+
+You need various libraries, because this software is rapidly changing, no
+list is provided here. You should be able to idetify it by you-self
+(try and failure method).
+
+Use the following magic sequence to build this project.
+
+mkdir build
+cd build
+cmake ..
+make
+
+== Usage
+
+See file run.sh for example of usage. This script should give you basic
+inspiration what to do and how to use this tool. If you feel totaly lost
+you should try harder or start playing with something simpler.
 
