@@ -79,7 +79,7 @@ find ${OUTPUT_DIR} -size 0 -exec rm \{\} \;
 
 # Decode all channels. (For now it just dups some log, but it will change soon.)
 for f in ${OUTPUT_DIR}/channel*.bits; do
-    echo "Processing: $f" "${f:0:-5}.log"
-    ./build/apps/tetrapol_dump -i "$f" >"${f:0:-5}.log"
+    echo "Processing: $f"
+    ./build/apps/tetrapol_dump -i "$f" >"${f%.bits}.log"
 done
 
