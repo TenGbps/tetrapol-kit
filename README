@@ -21,6 +21,9 @@ cd build
 cmake ..
 make
 
+# edit ruh.sh as needed
+./run.sh
+
 == Usage
 
 See file run.sh for example of usage. This script should give you basic
