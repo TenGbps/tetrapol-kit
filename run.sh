@@ -21,34 +21,65 @@ OUTPUT_DIR=../tetrapol_data
 # start receiver
 ./demod/tetrapol_rx.py -f ${FREQ} -p ${PPM} -g ${GAIN} -s ${SAMPLE_RATE} -o ${OUTPUT_DIR}/channel%d.bits &
 DEMOD_PID=$!
-sleep 8
+sleep 2
 
-# list top 30 channels with strongest power
-./demod/tetrapol_cli_pwr.py | head -n 30
+print_help()
+{
+	echo "a <CHANNEL>    - automatic fine tunning to channel C"
+	echo "d <CHANNEL>    - disable demodulation for channel C"
+	echo "e <CHANNEL>    - enable demodulation for channel C"
+	echo "h              - print help"
+	echo "l              - list top 30 channels by PWR"
+	echo "x              - exit"
+}
 
-# Following lines are templates for commands, you can uncomment them and set
-# paramters for automatic set-up or use them from commandline interactively.
+print_help
 
-# Enable automatic fine-tuning. Replace N with channel number.
-# Control channels should be used as freqency reference.
-# ./demod/tetrapol_cli_auto_tune.py N
-#
-# Wait for stabilisation.
-# sleep 6
+while true; do
+	read -p "Command: " CMD ARG1
+	case "$CMD" in
+		"a")
+			./demod/tetrapol_cli_auto_tune.py $ARG1
+		;;
 
-# Enable recording of channel N (replace N with channel number(s))
-#./demod/tetrapol_cli_output_enabled.py open N
+		"d")
+			./demod/tetrapol_cli_output_enabled.py close $ARG1
+		;;
 
-# stop recording after specified time
-# sleep 600
-# kill ${DEMOD_PID}
-# sleep 1
+		"e")
+			./demod/tetrapol_cli_output_enabled.py open $ARG1
+		;;
+
+
+		"h")
+			print_help
+		;;
+
+		"l")
+			# list top 30 channels with strongest power
+			./demod/tetrapol_cli_pwr.py | head -n ${ARG1:-30}
+		;;
+
+		"x")
+			kill ${DEMOD_PID}
+			break
+		;;
+
+		*)
+			echo "Invalid command $CMD"
+		;;
+	esac
+done
+
 # FIXME: This is dirty way to kill receiving when somethings get wrong.
 # killall python2.7
 
 # Find and remove all empty recordings.
-# find ${OUTPUT_DIR} -size 0 -exec rm \{\} \;
+find ${OUTPUT_DIR} -size 0 -exec rm \{\} \;
 
 # Decode all channels. (For now it just dups some log, but it will change soon.)
-# for f in ${OUTPUT_DIR}/channel*.bits; do echo $f; ./apps/tetrapol_dump -i $f; done | vimpager'
+for f in ${OUTPUT_DIR}/channel*.bits; do
+    echo "Processing: $f" "${f:0:-5}.log"
+    ./build/apps/tetrapol_dump -i "$f" >"${f:0:-5}.log"
+done
 
