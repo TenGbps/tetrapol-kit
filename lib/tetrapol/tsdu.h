@@ -5,7 +5,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// PAS 0001-3-2 4.4
+/**
+  PAS 0001-3-2 4.4
+  X_UNKNOWN_xx messages float in air but are not part of public specification
+  */
 enum {
     D_REJECT                    = 0x08,
     D_REFUSAL                   = 0x09,
@@ -29,6 +32,13 @@ enum {
     D_FORCED_REGISTRATION       = 0x23,
     U_LOCATION_ACTIVITY         = 0x24,
     D_LOCATION_ACTIVITY_ACK     = 0x25,
+    X_UNKNOWN_29                = 0x29,
+    X_UNKNOWN_2A                = 0x2A,
+    X_UNKNOWN_2B                = 0x2B,
+    X_UNKNOWN_2C                = 0x2C,
+    X_UNKNOWN_2D                = 0x2D,
+    X_UNKNOWN_2E                = 0x2E,
+    X_UNKNOWN_2F                = 0x2F,
     U_CALL_SETUP                = 0x30,
     D_CALL_ALERT                = 0x31,
     D_CALL_SETUP                = 0x32,
@@ -53,7 +63,7 @@ enum {
     U_DATA_MSG_UP               = 0x44,
     D_DATA_MSG_DOWN             = 0x45,
     D_EXPLICIT_SHORT_DATA       = 0x46,
-    D_SEECRET_0x47              = 0x47,
+    X_UNKNOWN_47                = 0x47,
     D_DATA_END                  = 0x48,
     D_DATAGRAM_NOTIFY           = 0x49,
     D_DATAGRAM                  = 0x4a,
@@ -107,7 +117,7 @@ enum {
     D_NEIGHBOURING_CELL         = 0x94,
     D_ECCH_DESCRIPTION          = 0x95,
     D_ADDITIONAL_PARTICIPANTS   = 0x96,
-    D_RESERVED_0x97             = 0x97,
+    X_UNKNOWN_97                = 0x97,
     D_INFORMATION_DELIVERY      = 0xc5,
 };
 typedef uint8_t codop_t;

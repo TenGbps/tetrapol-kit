@@ -90,7 +90,7 @@ static const char *codop_str[256] = {
     "U_DATA_MSG_UP",                // 0x44,
     "D_DATA_MSG_DOWN",              // 0x45,
     "D_EXPLICIT_SHORT_DATA",        // 0x46,
-    "D_SEECRET_0x47",               // 0x47,
+    "X_UNKNOWN_47",                 // 0x47,
     "D_DATA_END",                   // 0x48,
     "D_DATAGRAM_NOTIFY",            // 0x49,
     "D_DATAGRAM",                   // 0x4a,
@@ -170,7 +170,7 @@ static const char *codop_str[256] = {
     "D_NEIGHBOURING_CELL",          // 0x94,
     "D_ECCH_DESCRIPTION",           // 0x95,
     "D_ADDITIONAL_PARTICIPANTS",    // 0x96,
-    "D_RESERVED_0x97",              // 0x97,
+    "X_UNKNOWN_97",                 // 0x97,
     "N/A",                          // 0x98,
     "N/A",                          // 0x99,
     "N/A",                          // 0x9a,
@@ -911,7 +911,7 @@ static void d_ech_overload_id_print(const tsdu_d_ech_overload_id_t *tsdu)
     printf("\t\tORGANISATION=%d\n", tsdu->organisation);
 }
 
-static tsdu_seecret_codop_t *d_seecret_parse(const uint8_t *data, int nbits)
+static tsdu_seecret_codop_t *d_unknown_parse(const uint8_t *data, int nbits)
 {
     tsdu_seecret_codop_t *tsdu = malloc(sizeof(tsdu_seecret_codop_t));
     if (!tsdu) {
@@ -937,10 +937,10 @@ static tsdu_seecret_codop_t *d_seecret_parse(const uint8_t *data, int nbits)
     return tsdu;
 }
 
-static void d_seecret_print(const tsdu_seecret_codop_t *tsdu)
+static void d_unknown_print(const tsdu_seecret_codop_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    printf("\t\tnbits=%d data=", tsdu->nbits);
+    printf("\t\tUNKNOWN CODOP nbits=%d data=", tsdu->nbits);
     print_hex(tsdu->data, (tsdu->nbits + 7) / 8);
 }
 
@@ -1112,9 +1112,16 @@ tsdu_t *tsdu_d_decode(const uint8_t *data, int nbits, int prio, int id_tsap)
             tsdu = (tsdu_t *)d_system_info_decode(data, nbits);
             break;
 
-        case D_SEECRET_0x47:
-        case D_RESERVED_0x97:
-            tsdu = (tsdu_t *)d_seecret_parse(data, nbits);
+        case X_UNKNOWN_29:
+        case X_UNKNOWN_2A:
+        case X_UNKNOWN_2B:
+        case X_UNKNOWN_2C:
+        case X_UNKNOWN_2D:
+        case X_UNKNOWN_2E:
+        case X_UNKNOWN_2F:
+        case X_UNKNOWN_47:
+        case X_UNKNOWN_97:
+            tsdu = (tsdu_t *)d_unknown_parse(data, nbits);
             break;
 
         default:
@@ -1174,9 +1181,16 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_system_info_print((tsdu_d_system_info_t *)tsdu);
             break;
 
-        case D_SEECRET_0x47:
-        case D_RESERVED_0x97:
-            d_seecret_print((tsdu_seecret_codop_t *)tsdu);
+        case X_UNKNOWN_29:
+        case X_UNKNOWN_2A:
+        case X_UNKNOWN_2B:
+        case X_UNKNOWN_2C:
+        case X_UNKNOWN_2D:
+        case X_UNKNOWN_2E:
+        case X_UNKNOWN_2F:
+        case X_UNKNOWN_47:
+        case X_UNKNOWN_97:
+            d_unknown_print((tsdu_seecret_codop_t *)tsdu);
             break;
 
         default:
