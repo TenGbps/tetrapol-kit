@@ -177,6 +177,42 @@ typedef struct {
     uint8_t type;
 } activation_mode_t;
 
+/// PAS 0001-3-2 5.3.3
+typedef struct {
+    unsigned int origin : 3;
+    unsigned int _reserver : 2;
+    unsigned int id : 1;
+    unsigned int mod : 1;
+    unsigned int sil : 1;
+} add_setup_param_t;
+
+/// PAS 0001-3-2 5.3.4
+enum {
+    ADDRESS_CNA_NOT_SIGNIFICANT = 0,
+    ADDRESS_CNA_RFSI = 1,
+    ADDRESS_CNA_X400 = 2,
+    ADDRESS_CNA_PABX = 3,
+    ADDRESS_CNA_FUNCTIONAL = 4,
+    ADDRESS_CNA_LONG = 5,
+    ADDRESS_CNA_BINARY = 6,
+    ADDRESS_CNA_ESCAPED_CODE = 7,
+};
+
+// TODO: incomplete
+typedef struct {
+    uint8_t cna;
+    union {
+        char rfsi[9];
+        char pabx[15];
+        char unsupported[251];
+    };
+} address_t;
+
+typedef struct {
+    int nadrs;
+    address_t called_adr[];
+} address_list_t;
+
 /// PAS 0001-3-2 5.3.5
 enum {
     ADJACENT_PARAM_BN_DIFFERENT = 0,
@@ -495,6 +531,14 @@ typedef union {
         unsigned int type : 2;
     };
 } type_nb_t;
+
+/// PAS 0001-3-2 5.3.76
+enum {
+    USER_PRIORITY_0 = 0,
+    USER_PRIORITY_1 = 1,
+    USER_PRIORITY_2 = 2,
+    // values 3..15 are reserved
+};
 
 /// PAS 0001-3-2 4.4.24
 typedef struct {
