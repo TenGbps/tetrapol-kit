@@ -1112,19 +1112,8 @@ tsdu_t *tsdu_d_decode(const uint8_t *data, int nbits, int prio, int id_tsap)
             tsdu = (tsdu_t *)d_system_info_decode(data, nbits);
             break;
 
-        case X_UNKNOWN_29:
-        case X_UNKNOWN_2A:
-        case X_UNKNOWN_2B:
-        case X_UNKNOWN_2C:
-        case X_UNKNOWN_2D:
-        case X_UNKNOWN_2E:
-        case X_UNKNOWN_2F:
-        case X_UNKNOWN_47:
-        case X_UNKNOWN_97:
-            tsdu = (tsdu_t *)d_unknown_parse(data, nbits);
-            break;
-
         default:
+            tsdu = (tsdu_t *)d_unknown_parse(data, nbits);
             LOG(WTF, "unsupported codop 0x%02x", codop);
     }
 
@@ -1181,21 +1170,75 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_system_info_print((tsdu_d_system_info_t *)tsdu);
             break;
 
-        case X_UNKNOWN_29:
-        case X_UNKNOWN_2A:
-        case X_UNKNOWN_2B:
-        case X_UNKNOWN_2C:
-        case X_UNKNOWN_2D:
-        case X_UNKNOWN_2E:
-        case X_UNKNOWN_2F:
-        case X_UNKNOWN_47:
-        case X_UNKNOWN_97:
-            d_unknown_print((tsdu_seecret_codop_t *)tsdu);
-            break;
-
         default:
+            LOG(WTF, "Undefined downlink codop=0x%02x", tsdu->codop);
+
+        case D_ABILITY_MNGT:
+        case D_ACCESS_DISABLED:
+        case D_ADDITIONAL_PARTICIPANTS:
+        case D_AUTHENTICATION:
+        case D_AUTHORISATION:
+        case D_BACK_CCH:
+        case D_BROADCAST:
+        case D_BROADCAST_NOTIFICATION:
+        case D_BROADCAST_WAITING:
+        case D_CALL_ACTIVATION:
+        case D_CALL_ALERT:
+        case D_CALL_COMPOSITION:
+        case D_CALL_CONNECT:
+        case D_CALL_END:
+        case D_CALL_OVERLOAD_ID:
+        case D_CALL_SETUP:
+        case D_CALL_START:
+        case D_CALL_SWITCH:
+        case D_CALL_WAITING:
+        case D_CCH_OPEN:
+        case D_CONNECT_CCH:
+        case D_CONNECT_DCH:
+        case D_CRISIS_NOTIFICATION:
+        case D_DATA_AUTHENTICATION:
+        case D_DATA_DOWN_STATUS:
+        case D_DATA_MSG_DOWN:
+        case D_DATA_REQUEST:
+        case D_DATA_SERV:
+        case D_DEVIATION_ON:
+        case D_DCH_OPEN:
+        case D_ECCH_DESCRIPTION:
+        case D_ECH_ACTIVATION:
+        case D_ECH_REJECT:
+        case D_EMERGENCY_ACK:
+        case D_EMERGENCY_NAK:
+        case D_EMERGENCY_NOTIFICATION:
+        case D_EXTENDED_STATUS:
+        case D_FORCED_REGISTRATION:
+        case D_FUNCTIONAL_SHORT_DATA:
+        case D_GROUP_END:
+        case D_GROUP_IDLE:
+        case D_GROUP_OVERLOAD_ID:
+        case D_GROUP_PAGING:
+        case D_GROUP_REJECT:
+        case D_HOOK_ON_INVITATION:
+        case D_CHANNEL_INIT:
+        case D_INFORMATION_DELIVERY:
+        case D_LOCATION_ACTIVITY_ACK:
+        case D_OC_ACTIVATION:
+        case D_OC_PAGING:
+        case D_OC_REJECT:
+        case D_PRIORITY_GRP_ACTIVATION:
+        case D_PRIORITY_GRP_WAITING:
+        case D_REFUSAL:
+        case D_REGISTRATION_ACK:
+        case D_REGISTRATION_NAK:
+        case D_REJECT:
+        case D_RELEASE:
+        case D_RETURN:
+        case D_SERVICE_DISABLED:
+        case D_TRAFFIC_DISABLED:
+        case D_TRAFFIC_ENABLED:
+        case D_TRANSFER_NAK:
             LOG(WTF, "print not implemented: downlink codop=0x%02x",
                 tsdu->codop);
+            d_unknown_print((tsdu_seecret_codop_t *)tsdu);
     }
 }
 
