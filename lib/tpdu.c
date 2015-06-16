@@ -270,7 +270,7 @@ static bool tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_f
 
         // PAS 0001-3-3 9.5.1.2
         if ((tpdu->fr_type == FRAME_TYPE_DATA && hdlc_fr->nbits > (3*8)) ||
-                (tpdu->fr_type == FRAME_TYPE_DATA && hdlc_fr->nbits > (6*8))) {
+                (tpdu->fr_type == FRAME_TYPE_HR_DATA && hdlc_fr->nbits > (6*8))) {
             const int nbits     = get_bits(8, hdlc_fr->data + 1, 0) * 8;
             tpdu->tsdu = tsdu_d_decode(hdlc_fr->data + 2, nbits, prio, id_tsap);
         } else {
