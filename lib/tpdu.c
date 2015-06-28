@@ -136,6 +136,11 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
                hdlc_fr->command.information.p_e);
     }
 
+    if (seg) {
+        LOG(ERR, "TPDU: TODO segmentation");
+        return -1;
+    }
+
     const uint8_t code_prefix = code & TPDU_CODE_PREFIX_MASK;
 
     if (code_prefix != TPDU_CODE_PREFIX_MASK) {
@@ -148,7 +153,6 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
                 // check if connection exists, deallocate and WTF
                 // create new connection stuct
                 // set state to REQ
-
                 break;
 
             case TPDU_CODE_CC:
@@ -169,32 +173,37 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
         switch (code) {
             case TPDU_CODE_DR:
                 LOG(ERR, "TODO DR d: %d TSAP_ref_send: %d TSAP_ref_recv: %d len: %d",
-                    d, par_field, dest_ref, len);
+                        d, par_field, dest_ref, len);
                 break;
 
             case TPDU_CODE_FDR:
                 LOG(ERR, "TODO FDR d: %d TSAP_ref_send: %d TSAP_ref_recv: %d len: %d",
-                    d, par_field, dest_ref, len);
+                        d, par_field, dest_ref, len);
                 break;
 
             case TPDU_CODE_DC:
                 LOG(ERR, "TODO DC TSAP_ref_send: %d TSAP_ref_recv: %d",
-                    par_field, dest_ref);
+                        par_field, dest_ref);
                 break;
 
             case TPDU_CODE_DT:
                 LOG(ERR, "TODO DT seg: %d d: %d TSAP_ref_send: %d TSAP_ref_recv: %d, len: %d",
-                    seg, d, par_field, dest_ref, len);
+                        seg, d, par_field, dest_ref, len);
                 break;
 
             case TPDU_CODE_DTE:
                 LOG(ERR, "TODO DTE TSAP_ref_send: %d TSAP_ref_recv: %d, len: %d",
-                    par_field, dest_ref, len);
+                        par_field, dest_ref, len);
                 break;
 
             default:
                 LOG(WTF, "unknown code %d", code);
         }
+    }
+
+    if (d) {
+        // TODO: prio, qos
+        return tsdu_d_decode(hdlc_fr->data + 3, len, 0, dest_ref, tsdu);
     }
 
     return -1;

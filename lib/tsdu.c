@@ -346,6 +346,81 @@ static void cell_id_decode2(cell_id_t *cell_id, const uint8_t *data)
     }
 }
 
+/// return true if another address follows, false otherwise
+static bool address_decode(address_t *address, const uint8_t *data)
+{
+    const bool li = get_bits(1, data, 0);
+    address->cna = get_bits(3, data, 1);
+
+    switch (address->cna) {
+        case ADDRESS_CNA_NOT_SIGNIFICANT:
+            address->len = 0;
+            if (get_bits(4, data, 4) != 0) {
+                LOG(WTF, "CND == 0 but address = 0x%0x", get_bits(4, data, 4));
+            }
+            break;
+
+        case ADDRESS_CNA_RFSI:
+            address->len = 9;
+            for (int i = 0; i < 9; ++i) {
+                address->rfsi.addr[i] = get_bits(4, data , 4 + 4*i);
+            }
+            break;
+
+        case ADDRESS_CNA_PABX:
+            address->len = get_bits(4, data, 4);
+            for (int i = 0; i < address->len; ++i) {
+                address->pabx[i] = get_bits(4, data, 8 + 4*i);
+            }
+            break;
+
+        case ADDRESS_CNA_X400:
+        case ADDRESS_CNA_FUNCTIONAL:
+        case ADDRESS_CNA_LONG:
+        case ADDRESS_CNA_BINARY:
+        case ADDRESS_CNA_ESCAPED_CODE:
+            address->len = 0;
+            LOG(ERR, "TODO: unsupported address CNA");
+            break;
+
+        default:
+            address->len = 0;
+            LOG(WTF, "unknown address CNA");
+            break;
+    }
+
+    return li;
+}
+
+static void address_print(const address_t *address)
+{
+    LOGF("\t\tADDRESS CNA=%i ", address->cna);
+    switch (address->cna) {
+        case ADDRESS_CNA_NOT_SIGNIFICANT:
+            LOGF("NOT_SIGNIFICANT\n");
+            break;
+
+        case ADDRESS_CNA_RFSI:
+            LOGF("RFSI=%x%x%x-%x-%x%x-%x%x%x\n", address->rfsi.r[0],
+                    address->rfsi.r[1], address->rfsi.r[2],
+                    address->rfsi.f, address->rfsi.s[0],
+                    address->rfsi.s[1], address->rfsi.i[0],
+                    address->rfsi.i[1], address->rfsi.i[2]);
+            break;
+
+        case ADDRESS_CNA_PABX:
+            LOGF("PABX=");
+            for (int i = 0; i < address->len; ++i) {
+                LOGF("%d", address->pabx[i]);
+            }
+            LOGF("\n");
+            break;
+
+        default:
+            LOGF("TODO: (unsupported/unwknow)\n");
+    }
+}
+
 static tsdu_d_group_activation_t *
 d_group_activation_decode(const uint8_t *data, int len)
 {
@@ -878,6 +953,62 @@ static void d_system_info_print(tsdu_d_system_info_t *tsdu)
     }
 }
 
+static tsdu_d_registration_ack_t *d_registration_ack_decode(const uint8_t *data, int len)
+{
+    tsdu_d_registration_ack_t *tsdu = malloc(sizeof(tsdu_d_registration_ack_t));
+    if (!tsdu) {
+        return NULL;
+    }
+    tsdu_base_set_nopts(&tsdu->base, 0);
+
+    CHECK_LEN(len, 14, tsdu);
+
+    tsdu->complete_reg          = data[1];
+    tsdu->rt_min_activity       = data[2];
+    tsdu->rt_status._data       = data[3];
+    if (address_decode(&tsdu->host_adr, data + 4)) {
+        LOG(ERR, "Only single address ACK is supported");
+    }
+    tsdu->rt_min_registration   = data[9];
+    tsdu->tlr_value             = data[10];
+    tsdu->rt_data_info._data    = data[11];
+    tsdu->group_id              = get_bits(12, data + 12, 0);
+
+    if (len >= 16) {
+        switch(data[14]) {
+            case IEI_COVERAGE_ID:
+                tsdu->has_coverage_id = true;
+                tsdu->coverage_id = data[15];
+                break;
+
+            default:
+                LOG(WTF, "Unexpected IEI 0x%x", data[14]);
+        };
+    }
+
+    return tsdu;
+}
+
+static void d_registration_ack_print(tsdu_d_registration_ack_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tCOMPLETE_REG=%d\n", tsdu->complete_reg);
+    LOGF("\t\tRT_MIN_ACTIVITY=%i\n", tsdu->rt_min_activity);
+    LOGF("\t\tRT_STATUS FIX=%i PRO=%i CHG=%i REN=%i TRA=%i\n",
+            tsdu->rt_status.fix, tsdu->rt_status.pro, tsdu->rt_status.chg,
+            tsdu->rt_status.ren, tsdu->rt_status.tra);
+    address_print(&tsdu->host_adr);
+    LOGF("\t\tRT_MIN_REGISTRATION=%i\n", tsdu->rt_min_registration);
+    LOGF("\t\tTLR_VALUE=%i\n", tsdu->tlr_value);
+    LOGF("\t\tRT_DATA_INFO POLLING=%i CNT=%i IAB=%i\n",
+            tsdu->rt_data_info.polling, tsdu->rt_data_info.cnt,
+            tsdu->rt_data_info.iab);
+    LOGF("\t\tGROUP_ID=%i\n", tsdu->group_id);
+    if (tsdu->has_coverage_id) {
+        LOGF("\t\tCOVERAGE_ID=%i\n", tsdu->coverage_id);
+    }
+}
+
 static tsdu_d_ech_overload_id_t *d_ech_overload_id_decode(const uint8_t *data, int len)
 {
     tsdu_d_ech_overload_id_t *tsdu = malloc(sizeof(tsdu_d_ech_overload_id_t));
@@ -1115,6 +1246,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_system_info_decode(data, len);
             break;
 
+        case D_REGISTRATION_ACK:
+            *tsdu = (tsdu_t *)d_registration_ack_decode(data, len);
+            break;
+
         default:
             *tsdu = (tsdu_t *)d_unknown_parse(data, len);
             LOG(WTF, "unsupported codop 0x%02x", codop);
@@ -1171,6 +1306,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
 
         case D_SYSTEM_INFO:
             d_system_info_print((tsdu_d_system_info_t *)tsdu);
+            break;
+
+        case D_REGISTRATION_ACK:
+            d_registration_ack_print((tsdu_d_registration_ack_t *)tsdu);
             break;
 
         default:
@@ -1230,7 +1369,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_PRIORITY_GRP_ACTIVATION:
         case D_PRIORITY_GRP_WAITING:
         case D_REFUSAL:
-        case D_REGISTRATION_ACK:
         case D_REGISTRATION_NAK:
         case D_REJECT:
         case D_RELEASE:

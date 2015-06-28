@@ -189,13 +189,23 @@ enum {
     ADDRESS_CNA_ESCAPED_CODE = 7,
 };
 
-// TODO: incomplete
+typedef union {
+    struct {
+        uint8_t r[3];
+        uint8_t f;
+        uint8_t s[2];
+        uint8_t i[3];
+    };
+    uint8_t addr[9];
+} rfsi_address_t;
+
 typedef struct {
     uint8_t cna;
+    int len;    //< real lenght of address
     union {
-        char rfsi[9];
-        char pabx[15];
-        char unsupported[251];
+        rfsi_address_t rfsi;
+        uint8_t pabx[15];
+        // TODO: add another address types
     };
 } address_t;
 
@@ -491,6 +501,40 @@ typedef union {
     };
 } reference_list_t;
 
+/// PAS 0001-3-2 5.3.52
+enum {
+    POLLING_NO = 0,
+    POLLING_PROFILE_1 = 1,
+    POLLING_PROFILE_2 = 2,
+    POLLING_PROFILE_3 = 3,
+    // other values reserved
+};
+
+typedef union {
+    uint8_t _data;
+    struct {
+        unsigned int polling : 3;
+        unsigned int cnt : 1;
+        unsigned int iab : 1;
+        unsigned int _zero : 3;
+    };
+} rt_data_info_t;
+
+/// PAS 0001-3-2 5.3.56
+typedef union {
+    uint8_t _data;
+    struct {
+        unsigned int tra : 1;
+        unsigned int ren : 1;
+        unsigned int chg : 1;
+        unsigned int pro : 1;
+        unsigned int _reserved_0 : 1;
+        unsigned int fix : 1;
+        unsigned int _reserved_1 : 1;
+        unsigned int _reserved_2 : 1;
+    };
+} rt_status_t;
+
 /// PAS 0001-3-2 5.3.65
 typedef union {
     uint8_t _data;
@@ -636,6 +680,21 @@ typedef struct {
         adjacent_param_t adjacent_param;
     } adj_cells[16];
 } tsdu_d_neighbouring_cell_t;
+
+/// PAS 0001-3-2 4.4.64
+typedef struct {
+    tsdu_base_t base;
+    uint8_t complete_reg;
+    uint8_t rt_min_activity;
+    rt_status_t rt_status;
+    address_t host_adr;
+    uint8_t rt_min_registration;
+    uint8_t tlr_value;
+    rt_data_info_t rt_data_info;
+    uint16_t group_id;
+    bool has_coverage_id;
+    uint8_t coverage_id;
+} tsdu_d_registration_ack_t;
 
 /// PAS 0001-3-2 4.4.71
 typedef struct {
