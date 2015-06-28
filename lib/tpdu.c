@@ -14,9 +14,9 @@ enum {
     TPDU_CODE_FCR = 0x10,
     TPDU_CODE_DR = 0x18,
     TPDU_CODE_FDR = 0x19,
-    TPDU_CODE_DC = 0x20,
-    TPDU_CODE_DT = 0x21,
-    TPDU_CODE_DTE = 0x22,
+    TPDU_CODE_DC = 0x1a,
+    TPDU_CODE_DT = 0x1b,
+    TPDU_CODE_DTE = 0x1c,
 };
 
 #define TPDU_CODE_PREFIX_MASK (0x18)
