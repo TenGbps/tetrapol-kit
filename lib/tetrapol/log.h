@@ -33,7 +33,7 @@ extern int log_global_lvl;
 #define LOG_STR_(s) #s
 
 #define LOG__(line, msg, ...) \
-    printf(LOG_PREFIX ":" LOG_STR_(line) " " msg , ##__VA_ARGS__)
+    fprintf(stderr, LOG_PREFIX ":" LOG_STR_(line) " " msg , ##__VA_ARGS__)
 
 #define LOG_(msg, ...) \
     LOG__(__LINE__, msg , ##__VA_ARGS__)
