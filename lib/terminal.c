@@ -1,10 +1,16 @@
+#define LOG_PREFIX "terminal"
+
+#include <tetrapol/log.h>
 #include <tetrapol/terminal.h>
+#include <tetrapol/tpdu.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <glib.h>
 
 struct _terminal_t {
+    tpdu_t *tpdu;
+    tpdu_ui_t *tpdu_ui;
 };
 
 struct _terminal_list_t {
@@ -19,11 +25,29 @@ static terminal_t* terminal_create(void)
     }
     memset(term, 0, sizeof(terminal_t));
 
+    term->tpdu_ui = tpdu_ui_create(FRAME_TYPE_DATA);
+    if (!term->tpdu_ui) {
+        free(term);
+        return NULL;
+    }
+
+    term->tpdu = tpdu_create();
+    if (!term->tpdu) {
+        tpdu_ui_destroy(term->tpdu_ui);
+        free(term);
+        return NULL;
+    }
+
     return term;
 }
 
 static void terminal_destroy(terminal_t *term)
 {
+    if (term) {
+        tpdu_destroy(term->tpdu);
+        tpdu_ui_destroy(term->tpdu_ui);
+    }
+
     free(term);
 }
 
@@ -120,8 +144,32 @@ int terminal_list_push_hdlc_frame(terminal_list_t* tlist,
     if (!tsdu) {
         return -1;
     }
-    *tsdu = NULL;
-    // TODO
-    return -1;
+
+    terminal_t *term = terminal_list_lookup(tlist, &hdlc_fr->addr);
+    if (!term) {
+        term = terminal_list_insert(tlist, &hdlc_fr->addr);
+        if (!term) {
+            LOG(ERR, "Terminal allocation failed");
+            return -1;
+        }
+    }
+
+    return terminal_push_hdlc_frame(term, hdlc_fr, tsdu);
+}
+
+static gboolean terminal_tick(gpointer key, gpointer value,
+        gpointer data)
+{
+    terminal_t *term = value;
+    const timeval_t *tv = data;
+
+    tpdu_du_tick(tv, term->tpdu_ui);
+
+    return false;
+}
+
+void terminal_list_tick(terminal_list_t* tlist, const timeval_t* tv)
+{
+    g_tree_foreach(tlist->tree, terminal_tick, (timeval_t*)tv);
 }
 
