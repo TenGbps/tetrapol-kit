@@ -1,6 +1,7 @@
 #define LOG_PREFIX "terminal"
 
 #include <tetrapol/log.h>
+#include <tetrapol/misc.h>
 #include <tetrapol/terminal.h>
 #include <tetrapol/tpdu.h>
 #include <stdlib.h>
@@ -64,6 +65,64 @@ int terminal_push_hdlc_frame(terminal_t* term, const hdlc_frame_t *hdlc_fr,
         return -1;
     }
     *tsdu = NULL;
+
+    if (hdlc_fr->command.cmd == COMMAND_INFORMATION ||
+            hdlc_fr->command.cmd == COMMAND_SUPERVISION_RR ||
+            hdlc_fr->command.cmd == COMMAND_SUPERVISION_RNR ||
+            hdlc_fr->command.cmd == COMMAND_SUPERVISION_REJ) {
+        return tpdu_push_hdlc_frame(term->tpdu, hdlc_fr, tsdu);
+    }
+
+    if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_UI) {
+        LOG_IF(DBG) {
+            LOG_("HDLC info=");
+            print_hex(hdlc_fr->data, hdlc_fr->nbits / 8);
+            LOGF("\t");
+            addr_print(&hdlc_fr->addr);
+            LOGF("\n");
+        }
+        return tpdu_ui_push_hdlc_frame(term->tpdu_ui, hdlc_fr, tsdu);
+    }
+
+    if (hdlc_fr->command.cmd == COMMAND_DACH) {
+        LOG_IF(INFO) {
+            LOG_("\n\tcmd ACK_DACH\n\taddr: ");
+            addr_print(&hdlc_fr->addr);
+            LOGF("\n");
+        }
+        if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
+            LOG_IF(WTF) {
+                LOG_("cmd: ACK_DACH, nonzero stuffing");
+                print_hex(hdlc_fr->data, hdlc_fr->nbits / 8);
+            }
+        }
+
+        LOG(ERR, "TODO: ACK_DACH");
+        // TODO: report ACK_DACH to application layer
+        return 0;
+    }
+
+    if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_SNRM) {
+        LOG_IF(INFO) {
+            LOG_("\n\tcmd SNMR\n\taddr: ");
+            addr_print(&hdlc_fr->addr);
+            LOGF("\n");
+        }
+
+        if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
+            LOG_IF(WTF) {
+                LOG_("cmd: SNMR, nonzero stuffing");
+                print_hex(hdlc_fr->data, hdlc_fr->nbits / 8);
+            }
+        }
+
+        LOG(ERR, "TODO: SNMR");
+        // TODO: report SNMR to upper layer
+        return 0;
+    }
+
+    LOG(INFO, "TODO CMD 0x%02x", hdlc_fr->command.cmd);
+
     // TODO
     return -1;
 }

@@ -76,11 +76,12 @@ add_executable (test_phys_ch
     pch.c
     rch.c
     sdch.c
+    terminal.c
     test_phys_ch.c
     timer.c
     tpdu.c
     tsdu.c)
-target_link_libraries (test_phys_ch ${CMOCKA_LIBRARY})
+target_link_libraries (test_phys_ch ${CMOCKA_LIBRARY} ${GLIB2_LIBRARIES})
 
 add_test(test_data_block ${CMAKE_CURRENT_BINARY_DIR}/test_data_block)
 add_test(test_data_frame ${CMAKE_CURRENT_BINARY_DIR}/test_data_frame)
