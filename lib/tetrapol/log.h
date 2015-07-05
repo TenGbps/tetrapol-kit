@@ -32,21 +32,24 @@ extern int log_global_lvl;
 
 #define LOG_STR_(s) #s
 
+#define LOGF(...) fprintf(stderr, ##__VA_ARGS__)
+
 #define LOG__(line, msg, ...) \
-    fprintf(stderr, LOG_PREFIX ":" LOG_STR_(line) " " msg , ##__VA_ARGS__)
+    LOGF(LOG_PREFIX ":" LOG_STR_(line) " " msg , ##__VA_ARGS__)
 
 #define LOG_(msg, ...) \
     LOG__(__LINE__, msg , ##__VA_ARGS__)
+
+#define LOG_IF(lvl) \
+    if (LOG_LOCAL_LVL(lvl) || lvl <= log_global_lvl)
 
 #define IF_LOG(lvl) \
     if (LOG_LOCAL_LVL(lvl) || lvl <= log_global_lvl)
 
 #define LOG(lvl, msg, ...) \
-    do { \
-    if (LOG_LOCAL_LVL(lvl) || lvl <= log_global_lvl) { \
-            LOG_(msg "\n", ##__VA_ARGS__); \
-        } \
-    } while(false)
+    LOG_IF(lvl) { \
+        LOG_(msg "\n", ##__VA_ARGS__); \
+    }
 
 inline void log_set_lvl(int lvl)
 {
