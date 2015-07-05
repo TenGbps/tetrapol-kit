@@ -4,7 +4,6 @@
 #include <tetrapol/data_frame.h>
 #include <tetrapol/misc.h>
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 

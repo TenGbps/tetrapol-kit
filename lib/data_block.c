@@ -3,7 +3,6 @@
 #include <tetrapol/data_block.h>
 
 #include <limits.h>
-#include <stdio.h>
 #include <string.h>
 
 // http://ghsi.de/CRC/index.php?Polynom=10010

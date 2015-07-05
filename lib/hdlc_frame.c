@@ -5,7 +5,6 @@
 #include <tetrapol/misc.h>
 
 #include <stdbool.h>
-#include <stdio.h>
 #include <string.h>
 
 static const command_mask_t commands[] = {

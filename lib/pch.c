@@ -5,7 +5,6 @@
 #include <tetrapol/misc.h>
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 
 typedef struct {
@@ -87,14 +86,14 @@ bool pch_push_data_block(pch_t *pch, data_block_t* data_blk)
 
 void pch_print(pch_t *pch)
 {
-    printf("PCH: activation_bitmap=");
+    LOGF("PCH: activation_bitmap=");
     for (int i = 0; i < ARRAY_LEN(pch->pch_data.act_bitmap); ++i) {
-        printf("0x%02x  ", pch->pch_data.act_bitmap[i]);
+        LOGF("0x%02x  ", pch->pch_data.act_bitmap[i]);
     }
-    printf("\n");
+    LOGF("\n");
     for (int i = 0; i < pch->pch_data.naddrs; ++i) {
-        printf("\taddr %d: ", i);
+        LOGF("\taddr %d: ", i);
         addr_print(&pch->pch_data.addrs[i]);
-        printf("\n");
+        LOGF("\n");
     }
 }

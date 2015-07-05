@@ -80,21 +80,21 @@ bool rch_push_data_block(rch_t *rch, data_block_t *data_blk)
 
 void rch_print(const rch_t *rch)
 {
-    printf("RCH ACKs (%d):\n", rch->rch_data.naddrs);
+    LOGF("RCH ACKs (%d):\n", rch->rch_data.naddrs);
     for (int i = 0; i < rch->rch_data.naddrs; ++i) {
         const addr_t *addr = &rch->rch_data.addrs[i];
         if (!addr->z) {
-            printf("\tADDR ACK: ");
+            LOGF("\tADDR ACK: ");
             addr_print(addr);
-            printf("\n");
+            LOGF("\n");
         } else {
-            printf("\tNACK: ");
+            LOGF("\tNACK: ");
             if (addr->y == 4) {
-                printf("noise\n");
+                LOGF("noise\n");
             } else if (addr->y == 5) {
-                printf("collision\n");
+                LOGF("collision\n");
             } else {
-                printf("WTF unknown\n");
+                LOGF("WTF unknown\n");
             }
         }
     }

@@ -17,7 +17,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdio.h>
 #include <unistd.h>
 
 // max error rate for 2 frame synchronization sequences

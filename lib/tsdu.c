@@ -306,7 +306,7 @@ static void tsdu_base_set_nopts(tsdu_base_t *tsdu, int noptionals)
 
 static void tsdu_base_print(const tsdu_base_t *tsdu)
 {
-    printf("\tCODOP=0x%02x (%s)\n\tPRIO=%d\n\tID_TSAP=%d\n",
+    LOGF("\tCODOP=0x%02x (%s)\n\tPRIO=%d\n\tID_TSAP=%d\n",
            tsdu->codop, codop_str[tsdu->codop], tsdu->prio, tsdu->id_tsap);
     // TODO: print addr
 }
@@ -393,19 +393,19 @@ d_group_activation_decode(const uint8_t *data, int nbits)
 static void d_group_activation_print(tsdu_d_group_activation_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    printf("\t\tACTIVATION_MODE: HOOK=%d TYPE=%d\n",
+    LOGF("\t\tACTIVATION_MODE: HOOK=%d TYPE=%d\n",
            tsdu->activation_mode.hook, tsdu->activation_mode.type);
-    printf("\t\tGROUP_ID=%d\n", tsdu->group_id);
-    printf("\t\tCOVERAGE_ID=%d\n", tsdu->coverage_id);
-    printf("\t\tCHANNEL_ID=%d\n", tsdu->channel_id);
-    printf("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
-    printf("\t\tD_CH_SCRAMBLING=%d\n", tsdu->d_ch_scrambling);
-    printf("\t\tKEY_REFERENCE: KEY_TYPE=%i KEY_INDEX=%i\n",
+    LOGF("\t\tGROUP_ID=%d\n", tsdu->group_id);
+    LOGF("\t\tCOVERAGE_ID=%d\n", tsdu->coverage_id);
+    LOGF("\t\tCHANNEL_ID=%d\n", tsdu->channel_id);
+    LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
+    LOGF("\t\tD_CH_SCRAMBLING=%d\n", tsdu->d_ch_scrambling);
+    LOGF("\t\tKEY_REFERENCE: KEY_TYPE=%i KEY_INDEX=%i\n",
            tsdu->key_reference.key_type, tsdu->key_reference.key_index);
     if (tsdu->has_addr_tti) {
-        printf("\t\tADDR_TTI=");
+        LOGF("\t\tADDR_TTI=");
         addr_print(&tsdu->addr_tti);
-        printf("\n");
+        LOGF("\n");
     }
 }
 
@@ -522,19 +522,19 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int nbits)
 static void d_group_list_print(tsdu_d_group_list_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    printf("\t\tREFERENCE_LIST REVISION=%d CSG=%d CSO=%d DC=%d\n",
+    LOGF("\t\tREFERENCE_LIST REVISION=%d CSG=%d CSO=%d DC=%d\n",
            tsdu->reference_list.revision, tsdu->reference_list.csg,
            tsdu->reference_list.cso, tsdu->reference_list.dc);
     if (tsdu->reference_list.revision == 0) {
         return;
     }
-    printf("\t\tINDEX_LIST MODE=%d INDEX=%d\n",
+    LOGF("\t\tINDEX_LIST MODE=%d INDEX=%d\n",
            tsdu->index_list.mode, tsdu->index_list.index);
 
     if (tsdu->nopen) {
-        printf("\t\tOCH\n");
+        LOGF("\t\tOCH\n");
         for (int i = 0; i < tsdu->nopen; ++i) {
-            printf("\t\t\tCOVERAGE_ID=%d CALL_PRIORITY=%d GROUP_ID=%d "
+            LOGF("\t\t\tCOVERAGE_ID=%d CALL_PRIORITY=%d GROUP_ID=%d "
                    "OCH_PARAMETERS.ADD=%d OCH_PARAMETERS.MBN=%d "
                    "NEIGBOURING_CELL=%d\n",
                    tsdu->open[i].coverage_id,
@@ -547,17 +547,17 @@ static void d_group_list_print(tsdu_d_group_list_t *tsdu)
     }
 
     if (tsdu->ngroup) {
-        printf("\t\tGROUP\n");
+        LOGF("\t\tGROUP\n");
         for (int i = 0; i < tsdu->ngroup; ++i) {
-            printf("\t\t\tCOVERAGE_ID=%d NEIGHBOURING_CALL=%d\n",
+            LOGF("\t\t\tCOVERAGE_ID=%d NEIGHBOURING_CALL=%d\n",
                    tsdu->group[i].coverage_id, tsdu->group[i].neighbouring_cell);
         }
     }
 
     if (tsdu->nemergency) {
-        printf("\t\t\tEMERGENCY\n");
+        LOGF("\t\t\tEMERGENCY\n");
         for (int i = 0; i < tsdu->nemergency; ++i) {
-            printf("\t\t\tCELL_ID.BS_ID=%d CELL_ID.RWS_ID=%d\n",
+            LOGF("\t\t\tCELL_ID.BS_ID=%d CELL_ID.RWS_ID=%d\n",
                    tsdu->emergency[i].cell_id.bs_id, tsdu->emergency[i].cell_id.rws_id);
         }
     }
@@ -590,9 +590,9 @@ static tsdu_d_group_composition_t *d_group_composition_decode(const uint8_t *dat
 static void d_group_composition_print(tsdu_d_group_composition_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    printf("\t\tGROUP_ID=%d\n", tsdu->group_id);
+    LOGF("\t\tGROUP_ID=%d\n", tsdu->group_id);
     for (int i = 0; i < tsdu->og_nb; ++i) {
-        printf("\t\tGROUP_ID=%d\n", tsdu->group_ids[i]);
+        LOGF("\t\tGROUP_ID=%d\n", tsdu->group_ids[i]);
     }
 }
 
@@ -724,13 +724,13 @@ static tsdu_d_neighbouring_cell_t *d_neighbouring_cell_decode(const uint8_t *dat
 static void d_neighbouring_cell_print(tsdu_d_neighbouring_cell_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    printf("\t\tCCR_CONFIG=%d\n", tsdu->ccr_config.number);
+    LOGF("\t\tCCR_CONFIG=%d\n", tsdu->ccr_config.number);
     if (!tsdu->ccr_config.number) {
         return;
     }
-    printf("\t\tCCR_PARAM=%d\n", tsdu->ccr_param);
+    LOGF("\t\tCCR_PARAM=%d\n", tsdu->ccr_param);
     for (int i = 0; i < tsdu->ccr_config.number; ++i) {
-        printf("\t\t\tBN_NB=%d CHANNEL_ID=%d ADJACENT_PARAM=%d BN=%d LOC=%d EXP=%d RXLEV_ACCESS=%d\n",
+        LOGF("\t\t\tBN_NB=%d CHANNEL_ID=%d ADJACENT_PARAM=%d BN=%d LOC=%d EXP=%d RXLEV_ACCESS=%d\n",
                tsdu->adj_cells[i].bn_nb,
                tsdu->adj_cells[i].channel_id,
                tsdu->adj_cells[i].adjacent_param._data,
@@ -740,19 +740,19 @@ static void d_neighbouring_cell_print(tsdu_d_neighbouring_cell_t *tsdu)
                tsdu->adj_cells[i].adjacent_param.rxlev_access);
     }
     if (tsdu->cell_ids) {
-        printf("\t\tCELL_IDs\n");
+        LOGF("\t\tCELL_IDs\n");
         for (int i = 0; i < tsdu->cell_ids->len; ++i) {
-            printf("\t\t\tCELL_ID BS_ID=%d RSW_ID=%d\n",
+            LOGF("\t\t\tCELL_ID BS_ID=%d RSW_ID=%d\n",
                    tsdu->cell_ids->cell_ids[i].bs_id,
                    tsdu->cell_ids->cell_ids[i].rws_id);
         }
     }
     if (tsdu->cell_bns) {
-        printf("\t\tCELL_BNs\n");
+        LOGF("\t\tCELL_BNs\n");
         for (int i = 0; i < tsdu->cell_bns->len; ++i) {
-            printf("\t\t\tCELL_BN=");
+            LOGF("\t\t\tCELL_BN=");
             addr_print(&tsdu->cell_bns->addrs[i]);
-            printf("\n");
+            LOGF("\n");
         }
     }
 }
@@ -817,67 +817,67 @@ static tsdu_d_system_info_t *d_system_info_decode(const uint8_t *data, int nbits
 static void d_system_info_print(tsdu_d_system_info_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    printf("\t\tCELL_STATE\n");
-    printf("\t\t\tMODE=%03x\n", tsdu->cell_state.mode);
+    LOGF("\t\tCELL_STATE\n");
+    LOGF("\t\t\tMODE=%03x\n", tsdu->cell_state.mode);
     if (tsdu->cell_state.mode == CELL_STATE_MODE_NORMAL) {
-        printf("\t\t\tBCH=%d\n", tsdu->cell_state.bch);
-        printf("\t\t\tROAM=%d\n", tsdu->cell_state.roam);
-        printf("\t\t\tEXP=%d\n", tsdu->cell_state.exp);
-        printf("\t\t\tRSERVED=%d\n", tsdu->cell_state._reserved_00);
+        LOGF("\t\t\tBCH=%d\n", tsdu->cell_state.bch);
+        LOGF("\t\t\tROAM=%d\n", tsdu->cell_state.roam);
+        LOGF("\t\t\tEXP=%d\n", tsdu->cell_state.exp);
+        LOGF("\t\t\tRSERVED=%d\n", tsdu->cell_state._reserved_00);
 
-        printf("\t\tCELL_CONFIG\n");
-        printf("\t\t\tECCH=%d\n", tsdu->cell_config.eccch);
-        printf("\t\t\tATTA=%d\n", tsdu->cell_config.atta);
-        printf("\t\t\tRESERVED=%d\n", tsdu->cell_config._reserved_0);
-        printf("\t\t\tMUX_TYPE=%d\n", tsdu->cell_config.mux_type);
-        printf("\t\t\tSIM=%d\n", tsdu->cell_config.sim);
-        printf("\t\t\tDC=%d\n", tsdu->cell_config.dc);
-        printf("\t\tCOUNTRY_CODE=%d\n", tsdu->country_code);
-        printf("\t\tSYSTEM_ID\n");
-        printf("\t\t\tVERSION=%d\n", tsdu->system_id.version);
-        printf("\t\t\tNETWORK=%d\n", tsdu->system_id.network);
-        printf("\t\tLOC_AREA_ID\n");
-        printf("\t\t\tLOC_ID=%d\n", tsdu->loc_area_id.loc_id);
-        printf("\t\t\tMODE=%d\n", tsdu->loc_area_id.mode);
-        printf("\t\tBN_ID=%d\n", tsdu->bn_id);
-        printf("\t\tCELL_ID: BS_ID=%d RWS_ID=%d\n",
+        LOGF("\t\tCELL_CONFIG\n");
+        LOGF("\t\t\tECCH=%d\n", tsdu->cell_config.eccch);
+        LOGF("\t\t\tATTA=%d\n", tsdu->cell_config.atta);
+        LOGF("\t\t\tRESERVED=%d\n", tsdu->cell_config._reserved_0);
+        LOGF("\t\t\tMUX_TYPE=%d\n", tsdu->cell_config.mux_type);
+        LOGF("\t\t\tSIM=%d\n", tsdu->cell_config.sim);
+        LOGF("\t\t\tDC=%d\n", tsdu->cell_config.dc);
+        LOGF("\t\tCOUNTRY_CODE=%d\n", tsdu->country_code);
+        LOGF("\t\tSYSTEM_ID\n");
+        LOGF("\t\t\tVERSION=%d\n", tsdu->system_id.version);
+        LOGF("\t\t\tNETWORK=%d\n", tsdu->system_id.network);
+        LOGF("\t\tLOC_AREA_ID\n");
+        LOGF("\t\t\tLOC_ID=%d\n", tsdu->loc_area_id.loc_id);
+        LOGF("\t\t\tMODE=%d\n", tsdu->loc_area_id.mode);
+        LOGF("\t\tBN_ID=%d\n", tsdu->bn_id);
+        LOGF("\t\tCELL_ID: BS_ID=%d RWS_ID=%d\n",
                tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
-        printf("\t\tCELL_BN=%d\n", tsdu->cell_bn);
-        printf("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
-        printf("\t\tCELL_RADIO_PARAM\n");
-        printf("\t\t\tTX_MAX=%d\n", tsdu->cell_radio_param.tx_max);
-        printf("\t\t\tRADIO_LINK_TIMEOUT=%d\n",
+        LOGF("\t\tCELL_BN=%d\n", tsdu->cell_bn);
+        LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
+        LOGF("\t\tCELL_RADIO_PARAM\n");
+        LOGF("\t\t\tTX_MAX=%d\n", tsdu->cell_radio_param.tx_max);
+        LOGF("\t\t\tRADIO_LINK_TIMEOUT=%d\n",
                 tsdu->cell_radio_param.radio_link_timeout);
-        printf("\t\t\tPWR_TX_ADJUST=%d dBm\n",
+        LOGF("\t\t\tPWR_TX_ADJUST=%d dBm\n",
                 CELL_RADIO_PARAM_PWR_TX_ADJUST_TO_DBM[
                     tsdu->cell_radio_param.pwr_tx_adjust]);
-        printf("\t\t\tRX_LEV_ACCESS=%d dBm\n",
+        LOGF("\t\t\tRX_LEV_ACCESS=%d dBm\n",
                 CELL_RADIO_PARAM_RX_LEV_ACCESS_TO_DBM[
                     tsdu->cell_radio_param.rx_lev_access]);
-        printf("\t\tSYSTEM_TIME=%d\n", tsdu->system_time);
-        printf("\t\tCELL_ACCESS\n");
-        printf("\t\t\tMIN_SERVICE_CLASS=%d\n",
+        LOGF("\t\tSYSTEM_TIME=%d\n", tsdu->system_time);
+        LOGF("\t\tCELL_ACCESS\n");
+        LOGF("\t\t\tMIN_SERVICE_CLASS=%d\n",
                 tsdu->cell_access.min_service_class);
-        printf("\t\t\tMIN_REG_CLASS=%d\n",
+        LOGF("\t\t\tMIN_REG_CLASS=%d\n",
                 tsdu->cell_access.min_reg_class);
-        printf("\t\tSUPERFRAME_CPT=%d\n", tsdu->superframe_cpt);
+        LOGF("\t\tSUPERFRAME_CPT=%d\n", tsdu->superframe_cpt);
     } else {
-        printf("\t\tCELL_ID BS_ID=%d RWS_ID=%d\n",
+        LOGF("\t\tCELL_ID BS_ID=%d RWS_ID=%d\n",
                tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
-        printf("\t\tCELL_BN=%d\n", tsdu->cell_bn);
-        printf("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
-        printf("\t\tCELL_RADIO_PARAM\n");
-        printf("\t\t\tTX_MAX=%d\n", tsdu->cell_radio_param.tx_max);
-        printf("\t\t\tRADIO_LINK_TIMEOUT=%d\n",
+        LOGF("\t\tCELL_BN=%d\n", tsdu->cell_bn);
+        LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
+        LOGF("\t\tCELL_RADIO_PARAM\n");
+        LOGF("\t\t\tTX_MAX=%d\n", tsdu->cell_radio_param.tx_max);
+        LOGF("\t\t\tRADIO_LINK_TIMEOUT=%d\n",
                 tsdu->cell_radio_param.radio_link_timeout);
-        printf("\t\t\tPWR_TX_ADJUST=%d dBm\n",
+        LOGF("\t\t\tPWR_TX_ADJUST=%d dBm\n",
                 CELL_RADIO_PARAM_PWR_TX_ADJUST_TO_DBM[
                     tsdu->cell_radio_param.pwr_tx_adjust]);
-        printf("\t\t\tRX_LEV_ACCESS=%d dBm\n",
+        LOGF("\t\t\tRX_LEV_ACCESS=%d dBm\n",
                 CELL_RADIO_PARAM_RX_LEV_ACCESS_TO_DBM[
                     tsdu->cell_radio_param.rx_lev_access]);
-        printf("\t\tBAND=%d\n", tsdu->band);
-        printf("\t\tCHANNEL_ID=%d\n", tsdu->channel_id);
+        LOGF("\t\tBAND=%d\n", tsdu->band);
+        LOGF("\t\tCHANNEL_ID=%d\n", tsdu->channel_id);
     }
 }
 
@@ -902,13 +902,13 @@ static tsdu_d_ech_overload_id_t *d_ech_overload_id_decode(const uint8_t *data, i
 
 static void d_ech_overload_id_print(const tsdu_d_ech_overload_id_t *tsdu)
 {
-    printf("\tCODOP=0x%0x (D_ECH_OVERLOAD_ID)\n", tsdu->base.codop);
-    printf("\t\tACTIVATION_MODE: hook=%d type=%d\n",
+    LOGF("\tCODOP=0x%0x (D_ECH_OVERLOAD_ID)\n", tsdu->base.codop);
+    LOGF("\t\tACTIVATION_MODE: hook=%d type=%d\n",
            tsdu->activation_mode.hook, tsdu->activation_mode.type);
-    printf("\t\tGROUP_ID=%d", tsdu->group_id);
-    printf("\t\tCELL_ID: BS_ID=%d RWS_ID=%d\n",
+    LOGF("\t\tGROUP_ID=%d", tsdu->group_id);
+    LOGF("\t\tCELL_ID: BS_ID=%d RWS_ID=%d\n",
            tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
-    printf("\t\tORGANISATION=%d\n", tsdu->organisation);
+    LOGF("\t\tORGANISATION=%d\n", tsdu->organisation);
 }
 
 static tsdu_seecret_codop_t *d_unknown_parse(const uint8_t *data, int nbits)
@@ -940,7 +940,7 @@ static tsdu_seecret_codop_t *d_unknown_parse(const uint8_t *data, int nbits)
 static void d_unknown_print(const tsdu_seecret_codop_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    printf("\t\tUNKNOWN CODOP nbits=%d data=", tsdu->nbits);
+    LOGF("\t\tUNKNOWN CODOP nbits=%d data=", tsdu->nbits);
     print_hex(tsdu->data, (tsdu->nbits + 7) / 8);
 }
 
@@ -961,7 +961,7 @@ static tsdu_d_data_end_t *d_data_end_decode(const uint8_t *data, int nbits)
 static void d_data_end_print(const tsdu_d_data_end_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    printf("\t\tCAUSE=0x%02x\n", tsdu->cause);
+    LOGF("\t\tCAUSE=0x%02x\n", tsdu->cause);
 }
 
 static tsdu_d_datagram_notify_t *d_datagram_notify_decode(const uint8_t *data, int nbits)
@@ -990,12 +990,12 @@ static tsdu_d_datagram_notify_t *d_datagram_notify_decode(const uint8_t *data, i
 static void d_datagram_notify_print(const tsdu_d_datagram_notify_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    printf("\t\tCALL_PRIORITY=%d\n", tsdu->call_priority);
-    printf("\t\tMESSAGE_REFERENCE=%d\n", tsdu->message_reference);
-    printf("\t\tKEY_REFERENCE: key_index=%d key_type=%d\n",
+    LOGF("\t\tCALL_PRIORITY=%d\n", tsdu->call_priority);
+    LOGF("\t\tMESSAGE_REFERENCE=%d\n", tsdu->message_reference);
+    LOGF("\t\tKEY_REFERENCE: key_index=%d key_type=%d\n",
            tsdu->key_reference.key_index, tsdu->key_reference.key_type);
     if (tsdu->destination_port != -1) {
-        printf("\t\tDESTINATION_PORT=%d\n", tsdu->destination_port);
+        LOGF("\t\tDESTINATION_PORT=%d\n", tsdu->destination_port);
     }
 }
 
@@ -1026,11 +1026,11 @@ static tsdu_d_datagram_t *d_datagram_decode(const uint8_t *data, int nbits)
 static void d_datagram_print(const tsdu_d_datagram_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    printf("\t\tCALL_PRIORITY=%d\n", tsdu->call_priority);
-    printf("\t\tMESSAGE_REFERENCE=%d\n", tsdu->message_reference);
-    printf("\t\tKEY_REFERENCE: key_type=%d key_index=%d\n",
+    LOGF("\t\tCALL_PRIORITY=%d\n", tsdu->call_priority);
+    LOGF("\t\tMESSAGE_REFERENCE=%d\n", tsdu->message_reference);
+    LOGF("\t\tKEY_REFERENCE: key_type=%d key_index=%d\n",
            tsdu->key_reference.key_type, tsdu->key_reference.key_index);
-    printf("\t\tDATA: len=%d data=", tsdu->len);
+    LOGF("\t\tDATA: len=%d data=", tsdu->len);
     print_hex(tsdu->data, tsdu->len);
 }
 
@@ -1060,7 +1060,7 @@ static tsdu_d_explicit_short_data_t *d_explicit_short_data_decode(
 static void d_explicit_short_data_print(const tsdu_d_explicit_short_data_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    printf("\t\tDATA: len=%d data=", tsdu->len);
+    LOGF("\t\tDATA: len=%d data=", tsdu->len);
     print_hex(tsdu->data, tsdu->len);
 }
 
