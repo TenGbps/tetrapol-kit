@@ -58,7 +58,7 @@ tpdu_t *tpdu_create(void)
 
 static bool tpdu_push_supervision_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr)
 {
-    IF_LOG(INFO) {
+    LOG_IF(INFO) {
         switch(hdlc_fr->command.cmd) {
             case COMMAND_SUPERVISION_RR:
                 LOG_("\n\tcmd: RR\n\taddr: ");
@@ -73,13 +73,13 @@ static bool tpdu_push_supervision_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_f
                 break;
         }
         addr_print(&hdlc_fr->addr);
-        printf("\n\trecv_seq_no: %d P: %d\n",
+        LOGF("\n\trecv_seq_no: %d P: %d\n",
                hdlc_fr->command.supervision.recv_seq_no,
                hdlc_fr->command.supervision.p_e);
     }
 
     if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
-        IF_LOG(WTF) {
+        LOG_IF(WTF) {
             LOG_("cmd: 0x%02x, nonzero stuffing", hdlc_fr->command.cmd);
             print_hex(hdlc_fr->data, hdlc_fr->nbits / 8);
         }
@@ -120,11 +120,11 @@ static bool tpdu_push_information_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_f
 
     const uint8_t len = (d && !seg) ? hdlc_fr->data[2] : 0;
 
-    IF_LOG(INFO) {
+    LOG_IF(INFO) {
         LOG_("information cmd\n");
-        printf("\taddr: ");
+        LOGF("\taddr: ");
         addr_print(&hdlc_fr->addr);
-        printf("\n\trecv_seq_no: %d send_seq_no: %d P: %d\n",
+        LOGF("\n\trecv_seq_no: %d send_seq_no: %d P: %d\n",
                hdlc_fr->command.information.recv_seq_no,
                hdlc_fr->command.information.send_seq_no,
                hdlc_fr->command.information.p_e);

@@ -629,7 +629,7 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
 
     data_block_t data_blk;
     data_block_decode_frame(&data_blk, f->data, f->frame_no, FRAME_TYPE_DATA);
-    IF_LOG(DBG) {
+    LOG_IF(DBG) {
         if (!data_blk.nerrs) {
             int asbx = data_blk.data[67];
             int asby = data_blk.data[68];
@@ -655,7 +655,7 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
                 LOG(ERR, "Unknown channel multiplexing type");
                 return -1;
             }
-            IF_LOG(INFO) {
+            LOG_IF(INFO) {
                 LOG_("\n");
                 tsdu_print(&tsdu->base);
             }
@@ -677,7 +677,7 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
 
     if (fn_mod == 98 || fn_mod == 99) {
         if (pch_push_data_block(phys_ch->pch, &data_blk)) {
-            IF_LOG(INFO) {
+            LOG_IF(INFO) {
                 LOG_("\n");
                 pch_print(phys_ch->pch);
             }
@@ -687,7 +687,7 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
     if (phys_ch->cch_mux_type == CELL_CONFIG_MUX_TYPE_TYPE_2) {
         if (fn_mod == 48 || fn_mod == 49) {
             if (pch_push_data_block(phys_ch->pch, &data_blk)) {
-                IF_LOG(INFO) {
+                LOG_IF(INFO) {
                     LOG_("\n");
                     pch_print(phys_ch->pch);
                 }
@@ -698,7 +698,7 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
 
     if (f->frame_no % 25 == 14) {
         if (rch_push_data_block(phys_ch->rch, &data_blk)) {
-            IF_LOG(INFO) {
+            LOG_IF(INFO) {
                 LOG_("\n");
                 rch_print(phys_ch->rch);
             }
@@ -709,7 +709,7 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
     if (sdch_dl_push_data_frame(phys_ch->sdch, &data_blk)) {
         tsdu_t *tsdu = sdch_get_tsdu(phys_ch->sdch);
         if (tsdu) {
-            IF_LOG(INFO) {
+            LOG_IF(INFO) {
                 LOG_("\n");
                 tsdu_print(tsdu);
             }

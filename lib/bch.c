@@ -73,10 +73,10 @@ bool bch_push_data_block(bch_t *bch, data_block_t* data_blk)
 
     if (!addr_is_tti_all_st(&hdlc_fr.addr, true)) {
         if (data_blk->frame_no == FRAME_NO_UNKNOWN) {
-            IF_LOG(DBG) {
+            LOG_IF(DBG) {
                 LOG_("invalid address for BCH");
                 addr_print(&hdlc_fr.addr);
-                printf("\n");
+                LOGF("\n");
             }
         }
         return false;

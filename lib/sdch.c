@@ -86,24 +86,24 @@ bool sdch_dl_push_data_frame(sdch_t *sdch, data_block_t *data_blk)
     }
 
     if (hdlc_fr.command.cmd == COMMAND_UNNUMBERED_UI) {
-        IF_LOG(DBG) {
+        LOG_IF(DBG) {
             LOG_("HDLC info=");
             print_hex(hdlc_fr.data, hdlc_fr.nbits / 8);
-            printf("\t");
+            LOGF("\t");
             addr_print(&hdlc_fr.addr);
-            printf("\n");
+            LOGF("\n");
         }
         return tpdu_ui_push_hdlc_frame(sdch->tpdu_ui, &hdlc_fr);
     }
 
     if (hdlc_fr.command.cmd == COMMAND_DACH) {
-        IF_LOG(INFO) {
+        LOG_IF(INFO) {
             LOG_("\n\tcmd ACK_DACH\n\taddr: ");
             addr_print(&hdlc_fr.addr);
-            printf("\n");
+            LOGF("\n");
         }
         if (!cmpzero(hdlc_fr.data, hdlc_fr.nbits / 8)) {
-            IF_LOG(WTF) {
+            LOG_IF(WTF) {
                 LOG_("cmd: ACK_DACH, nonzero stuffing");
                 print_hex(hdlc_fr.data, hdlc_fr.nbits / 8);
             }
@@ -115,14 +115,14 @@ bool sdch_dl_push_data_frame(sdch_t *sdch, data_block_t *data_blk)
     }
 
     if (hdlc_fr.command.cmd == COMMAND_UNNUMBERED_SNRM) {
-        IF_LOG(INFO) {
+        LOG_IF(INFO) {
             LOG_("\n\tcmd SNMR\n\taddr: ");
             addr_print(&hdlc_fr.addr);
-            printf("\n");
+            LOGF("\n");
         }
 
         if (!cmpzero(hdlc_fr.data, hdlc_fr.nbits / 8)) {
-            IF_LOG(WTF) {
+            LOG_IF(WTF) {
                 LOG_("cmd: SNMR, nonzero stuffing");
                 print_hex(hdlc_fr.data, hdlc_fr.nbits / 8);
             }

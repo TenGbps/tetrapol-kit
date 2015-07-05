@@ -43,9 +43,6 @@ extern int log_global_lvl;
 #define LOG_IF(lvl) \
     if (LOG_LOCAL_LVL(lvl) || lvl <= log_global_lvl)
 
-#define IF_LOG(lvl) \
-    if (LOG_LOCAL_LVL(lvl) || lvl <= log_global_lvl)
-
 #define LOG(lvl, msg, ...) \
     LOG_IF(lvl) { \
         LOG_(msg "\n", ##__VA_ARGS__); \
