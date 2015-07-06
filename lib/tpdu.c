@@ -133,7 +133,7 @@ static bool tpdu_push_information_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_f
     const uint8_t code_prefix   = code & TPDU_CODE_PREFIX_MASK;
 
     if (code_prefix != TPDU_CODE_PREFIX_MASK) {
-        const uint8_t qos           = (~TPDU_CODE_PREFIX_MASK) & code;
+        const uint8_t qos = (~TPDU_CODE_PREFIX_MASK) & code;
 
         switch(code_prefix) {
             case 0: // CR
