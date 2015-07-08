@@ -671,13 +671,17 @@ typedef tsdu_base_t tsdu_t;
 void tsdu_destroy(tsdu_base_t *tsdu);
 
 /**
- * @brief tsdu_d_decode Decode TSDU structure.
- * @param data Data packed into bytes.
- * @param nbits Number of bits used in 'data'
+ * @brief tsdu_d_decode Compose TSDU from TPDUs.
+ * @param data TPDU composed data.
+ * @param nbits 'data' length
  * @param prio Priority from TPDU
  * @param id_tsap TSAP-id
- * @return TSDU or NULL
+ * @param tsdu Is set to point o decoded TSDU when available or to NULL
+ *   otherwise. Caller is responsible for freeing this TSDU.
+ * @return 0 on success, -1 on fail.
  */
-tsdu_t *tsdu_d_decode(const uint8_t *data, int nbits, int prio, int id_tsap);
+int tsdu_d_decode(const uint8_t *data, int nbits, int prio, int id_tsap,
+        tsdu_t **tsdu);
 
 void tsdu_print(tsdu_t *tsdu);
+

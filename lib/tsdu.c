@@ -1064,67 +1064,74 @@ static void d_explicit_short_data_print(const tsdu_d_explicit_short_data_t *tsdu
     print_hex(tsdu->data, tsdu->len);
 }
 
-tsdu_t *tsdu_d_decode(const uint8_t *data, int nbits, int prio, int id_tsap)
+int tsdu_d_decode(const uint8_t *data, int nbits, int prio, int id_tsap, tsdu_t **tsdu)
 {
-    CHECK_LEN(nbits, 8, NULL);
+    if (nbits < 8) {
+        LOG(ERR, "%d data too short %d < %d", __LINE__, nbits, 8);
+        return -1;
+    }
+    if (!tsdu) {
+        LOG(ERR, "tsdu == NULL");
+        return -1;
+    }
 
     const codop_t codop = get_bits(8, data, 0);
 
-    tsdu_t *tsdu = NULL;
+    *tsdu = NULL;
     switch (codop) {
         case D_DATA_END:
-            tsdu = (tsdu_t *)d_data_end_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_data_end_decode(data, nbits);
             break;
 
         case D_DATAGRAM:
-            tsdu = (tsdu_t *)d_datagram_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_datagram_decode(data, nbits);
             break;
 
         case D_DATAGRAM_NOTIFY:
-            tsdu = (tsdu_t *)d_datagram_notify_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_datagram_notify_decode(data, nbits);
             break;
 
         case D_ECH_OVERLOAD_ID:
-            tsdu = (tsdu_t *)d_ech_overload_id_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_ech_overload_id_decode(data, nbits);
             break;
 
         case D_EXPLICIT_SHORT_DATA:
-            tsdu = (tsdu_t *)d_explicit_short_data_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_explicit_short_data_decode(data, nbits);
             break;
 
         case D_GROUP_ACTIVATION:
-            tsdu = (tsdu_t *)d_group_activation_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_group_activation_decode(data, nbits);
             break;
 
         case D_GROUP_COMPOSITION:
-            tsdu = (tsdu_t *)d_group_composition_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_group_composition_decode(data, nbits);
             break;
 
         case D_GROUP_LIST:
-            tsdu = (tsdu_t *)d_group_list_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_group_list_decode(data, nbits);
             break;
 
         case D_NEIGHBOURING_CELL:
-            tsdu = (tsdu_t *)d_neighbouring_cell_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_neighbouring_cell_decode(data, nbits);
             break;
 
         case D_SYSTEM_INFO:
-            tsdu = (tsdu_t *)d_system_info_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_system_info_decode(data, nbits);
             break;
 
         default:
-            tsdu = (tsdu_t *)d_unknown_parse(data, nbits);
+            *tsdu = (tsdu_t *)d_unknown_parse(data, nbits);
             LOG(WTF, "unsupported codop 0x%02x", codop);
     }
 
-    if (tsdu) {
-        tsdu->codop = codop;
-        tsdu->downlink = true;
-        tsdu->prio = prio;
-        tsdu->id_tsap = id_tsap;
+    if (*tsdu) {
+        (*tsdu)->codop = codop;
+        (*tsdu)->downlink = true;
+        (*tsdu)->prio = prio;
+        (*tsdu)->id_tsap = id_tsap;
     }
 
-    return tsdu;
+    return 0;
 }
 
 static void tsdu_d_print(const tsdu_t *tsdu)
