@@ -43,7 +43,6 @@ struct _tpdu_t {
 struct _tpdu_ui_t {
     frame_type_t fr_type;
     segmented_du_t *seg_du[128];
-    tsdu_t *tsdu;           ///< contains last decoded TSDU
 };
 
 tpdu_t *tpdu_create(void)
@@ -56,8 +55,11 @@ tpdu_t *tpdu_create(void)
     return tpdu;
 }
 
-static bool tpdu_push_supervision_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr)
+static int tpdu_push_supervision_frame(tpdu_t *tpdu,
+        const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu)
 {
+    *tsdu = NULL;
+
     LOG_IF(INFO) {
         switch(hdlc_fr->command.cmd) {
             case COMMAND_SUPERVISION_RR:
@@ -102,11 +104,14 @@ static bool tpdu_push_supervision_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_f
             break;
     }
 
-    return false;
+    return -1;
 }
 
-static bool tpdu_push_information_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr)
+static int tpdu_push_information_frame(tpdu_t *tpdu,
+        const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu)
 {
+    *tsdu = NULL;
+
     const bool ext              = get_bits(1, hdlc_fr->data, 0);
     const bool seg              = get_bits(1, hdlc_fr->data, 1);
     const bool d                = get_bits(1, hdlc_fr->data, 2);
@@ -188,26 +193,26 @@ static bool tpdu_push_information_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_f
         }
     }
 
-    return hdlc_fr;
+    return -1;
 }
 
-bool tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr)
+int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu)
 {
     switch (hdlc_fr->command.cmd) {
         case COMMAND_SUPERVISION_RR:
         case COMMAND_SUPERVISION_RNR:
         case COMMAND_SUPERVISION_REJ:
-            return tpdu_push_supervision_frame(tpdu, hdlc_fr);
+            return tpdu_push_supervision_frame(tpdu, hdlc_fr, tsdu);
 
         case COMMAND_INFORMATION:
-            return tpdu_push_information_frame(tpdu, hdlc_fr);
+            return tpdu_push_information_frame(tpdu, hdlc_fr, tsdu);
 
         default:
             break;
     }
 
     LOG(WTF, "invalid cmd for TPDU (%d)", hdlc_fr->command.cmd);
-    return false;
+    return -1;
 }
 
 void tpdu_destroy(tpdu_t *tpdu)
@@ -241,7 +246,6 @@ tpdu_ui_t *tpdu_ui_create(frame_type_t fr_type)
 
 void tpdu_ui_destroy(tpdu_ui_t *tpdu)
 {
-    tsdu_destroy(tpdu->tsdu);
     for (int i = 0; i < ARRAY_LEN(tpdu->seg_du); ++i) {
         if (!tpdu->seg_du[i]) {
             continue;
@@ -251,12 +255,14 @@ void tpdu_ui_destroy(tpdu_ui_t *tpdu)
     free(tpdu);
 }
 
-static bool tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_fr,
-                                     bool allow_seg)
+static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
+        const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu, bool allow_seg)
 {
+    *tsdu = NULL;
+
     if (hdlc_fr->nbits < 8) {
         LOG(WTF, "too short HDLC (%d)", hdlc_fr->nbits);
-        return false;
+        return -1;
     }
 
     bool ext                    = get_bits(1, hdlc_fr->data, 0);
@@ -266,34 +272,25 @@ static bool tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_f
 
     LOG(DBG, "DU EXT=%d SEG=%d PRIO=%d ID_TSAP=%d", ext, seg, prio, id_tsap);
     if (ext == 0 && seg == 0) {
-        tsdu_destroy(tpdu->tsdu);
-
         // PAS 0001-3-3 9.5.1.2
         if ((tpdu->fr_type == FRAME_TYPE_DATA && hdlc_fr->nbits > (3*8)) ||
                 (tpdu->fr_type == FRAME_TYPE_HR_DATA &&
                  hdlc_fr->nbits > (6*8))) {
-            const int nbits     = get_bits(8, hdlc_fr->data + 1, 0) * 8;
-            if (tsdu_d_decode(hdlc_fr->data + 2, nbits, prio, id_tsap,
-                        &tpdu->tsdu)) {
-                return false;
-            }
-        } else {
-            const int nbits = hdlc_fr->nbits - 8;
-            if (tsdu_d_decode(hdlc_fr->data + 1, nbits, prio, id_tsap,
-                        &tpdu->tsdu)) {
-                return false;
-            }
+            const int nbits = get_bits(8, hdlc_fr->data + 1, 0) * 8;
+            return tsdu_d_decode(hdlc_fr->data + 2, nbits, prio, id_tsap, tsdu);
         }
-        return tpdu->tsdu != NULL;
+        const int nbits = hdlc_fr->nbits - 8;
+        return tsdu_d_decode(hdlc_fr->data + 1, nbits, prio, id_tsap, tsdu);
     }
 
     if (ext != 1) {
         LOG(WTF, "unsupported ext and seg combination");
-        return false;
+        return -1;
     }
 
     if (!allow_seg) {
-        return false;
+        LOG(INFO, "Segmentation not allowed");
+        return -1;
     }
 
     ext                         = get_bits(1, hdlc_fr->data + 1, 0);
@@ -389,28 +386,19 @@ static bool tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_f
     tpdu_ui_segments_destroy(seg_du);
     tpdu->seg_du[seg_ref] = NULL;
 
-    if (tsdu_d_decode(data, nbits, prio, id_tsap, &tpdu->tsdu)) {
-        return false;
-    }
-
-    return tpdu->tsdu != NULL;
+    return tsdu_d_decode(data, nbits, prio, id_tsap, tsdu);
 }
 
-bool tpdu_ui_push_hdlc_frame(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_fr)
+int tpdu_ui_push_hdlc_frame(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_fr,
+        tsdu_t **tsdu)
 {
-    return tpdu_ui_push_hdlc_frame_(tpdu, hdlc_fr, true);
+    return tpdu_ui_push_hdlc_frame_(tpdu, hdlc_fr, tsdu, true);
 }
 
-bool tpdu_ui_push_hdlc_frame2(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_fr)
+int tpdu_ui_push_hdlc_frame2(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_fr,
+        tsdu_t **tsdu)
 {
-    return tpdu_ui_push_hdlc_frame_(tpdu, hdlc_fr, false);
-}
-
-tsdu_t *tpdu_ui_get_tsdu(tpdu_ui_t *tpdu)
-{
-    tsdu_t *tsdu = tpdu->tsdu;
-    tpdu->tsdu = NULL;
-    return tsdu;
+    return tpdu_ui_push_hdlc_frame_(tpdu, hdlc_fr, tsdu, false);
 }
 
 void tpdu_du_tick(const timeval_t *tv, void *tpdu_du)

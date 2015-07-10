@@ -81,11 +81,15 @@ bool bch_push_data_block(bch_t *bch, data_block_t* data_blk)
         return false;
     }
 
-    if (!tpdu_ui_push_hdlc_frame2(bch->tpdu, &hdlc_fr)) {
+    tsdu_t *tsdu;
+    if (tpdu_ui_push_hdlc_frame2(bch->tpdu, &hdlc_fr, &tsdu) == -1) {
         return false;
     }
 
-    tsdu_t *tsdu = tpdu_ui_get_tsdu(bch->tpdu);
+    if (!tsdu) {
+        return false;
+    }
+
     if (tsdu->codop != D_SYSTEM_INFO) {
         LOG(DBG, "Invalid codop for BCH 0x%02x", tsdu->codop);
         tsdu_destroy(tsdu);

@@ -5,6 +5,7 @@
 #include <tetrapol/hdlc_frame.h>
 #include <tetrapol/misc.h>
 #include <tetrapol/tpdu.h>
+#include <tetrapol/tsdu.h>
 #include <tetrapol/system_config.h>
 
 #include <stdlib.h>
@@ -14,6 +15,7 @@ struct _sdch_t {
     data_frame_t *data_fr;
     tpdu_t *tpdu;
     tpdu_ui_t *tpdu_ui;
+    tsdu_t *tsdu;
 };
 
 sdch_t *sdch_create(void)
@@ -37,6 +39,8 @@ sdch_t *sdch_create(void)
     if (!sdch->tpdu) {
         goto err_tpdu;
     }
+
+    sdch->tsdu = NULL;
 
     return sdch;
 
@@ -78,11 +82,17 @@ bool sdch_dl_push_data_frame(sdch_t *sdch, data_block_t *data_blk)
         return false;
     }
 
+    tsdu_destroy(sdch->tsdu);
+    sdch->tsdu = NULL;
+
     if (hdlc_fr.command.cmd == COMMAND_INFORMATION ||
             hdlc_fr.command.cmd == COMMAND_SUPERVISION_RR ||
             hdlc_fr.command.cmd == COMMAND_SUPERVISION_RNR ||
             hdlc_fr.command.cmd == COMMAND_SUPERVISION_REJ) {
-        return tpdu_push_hdlc_frame(sdch->tpdu, &hdlc_fr);
+        if (tpdu_push_hdlc_frame(sdch->tpdu, &hdlc_fr, &sdch->tsdu) == -1) {
+            return false;
+        }
+        return sdch->tsdu != NULL;
     }
 
     if (hdlc_fr.command.cmd == COMMAND_UNNUMBERED_UI) {
@@ -93,7 +103,10 @@ bool sdch_dl_push_data_frame(sdch_t *sdch, data_block_t *data_blk)
             addr_print(&hdlc_fr.addr);
             LOGF("\n");
         }
-        return tpdu_ui_push_hdlc_frame(sdch->tpdu_ui, &hdlc_fr);
+        if (tpdu_ui_push_hdlc_frame(sdch->tpdu_ui, &hdlc_fr, &sdch->tsdu) == -1) {
+            return false;
+        }
+        return sdch->tsdu != NULL;
     }
 
     if (hdlc_fr.command.cmd == COMMAND_DACH) {
@@ -140,9 +153,8 @@ bool sdch_dl_push_data_frame(sdch_t *sdch, data_block_t *data_blk)
 
 tsdu_t *sdch_get_tsdu(sdch_t *sdch)
 {
-    tsdu_t *tsdu = tpdu_ui_get_tsdu(sdch->tpdu_ui);
-
-    // TODO: multiplexing for other TPDU types
+    tsdu_t *tsdu = sdch->tsdu;
+    sdch->tsdu = NULL;
 
     return tsdu;
 }
