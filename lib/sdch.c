@@ -62,6 +62,7 @@ void sdch_destroy(sdch_t *sdch)
         data_frame_destroy(sdch->data_fr);
         tpdu_ui_destroy(sdch->tpdu_ui);
         tpdu_destroy(sdch->tpdu);
+        tsdu_destroy(sdch->tsdu);
     }
     free(sdch);
 }
