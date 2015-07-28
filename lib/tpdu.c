@@ -160,6 +160,9 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
                 LOG(ERR, "TODO FCR seg: %d d: %d TSAP_ref: %d TSAP_id: %d QoS: %d len: %d",
                     seg, d, par_field, dest_ref, qos, len);
                 break;
+
+            default:
+                LOG(WTF, "unknown code %d", code);
         }
     } else {
         switch (code) {
