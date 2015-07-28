@@ -301,7 +301,7 @@ void tsdu_destroy(tsdu_base_t *tsdu)
 static void tsdu_base_set_nopts(tsdu_base_t *tsdu, int noptionals)
 {
     tsdu->noptionals = noptionals;
-    memset(tsdu->optionals, 0, noptionals * sizeof(void *));
+    memset(tsdu->optionals, 0, sizeof(void *[noptionals]));
 }
 
 static void tsdu_base_print(const tsdu_base_t *tsdu)
@@ -445,7 +445,7 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int len)
 
         if (type_nb.type == TYPE_NB_TYPE_EMERGENCY) {
             const int n = tsdu->nemergency + type_nb.number;
-            const int l = sizeof(tsdu_d_group_list_emergency_t) * n;
+            const int l = sizeof(tsdu_d_group_list_emergency_t[n]);
             tsdu_d_group_list_emergency_t *p = realloc(tsdu->emergency, l);
             if (!p) {
                 tsdu_destroy(&tsdu->base);
@@ -466,7 +466,7 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int len)
 
         if (type_nb.type == TYPE_NB_TYPE_OPEN) {
             const int n = tsdu->nopen + type_nb.number;
-            const int l = sizeof(tsdu_d_group_list_open_t) * n;
+            const int l = sizeof(tsdu_d_group_list_open_t[n]);
             tsdu_d_group_list_open_t *p = realloc(tsdu->open,l);
             if (!p) {
                 tsdu_destroy(&tsdu->base);
@@ -491,7 +491,7 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int len)
         }
         if (type_nb.type == TYPE_NB_TYPE_TALK_GROUP) {
             const int n = tsdu->ngroup + type_nb.number;
-            const int l = sizeof(tsdu_d_group_list_talk_group_t) * n;
+            const int l = sizeof(tsdu_d_group_list_talk_group_t[n]);
             tsdu_d_group_list_talk_group_t *p = realloc(tsdu->group, l);
             if (!p) {
                 tsdu_destroy(&tsdu->base);
@@ -629,8 +629,7 @@ addr_list_t *iei_adjacent_bn_list_decode(
         n = adj_cells->len;
     }
     n +=  len * 2 / 3;
-    const int l = sizeof(addr_list_t) + n * sizeof(addr_t);
-    addr_list_t *p = realloc(adj_cells, l);
+    addr_list_t *p = realloc(adj_cells, sizeof(addr_list_t) + sizeof(addr_t[n]));
     if (!p) {
         LOG(ERR, "ERR OOM");
         return NULL;

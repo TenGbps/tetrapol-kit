@@ -58,7 +58,7 @@ bool timer_register(timer_t *timer, timer_callback_t timer_func, void *ptr)
     }
 
     ++timer->ncallbacks;
-    callback_t *p = realloc(timer->callbacks, sizeof(callback_t) * timer->ncallbacks);
+    callback_t *p = realloc(timer->callbacks, sizeof(callback_t[timer->ncallbacks]));
     if (!p) {
         LOG(ERR, "ERR OOM");
         return false;
@@ -76,7 +76,7 @@ void timer_cancel(timer_t *timer, timer_callback_t timer_func, void *ptr)
         if (timer->callbacks[i].func == timer_func &&
                 timer->callbacks[i].ptr == ptr) {
             memmove(&timer->callbacks[i], &timer->callbacks[i + 1],
-                    sizeof(callback_t) * (timer->ncallbacks - i - 1));
+                    sizeof(callback_t[timer->ncallbacks - i - 1]));
             --timer->ncallbacks;
             return;
         }
