@@ -145,7 +145,7 @@ typedef struct {
 typedef struct {
     tsdu_base_t base;
     uint8_t *data;
-    int nbits;
+    int len;
 } tsdu_seecret_codop_t;
 
 /// PAS 0001-3-2 5.3.2
@@ -673,14 +673,14 @@ void tsdu_destroy(tsdu_base_t *tsdu);
 /**
  * @brief tsdu_d_decode Compose TSDU from TPDUs.
  * @param data TPDU composed data.
- * @param nbits 'data' length
+ * @param len length of data in bytes
  * @param prio Priority from TPDU
  * @param id_tsap TSAP-id
  * @param tsdu Is set to point o decoded TSDU when available or to NULL
  *   otherwise. Caller is responsible for freeing this TSDU.
  * @return 0 on success, -1 on fail.
  */
-int tsdu_d_decode(const uint8_t *data, int nbits, int prio, int id_tsap,
+int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap,
         tsdu_t **tsdu);
 
 void tsdu_print(tsdu_t *tsdu);

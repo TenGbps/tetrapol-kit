@@ -347,7 +347,7 @@ static void cell_id_decode2(cell_id_t *cell_id, const uint8_t *data)
 }
 
 static tsdu_d_group_activation_t *
-d_group_activation_decode(const uint8_t *data, int nbits)
+d_group_activation_decode(const uint8_t *data, int len)
 {
     tsdu_d_group_activation_t *tsdu = malloc(sizeof(tsdu_d_group_activation_t));
     if (!tsdu) {
@@ -355,7 +355,7 @@ d_group_activation_decode(const uint8_t *data, int nbits)
     }
 
     tsdu_base_set_nopts(&tsdu->base, 0);
-    CHECK_LEN(nbits, 9 * 8, tsdu);
+    CHECK_LEN(len, 9, tsdu);
 
     int _zero0;
     activation_mode_decode(&tsdu->activation_mode, data[1]);
@@ -372,7 +372,7 @@ d_group_activation_decode(const uint8_t *data, int nbits)
     }
 
     tsdu->has_addr_tti = false;
-    if (nbits >= 12 * 8) {
+    if (len >= 12) {
         // FIXME: proper IEI handling
         uint8_t iei = get_bits(8, data + 9, 0);
         if (iei != IEI_TTI) {
@@ -383,8 +383,8 @@ d_group_activation_decode(const uint8_t *data, int nbits)
         }
     }
 
-    if (nbits > 12*8) {
-        LOG(WTF, "unused bits (%d)", nbits);
+    if (len > 12) {
+        LOG(WTF, "unused bytes (%d)", len);
     }
 
     return tsdu;
@@ -409,7 +409,7 @@ static void d_group_activation_print(tsdu_d_group_activation_t *tsdu)
     }
 }
 
-static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int nbits)
+static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int len)
 {
     tsdu_d_group_list_t *tsdu = malloc(sizeof(tsdu_d_group_list_t));
     if (!tsdu) {
@@ -421,20 +421,20 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int nbits)
     tsdu->ngroup = 0;
     tsdu->nopen = 0;
 
-    int rlen = 2*8; ///< required data length
-    CHECK_LEN(nbits, rlen, tsdu);
+    int rlen = 2; ///< required data length
+    CHECK_LEN(len, rlen, tsdu);
     tsdu->reference_list._data = get_bits(8, data + 1, 0);
     if (tsdu->reference_list.revision == 0) {
         return tsdu;
     }
 
-    rlen += 1*8;
-    CHECK_LEN(nbits, rlen, tsdu);
+    rlen += 1;
+    CHECK_LEN(len, rlen, tsdu);
     tsdu->index_list._data = get_bits(8, data + 2, 0);
     data += 3;
     do {
-        rlen += 1*8;
-        CHECK_LEN(nbits, rlen, tsdu);
+        rlen += 1;
+        CHECK_LEN(len, rlen, tsdu);
         const type_nb_t type_nb = {
             ._data = get_bits(8, data, 0),
         };
@@ -460,7 +460,7 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int nbits)
                     LOG(WTF, "nonzero padding (%d)", zero);
                 }
                 data += 2;
-                rlen += 2*8;
+                rlen += 2;
             }
         }
 
@@ -486,7 +486,7 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int nbits)
                 tsdu->open[i].och_parameters.mbn    = get_bits(1, data + 3, 3);
                 tsdu->open[i].neighbouring_cell     = get_bits(12, data + 3, 4);
                 data += 5;
-                rlen +=  5*8;
+                rlen += 5;
             }
         }
         if (type_nb.type == TYPE_NB_TYPE_TALK_GROUP) {
@@ -511,7 +511,7 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int nbits)
                 }
                 tsdu->group[i].neighbouring_cell    = get_bits(12, data + 2, 4);
                 data += 4;
-                rlen += 4*8;
+                rlen += 4;
             }
         }
     } while(true);
@@ -563,7 +563,8 @@ static void d_group_list_print(tsdu_d_group_list_t *tsdu)
     }
 }
 
-static tsdu_d_group_composition_t *d_group_composition_decode(const uint8_t *data, int nbits)
+static tsdu_d_group_composition_t *d_group_composition_decode(
+        const uint8_t *data, int len)
 {
     tsdu_d_group_composition_t *tsdu = malloc(sizeof(tsdu_d_group_composition_t));
     if (!tsdu) {
@@ -571,12 +572,12 @@ static tsdu_d_group_composition_t *d_group_composition_decode(const uint8_t *dat
     }
 
     tsdu_base_set_nopts(&tsdu->base, 0);
-    CHECK_LEN(nbits, 3*8, tsdu);
+    CHECK_LEN(len, 3, tsdu);
 
     tsdu->group_id = get_bits(12, data + 1, 0);
     tsdu->og_nb = get_bits(4, data + 2, 4);
 
-    CHECK_LEN(nbits, 3*8 + 12*tsdu->og_nb, tsdu);
+    CHECK_LEN(len, 3 + (12*tsdu->og_nb + 7) / 8, tsdu);
 
     int skip = 0;
     for (int i = 0; i < tsdu->og_nb; ++i) {
@@ -596,16 +597,13 @@ static void d_group_composition_print(tsdu_d_group_composition_t *tsdu)
     }
 }
 
-static cell_id_list_t *iei_cell_id_list_decode(
-        cell_id_list_t *cell_ids, const uint8_t *data, int len)
+static cell_id_list_t *iei_cell_id_list_decode(cell_id_list_t *cell_ids,
+        const uint8_t *data, int len)
 {
-    int n = 0;
-    if (cell_ids) {
-        n = cell_ids->len;
-    }
+    int n = cell_ids ? cell_ids->len : 0;
     n += len / 2;
-    const int l = sizeof(cell_id_list_t) + n * sizeof(cell_id_t);
-    cell_id_list_t *p = realloc(cell_ids, l);
+    cell_id_list_t *p = realloc(cell_ids,
+            sizeof(cell_id_list_t) + sizeof(cell_id_t[n]));
     if (!p) {
         LOG(ERR, "ERR OOM");
         return NULL;
@@ -650,14 +648,14 @@ addr_list_t *iei_adjacent_bn_list_decode(
     return adj_cells;
 }
 
-static tsdu_d_neighbouring_cell_t *d_neighbouring_cell_decode(const uint8_t *data, int nbits)
+static tsdu_d_neighbouring_cell_t *d_neighbouring_cell_decode(const uint8_t *data, int len)
 {
     tsdu_d_neighbouring_cell_t *tsdu = malloc(sizeof(tsdu_d_neighbouring_cell_t));
     if (!tsdu) {
         return NULL;
     }
     tsdu_base_set_nopts(&tsdu->base, 2);
-    CHECK_LEN(nbits, 2*8, tsdu);
+    CHECK_LEN(len, 2, tsdu);
 
     uint8_t _zero                               = get_bits(4, data + 1, 0);
     tsdu->ccr_config.number                     = get_bits(4, data + 1, 4);
@@ -675,8 +673,8 @@ static tsdu_d_neighbouring_cell_t *d_neighbouring_cell_decode(const uint8_t *dat
     }
 
     data += 3;
-    nbits -= 3 * 8;
-    CHECK_LEN(nbits, 3 * 8 * tsdu->ccr_config.number, tsdu);
+    len -= 3;
+    CHECK_LEN(len, 3 * tsdu->ccr_config.number, tsdu);
     for (int i = 0; i < tsdu->ccr_config.number; ++i) {
         tsdu->adj_cells[i].bn_nb                = get_bits(4,  data, 0);
         tsdu->adj_cells[i].channel_id           = get_bits(12, data, 4);
@@ -685,37 +683,37 @@ static tsdu_d_neighbouring_cell_t *d_neighbouring_cell_decode(const uint8_t *dat
             LOG(WTF, "adjacent_param._reserved != 0");
         }
         data += 3;
-        nbits -= 3 * 8;
+        len -= 3;
     }
 
-    while (nbits > 7) {
-        CHECK_LEN(nbits, 2 * 8, tsdu);
+    while (len > 0) {
+        CHECK_LEN(len, 2, tsdu);
         const uint8_t iei                       = get_bits(8, data, 0);
-        const uint8_t len                       = get_bits(8, data + 1, 0);
+        const uint8_t ie_len                    = get_bits(8, data + 1, 0);
         data += 2;
-        nbits -= 2 * 8;
-        CHECK_LEN(nbits, len * 8, tsdu);
-        if (iei == IEI_CELL_ID_LIST && len) {
+        len -= 2;
+        CHECK_LEN(len, ie_len, tsdu);
+        if (iei == IEI_CELL_ID_LIST && ie_len) {
             cell_id_list_t *p = iei_cell_id_list_decode(
-                        tsdu->cell_ids, data, len);
+                        tsdu->cell_ids, data, ie_len);
             if (!p) {
                 break;
             }
             tsdu->cell_ids = p;
-        } else if (iei == IEI_ADJACENT_BN_LIST && len) {
+        } else if (iei == IEI_ADJACENT_BN_LIST && ie_len) {
             addr_list_t *p = iei_adjacent_bn_list_decode(
-                        tsdu->cell_bns, data, len);
+                        tsdu->cell_bns, data, ie_len);
             if (!p) {
                 break;
             }
             tsdu->cell_bns = p;
         } else {
-            if (len) {
+            if (ie_len) {
                 LOG(WTF, "d_neighbouring_cell unknown iei (0x%x)", iei);
             }
         }
-        data += len;
-        nbits -= len * 8;
+        data += ie_len;
+        len -= ie_len;
     }
 
     return tsdu;
@@ -757,7 +755,7 @@ static void d_neighbouring_cell_print(tsdu_d_neighbouring_cell_t *tsdu)
     }
 }
 
-static tsdu_d_system_info_t *d_system_info_decode(const uint8_t *data, int nbits)
+static tsdu_d_system_info_t *d_system_info_decode(const uint8_t *data, int len)
 {
     tsdu_d_system_info_t *tsdu = malloc(sizeof(tsdu_d_system_info_t));
     if (!tsdu) {
@@ -767,12 +765,12 @@ static tsdu_d_system_info_t *d_system_info_decode(const uint8_t *data, int nbits
     tsdu_base_set_nopts(&tsdu->base, 0);
 
     // minimal size of disconnected mode
-    CHECK_LEN(nbits, 9*8, tsdu);
+    CHECK_LEN(len, 9, tsdu);
 
     tsdu->cell_state._data = get_bits(8, data + 1, 0);
     switch (tsdu->cell_state.mode) {
         case CELL_STATE_MODE_NORMAL:
-            CHECK_LEN(nbits, (17 * 8), tsdu);
+            CHECK_LEN(len, 17, tsdu);
             tsdu->cell_config._data                     = get_bits( 8, data + 2, 0);
             tsdu->country_code                          = get_bits( 8, data + 3, 0);
             tsdu->system_id._data                       = get_bits( 8, data + 4, 0);
@@ -881,7 +879,7 @@ static void d_system_info_print(tsdu_d_system_info_t *tsdu)
     }
 }
 
-static tsdu_d_ech_overload_id_t *d_ech_overload_id_decode(const uint8_t *data, int nbits)
+static tsdu_d_ech_overload_id_t *d_ech_overload_id_decode(const uint8_t *data, int len)
 {
     tsdu_d_ech_overload_id_t *tsdu = malloc(sizeof(tsdu_d_ech_overload_id_t));
     if (!tsdu) {
@@ -889,7 +887,7 @@ static tsdu_d_ech_overload_id_t *d_ech_overload_id_decode(const uint8_t *data, i
     }
     tsdu_base_set_nopts(&tsdu->base, 0);
 
-    CHECK_LEN(nbits, 6*8, tsdu);
+    CHECK_LEN(len, 6, tsdu);
 
     tsdu->activation_mode.hook = get_bits(2, data + 1, 0);
     tsdu->activation_mode.type = get_bits(2, data + 1, 2);
@@ -911,28 +909,27 @@ static void d_ech_overload_id_print(const tsdu_d_ech_overload_id_t *tsdu)
     LOGF("\t\tORGANISATION=%d\n", tsdu->organisation);
 }
 
-static tsdu_seecret_codop_t *d_unknown_parse(const uint8_t *data, int nbits)
+static tsdu_seecret_codop_t *d_unknown_parse(const uint8_t *data, int len)
 {
     tsdu_seecret_codop_t *tsdu = malloc(sizeof(tsdu_seecret_codop_t));
     if (!tsdu) {
         return NULL;
     }
 
-    tsdu->nbits = nbits;
-    if (!nbits) {
-        tsdu_base_set_nopts(&tsdu->base, 0);
+    tsdu_base_set_nopts(&tsdu->base, 1);
+
+    tsdu->len = len;
+    if (!len) {
         return tsdu;
     }
 
-    tsdu_base_set_nopts(&tsdu->base, 1);
-
-    tsdu->data = malloc((nbits + 7) / 8);
+    tsdu->data = malloc(len);
     if (!tsdu->data) {
         tsdu_destroy(&tsdu->base);
         return NULL;
     }
 
-    memcpy(tsdu->data, data, (nbits + 7) / 8);
+    memcpy(tsdu->data, data, len);
 
     return tsdu;
 }
@@ -940,11 +937,11 @@ static tsdu_seecret_codop_t *d_unknown_parse(const uint8_t *data, int nbits)
 static void d_unknown_print(const tsdu_seecret_codop_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    LOGF("\t\tUNKNOWN CODOP nbits=%d data=", tsdu->nbits);
-    print_hex(tsdu->data, (tsdu->nbits + 7) / 8);
+    LOGF("\t\tUNKNOWN CODOP len=%d data=", tsdu->len);
+    print_hex(tsdu->data, tsdu->len);
 }
 
-static tsdu_d_data_end_t *d_data_end_decode(const uint8_t *data, int nbits)
+static tsdu_d_data_end_t *d_data_end_decode(const uint8_t *data, int len)
 {
     tsdu_d_data_end_t *tsdu = malloc(sizeof(tsdu_d_data_end_t));
     if (!tsdu) {
@@ -952,7 +949,7 @@ static tsdu_d_data_end_t *d_data_end_decode(const uint8_t *data, int nbits)
     }
 
     tsdu_base_set_nopts(&tsdu->base, 0);
-    CHECK_LEN(nbits, 2*8, tsdu);
+    CHECK_LEN(len, 2, tsdu);
     tsdu->cause = data[1];
 
     return tsdu;
@@ -964,7 +961,7 @@ static void d_data_end_print(const tsdu_d_data_end_t *tsdu)
     LOGF("\t\tCAUSE=0x%02x\n", tsdu->cause);
 }
 
-static tsdu_d_datagram_notify_t *d_datagram_notify_decode(const uint8_t *data, int nbits)
+static tsdu_d_datagram_notify_t *d_datagram_notify_decode(const uint8_t *data, int len)
 {
     tsdu_d_datagram_notify_t *tsdu = malloc(sizeof(tsdu_d_datagram_notify_t));
     if (!tsdu) {
@@ -972,13 +969,13 @@ static tsdu_d_datagram_notify_t *d_datagram_notify_decode(const uint8_t *data, i
     }
 
     tsdu_base_set_nopts(&tsdu->base, 0);
-    CHECK_LEN(nbits, 5*8, tsdu);
+    CHECK_LEN(len, 5, tsdu);
 
     tsdu->call_priority         = get_bits(4, data + 1, 4);
     tsdu->message_reference     = data[2] | (data[3] << 8);
     tsdu->key_reference._data   = data[4];
 
-    if (nbits >= 7 * 8) {
+    if (len >= 7) {
         tsdu->destination_port  = data[5] | (data[6] << 8);
     } else {
         tsdu->destination_port = -1;
@@ -999,13 +996,13 @@ static void d_datagram_notify_print(const tsdu_d_datagram_notify_t *tsdu)
     }
 }
 
-static tsdu_d_datagram_t *d_datagram_decode(const uint8_t *data, int nbits)
+static tsdu_d_datagram_t *d_datagram_decode(const uint8_t *data, int len)
 {
-    const int len = nbits / 8 - 5;
-    if (len < 0) {
+    if (len < 5) {
         LOG(WTF, "too short");
         return NULL;
     }
+    len -= 5;
 
     tsdu_d_datagram_t *tsdu = malloc(sizeof(tsdu_d_datagram_t) + len);
     if (!tsdu) {
@@ -1035,13 +1032,13 @@ static void d_datagram_print(const tsdu_d_datagram_t *tsdu)
 }
 
 static tsdu_d_explicit_short_data_t *d_explicit_short_data_decode(
-        const uint8_t *data, int nbits)
+        const uint8_t *data, int len)
 {
-    const int len = nbits / 8 - 1;
-    if (len < 0) {
+    if (len < 1) {
         LOG(WTF, "too short");
         return NULL;
     }
+    len -= 1;
 
     tsdu_d_explicit_short_data_t *tsdu = malloc(
                 sizeof(tsdu_d_explicit_short_data_t) + len);
@@ -1064,10 +1061,10 @@ static void d_explicit_short_data_print(const tsdu_d_explicit_short_data_t *tsdu
     print_hex(tsdu->data, tsdu->len);
 }
 
-int tsdu_d_decode(const uint8_t *data, int nbits, int prio, int id_tsap, tsdu_t **tsdu)
+int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **tsdu)
 {
-    if (nbits < 8) {
-        LOG(ERR, "%d data too short %d < %d", __LINE__, nbits, 8);
+    if (len < 1) {
+        LOG(ERR, "%d data too short %d < %d", __LINE__, len, 1);
         return -1;
     }
     if (!tsdu) {
@@ -1080,47 +1077,47 @@ int tsdu_d_decode(const uint8_t *data, int nbits, int prio, int id_tsap, tsdu_t 
     *tsdu = NULL;
     switch (codop) {
         case D_DATA_END:
-            *tsdu = (tsdu_t *)d_data_end_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_data_end_decode(data, len);
             break;
 
         case D_DATAGRAM:
-            *tsdu = (tsdu_t *)d_datagram_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_datagram_decode(data, len);
             break;
 
         case D_DATAGRAM_NOTIFY:
-            *tsdu = (tsdu_t *)d_datagram_notify_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_datagram_notify_decode(data, len);
             break;
 
         case D_ECH_OVERLOAD_ID:
-            *tsdu = (tsdu_t *)d_ech_overload_id_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_ech_overload_id_decode(data, len);
             break;
 
         case D_EXPLICIT_SHORT_DATA:
-            *tsdu = (tsdu_t *)d_explicit_short_data_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_explicit_short_data_decode(data, len);
             break;
 
         case D_GROUP_ACTIVATION:
-            *tsdu = (tsdu_t *)d_group_activation_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_group_activation_decode(data, len);
             break;
 
         case D_GROUP_COMPOSITION:
-            *tsdu = (tsdu_t *)d_group_composition_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_group_composition_decode(data, len);
             break;
 
         case D_GROUP_LIST:
-            *tsdu = (tsdu_t *)d_group_list_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_group_list_decode(data, len);
             break;
 
         case D_NEIGHBOURING_CELL:
-            *tsdu = (tsdu_t *)d_neighbouring_cell_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_neighbouring_cell_decode(data, len);
             break;
 
         case D_SYSTEM_INFO:
-            *tsdu = (tsdu_t *)d_system_info_decode(data, nbits);
+            *tsdu = (tsdu_t *)d_system_info_decode(data, len);
             break;
 
         default:
-            *tsdu = (tsdu_t *)d_unknown_parse(data, nbits);
+            *tsdu = (tsdu_t *)d_unknown_parse(data, len);
             LOG(WTF, "unsupported codop 0x%02x", codop);
     }
 

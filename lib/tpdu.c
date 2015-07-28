@@ -276,11 +276,11 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
         if ((tpdu->fr_type == FRAME_TYPE_DATA && hdlc_fr->nbits > (3*8)) ||
                 (tpdu->fr_type == FRAME_TYPE_HR_DATA &&
                  hdlc_fr->nbits > (6*8))) {
-            const int nbits = get_bits(8, hdlc_fr->data + 1, 0) * 8;
-            return tsdu_d_decode(hdlc_fr->data + 2, nbits, prio, id_tsap, tsdu);
+            const int len = get_bits(8, hdlc_fr->data + 1, 0);
+            return tsdu_d_decode(hdlc_fr->data + 2, len, prio, id_tsap, tsdu);
         }
-        const int nbits = hdlc_fr->nbits - 8;
-        return tsdu_d_decode(hdlc_fr->data + 1, nbits, prio, id_tsap, tsdu);
+        const int len = hdlc_fr->nbits / 8 - 1;
+        return tsdu_d_decode(hdlc_fr->data + 1, len, prio, id_tsap, tsdu);
     }
 
     if (ext != 1) {
@@ -386,7 +386,7 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
     tpdu_ui_segments_destroy(seg_du);
     tpdu->seg_du[seg_ref] = NULL;
 
-    return tsdu_d_decode(data, nbits, prio, id_tsap, tsdu);
+    return tsdu_d_decode(data, nbits / 8, prio, id_tsap, tsdu);
 }
 
 int tpdu_ui_push_hdlc_frame(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_fr,
