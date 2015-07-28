@@ -4,7 +4,7 @@
 
 #include <tetrapol/data_frame.h>
 
-typedef struct _pch_t pch_t;
+typedef struct pch_priv_t pch_t;
 
 pch_t *pch_create(void);
 void pch_destroy(pch_t *pch);

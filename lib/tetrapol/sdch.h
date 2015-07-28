@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 
-typedef struct _sdch_t sdch_t;
+typedef struct sdch_priv_t sdch_t;
 
 sdch_t *sdch_create(void);
 void sdch_destroy(sdch_t *sdch);

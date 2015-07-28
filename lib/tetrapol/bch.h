@@ -3,7 +3,7 @@
 #include <tetrapol/data_block.h>
 #include <tetrapol/tsdu.h>
 
-typedef struct _bch_t bch_t;
+typedef struct bch_priv_t bch_t;
 
 bch_t *bch_create(void);
 void bch_destroy(bch_t *bch);

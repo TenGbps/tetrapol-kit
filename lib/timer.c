@@ -10,7 +10,7 @@ typedef struct {
     void *ptr;
 } callback_t;
 
-struct _timer_t {
+struct timer_priv_t {
     int ncallbacks;
     callback_t *callbacks;
     timeval_t tv;

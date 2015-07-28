@@ -14,7 +14,7 @@ enum {
     FN_11 = 03,
 };
 
-struct _data_frame_t {
+struct data_frame_priv_t {
     data_block_t data_blks[SYS_PAR_DATA_FRAME_BLOCKS_MAX + 1];
     int fn[SYS_PAR_DATA_FRAME_BLOCKS_MAX + 1];
     bool crc_ok[SYS_PAR_DATA_FRAME_BLOCKS_MAX + 1];

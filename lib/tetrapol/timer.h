@@ -4,7 +4,7 @@
 #include <sys/time.h>
 
 typedef struct timeval timeval_t;
-typedef struct _timer_t timer_t;
+typedef struct timer_priv_t timer_t;
 
 typedef void (*timer_callback_t)(const timeval_t *tv, void *ptr);
 

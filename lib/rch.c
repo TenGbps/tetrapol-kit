@@ -14,7 +14,7 @@ typedef struct {
     addr_t addrs[3];
 } rch_data_t;
 
-struct _rch_t {
+struct rch_priv_t {
      data_frame_t *data_fr;
      rch_data_t rch_data;
 };

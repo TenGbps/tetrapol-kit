@@ -33,7 +33,7 @@ typedef struct {
     uint8_t data[FRAME_DATA_LEN];
 } frame_t;
 
-struct _phys_ch_t {
+struct phys_ch_priv_t {
     int band;           ///< VHF or UHF
     int radio_ch_type;  ///< control or traffic
     int sync_errs;      ///< cumulative no. of errors in frame synchronisation

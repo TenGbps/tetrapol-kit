@@ -12,7 +12,7 @@
 #include <string.h>
 
 
-struct _bch_t {
+struct bch_priv_t {
     data_frame_t *data_fr;
     tpdu_ui_t *tpdu;
     tsdu_d_system_info_t *tsdu;

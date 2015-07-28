@@ -8,8 +8,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef struct _tpdu_t tpdu_t;
-typedef struct _tpdu_ui_t tpdu_ui_t;
+typedef struct tpdu_priv_t tpdu_t;
+typedef struct tpdu_priv_ui_t tpdu_ui_t;
 
 tpdu_t *tpdu_create(void);
 int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu);

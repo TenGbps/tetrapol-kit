@@ -5,7 +5,7 @@
 #include <tetrapol/timer.h>
 #include <tetrapol/tsdu.h>
 
-typedef struct _terminal_t terminal_t;
+typedef struct terminal_priv_t terminal_t;
 
 /**
   Push HDLC frame into terminal. If TSDU is compleded pointer to tsdu is set
@@ -16,7 +16,7 @@ typedef struct _terminal_t terminal_t;
 int terminal_push_hdlc_frame(terminal_t* term, const hdlc_frame_t *hdlc_fr,
         tsdu_t **tsdu);
 
-typedef struct _terminal_list_t terminal_list_t;
+typedef struct terminal_list_priv_t terminal_list_t;
 
 terminal_list_t *terminal_list_create(void);
 void terminal_list_destroy(terminal_list_t *tlist);

@@ -9,12 +9,12 @@
 
 #include <glib.h>
 
-struct _terminal_t {
+struct terminal_priv_t {
     tpdu_t *tpdu;
     tpdu_ui_t *tpdu_ui;
 };
 
-struct _terminal_list_t {
+struct terminal_list_priv_t {
     GTree *tree;
 };
 

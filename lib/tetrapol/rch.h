@@ -4,7 +4,7 @@
 
 #include <stdbool.h>
 
-typedef struct _rch_t rch_t;
+typedef struct rch_priv_t rch_t;
 
 rch_t *rch_create(void);
 void rch_destroy(rch_t *rch);

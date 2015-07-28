@@ -2,7 +2,7 @@
 
 #include <tetrapol/data_block.h>
 
-typedef struct _data_frame_t data_frame_t;
+typedef struct data_frame_priv_t data_frame_t;
 
 data_frame_t *data_frame_create(void);
 

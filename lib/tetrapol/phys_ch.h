@@ -5,7 +5,7 @@
 
 #define PHYS_CH_SCR_DETECT -1
 
-typedef struct _phys_ch_t phys_ch_t;
+typedef struct phys_ch_priv_t phys_ch_t;
 
 /**
   Create new TETRAPOL physical cahnnel instance.

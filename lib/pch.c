@@ -13,7 +13,7 @@ typedef struct {
     addr_t addrs[4];
 } pch_data_t;
 
-struct _pch_t {
+struct pch_priv_t {
     data_frame_t *data_fr;
     pch_data_t pch_data;
 };

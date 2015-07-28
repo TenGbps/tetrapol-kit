@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct _sdch_t {
+struct sdch_priv_t {
     data_frame_t *data_fr;
     terminal_list_t *tlist;
     tsdu_t *tsdu;

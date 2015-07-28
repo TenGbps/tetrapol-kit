@@ -35,12 +35,12 @@ typedef struct {
     uint8_t tsap_ref_ul;
 } connection_t;
 
-struct _tpdu_t {
+struct tpdu_priv_t {
     connection_t *conns[16];  // listed by TSAP reference id (SwMI side)
     connection_t *conns_fast[16];  // listed by TSAP id
 };
 
-struct _tpdu_ui_t {
+struct tpdu_priv_ui_t {
     frame_type_t fr_type;
     segmented_du_t *seg_du[128];
 };
