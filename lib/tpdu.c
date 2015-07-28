@@ -135,13 +135,13 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
                hdlc_fr->command.information.p_e);
     }
 
-    const uint8_t code_prefix   = code & TPDU_CODE_PREFIX_MASK;
+    const uint8_t code_prefix = code & TPDU_CODE_PREFIX_MASK;
 
     if (code_prefix != TPDU_CODE_PREFIX_MASK) {
         const uint8_t qos = (~TPDU_CODE_PREFIX_MASK) & code;
 
         switch(code_prefix) {
-            case 0: // CR
+            case TPDU_CODE_CR:
                 LOG(ERR, "TODO CR seg: %d d: %d TSAP_ref: %d TSAP_id %d QoS: %d len: %d",
                     seg, d, par_field, dest_ref, qos, len);
                 // check if connection exists, deallocate and WTF
@@ -150,13 +150,13 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
 
                 break;
 
-            case 1: // CC
+            case TPDU_CODE_CC:
                 LOG(ERR, "TODO CC seg: %d d: %d TSAP_ref_send: %d TSAP_ref_recv: %d QoS: %d len: %d",
                     seg, d, par_field, dest_ref, qos, len);
                 // check if connection exists
                 break;
 
-            case 2: //FCR
+            case TPDU_CODE_FCR:
                 LOG(ERR, "TODO FCR seg: %d d: %d TSAP_ref: %d TSAP_id: %d QoS: %d len: %d",
                     seg, d, par_field, dest_ref, qos, len);
                 break;
