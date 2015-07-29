@@ -389,13 +389,11 @@ enum {
     INDEX_LIST_MODE_PCH_BITMAP = 3,
 };
 
-typedef struct {
-    union {
-        uint8_t _data;
-        struct {
-            unsigned int index : 6;
-            unsigned int mode : 2;
-        };
+typedef union {
+    uint8_t _data;
+    struct {
+        unsigned int index : 6;
+        unsigned int mode : 2;
     };
 } index_list_t;
 
@@ -417,13 +415,11 @@ enum {
     // 15, ciphering key is in TSDU/mode shall be chosen by SwMI
 };
 
-typedef struct {
-    union {
-        uint8_t _data;
-        struct {
-            unsigned int key_index : 4;
-            unsigned int key_type : 4;
-        };
+typedef union {
+    uint8_t _data;
+    struct {
+        unsigned int key_index : 4;
+        unsigned int key_type : 4;
     };
 } key_reference_t;
 
@@ -484,16 +480,14 @@ enum {
     REFERENCE_LIST_CSG_ADVISE = 1,
 };
 
-typedef struct {
-    union {
-        uint8_t _data;
-        struct {
-            unsigned int dc : 1;
-            unsigned int cso : 1;
-            unsigned int csg : 1;
-            unsigned int _unused : 2;
-            unsigned int revision : 3;
-        };
+typedef union {
+    uint8_t _data;
+    struct {
+        unsigned int dc : 1;
+        unsigned int cso : 1;
+        unsigned int csg : 1;
+        unsigned int _unused : 2;
+        unsigned int revision : 3;
     };
 } reference_list_t;
 
