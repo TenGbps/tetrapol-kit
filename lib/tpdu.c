@@ -120,7 +120,8 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
     const uint8_t dest_ref      = get_bits(4, hdlc_fr->data + 1, 4);
 
     if (ext) {
-        LOG(WTF, "ext != 0 for TPDU");
+        LOG(WTF, "TPDU: ext != 0");
+        return -1;
     }
 
     const uint8_t len = (d && !seg) ? hdlc_fr->data[2] : 0;
