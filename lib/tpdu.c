@@ -302,7 +302,7 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
     }
 
     if (!allow_seg) {
-        LOG(INFO, "Segmentation not allowed");
+        LOG(DBG, "Segmentation not allowed for BCH");
         return -1;
     }
 
