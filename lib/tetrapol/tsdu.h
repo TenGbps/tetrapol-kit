@@ -407,6 +407,12 @@ typedef union {
     };
 } index_list_t;
 
+/// PAS 0001-3-2 5.3.37
+typedef uint8_t key_i_t;
+
+/// PAS 0001-3-2 5.3.38
+typedef uint8_t key_of_call_t[16];
+
 /// PAS 0001-3-2 5.3.39
 enum {
     KEY_TYPE_RNK = 0,
@@ -568,6 +574,15 @@ enum {
     USER_PRIORITY_2 = 2,
     // values 3..15 are reserved
 };
+
+/// PAS 0001-3-2 4.4.14
+typedef struct {
+    tsdu_base_t base;
+    bool has_key_reference;
+    key_reference_t key_reference;
+    bool has_key_of_call;
+    key_of_call_t key_of_call;
+} tsdu_d_call_start_t;
 
 /// PAS 0001-3-2 4.4.24
 typedef struct {
