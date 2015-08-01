@@ -81,6 +81,11 @@ bool bch_push_data_block(bch_t *bch, data_block_t* data_blk)
         return false;
     }
 
+    // This hack allows drop unsupported DU withought unnecessarry log noise
+    if (get_bits(1, &hdlc_fr.data[0], 0) || get_bits(1, &hdlc_fr.data[0], 1)) {
+        return false;
+    }
+
     tsdu_t *tsdu;
     if (tpdu_ui_push_hdlc_frame2(bch->tpdu, &hdlc_fr, &tsdu) == -1) {
         return false;
