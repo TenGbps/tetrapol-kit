@@ -27,9 +27,9 @@ bool data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk);
 
 /**
   Get data from data_frame, data are packe into bytes.
-  Unused bites in last byte are set to zero.
+  Unused bits in last byte are set to zero.
 
-  @return number of bites writen into output array
+  @return number of bits writen into output array
   */
 int data_frame_get_bytes(data_frame_t *data_fr, uint8_t *data);
 

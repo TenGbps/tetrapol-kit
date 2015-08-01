@@ -10,7 +10,7 @@
  * Check TETRAPOL style FCS of the data block.
  *
  * @param data Data packed into bytes.
- * @param nbits Lenght of data in bites, not necesary multiple of 8
+ * @param nbits Lenght of data in bits, not necesary multiple of 8
  * @return true if FCS at the end of block is correct, false otherwise.
  */
 bool check_fcs(const uint8_t *data, int nbits);

@@ -2,7 +2,7 @@
 
 bool check_fcs(const uint8_t *data, int nbits)
 {
-    // roll in firts 16 bites of data
+    // roll in firts 16 bits of data
     uint32_t crc = 0;
     uint8_t b = data[0];
     for (int i = 0; i < 8; ++i) {

@@ -68,7 +68,7 @@ void data_block_decode_frame(data_block_t *data_blk, const uint8_t *data,
     data_blk->fr_type = fr_type;
 
     if (fr_type == FRAME_TYPE_DATA) {
-        // decode first 52 bites of frame
+        // decode first 52 bits of frame
         data_blk->nerrs = decode_data_frame(
                 data_blk->data, data_blk->err, data, 26);
         // decode remaining part of frame

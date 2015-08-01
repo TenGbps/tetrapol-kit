@@ -230,8 +230,8 @@ bool data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
 
   @param bytes Output byte array.
   @param bits Input array of bits.
-  @param offs Number of bites already used in output.
-  @param nbits Number of bites to be used;
+  @param offs Number of bits already used in output.
+  @param nbits Number of bits to be used;
   */
 static void pack_bits(uint8_t *bytes, const uint8_t *bits, int offs, int nbits)
 {
