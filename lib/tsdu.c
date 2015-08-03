@@ -1258,6 +1258,50 @@ static void d_call_start_print(const tsdu_d_call_start_t *tsdu)
     }
 }
 
+static tsdu_d_call_connect_t *d_call_connect_decode(const uint8_t *data, int len)
+{
+    tsdu_d_call_connect_t *tsdu = tsdu_create(tsdu_d_call_connect_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+    CHECK_LEN(15, len, tsdu);
+
+    tsdu->call_type._data       = data[1];
+    tsdu->channel_id            = get_bits(12, &data[2], 4);
+    tsdu->u_ch_scrambling       = data[4];
+    tsdu->d_ch_scrambling       = data[5];
+    tsdu->key_reference._data   = data[6];
+    memcpy(&tsdu->valid_rt, &data[7], SIZEOF(tsdu_d_call_connect_t, valid_rt));
+    tsdu->has_key_of_call =
+        (tsdu->key_reference.key_type == KEY_TYPE_ESC) &&
+        (tsdu->key_reference.key_index == KEY_INDEX_KEY_SUPPLIED);
+    if (tsdu->has_key_of_call) {
+        CHECK_LEN(31, len, tsdu);
+        memcpy(&tsdu->key_of_call, &data[15], sizeof(key_of_call_t));
+    }
+
+    return tsdu;
+}
+
+static void d_call_connect_print(const tsdu_d_call_connect_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tCALL_TYPE ORIGIN=0x%x DESTINATION=0x%x TRFS=%d\n",
+            tsdu->call_type.origin, tsdu->call_type.destination,
+            tsdu->call_type.trfs);
+    LOGF("\t\tCHANNEL_ID=%d\n", tsdu->channel_id);
+    LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
+    LOGF("\t\tD_CH_SCRAMBLING=%d\n", tsdu->d_ch_scrambling);
+    LOGF("\t\tKEY_REFERENCE: KEY_TYPE=%i KEY_INDEX=%i\n",
+           tsdu->key_reference.key_type, tsdu->key_reference.key_index);
+    LOGF("\t\tVALID_RT=0x");
+    print_hex(tsdu->valid_rt, SIZEOF(tsdu_d_call_connect_t, valid_rt));
+    if (tsdu->has_key_of_call) {
+        LOGF("\t\t");
+        print_hex(tsdu->key_of_call, sizeof(key_of_call_t));
+    }
+}
+
 int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **tsdu)
 {
     if (len < 1) {
@@ -1273,6 +1317,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
 
     *tsdu = NULL;
     switch (codop) {
+        case D_CALL_CONNECT:
+            *tsdu = (tsdu_t *)d_call_connect_decode(data, len);
+            break;
+
         case D_CALL_START:
             *tsdu = (tsdu_t *)d_call_start_decode(data, len);
             break;
@@ -1339,6 +1387,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
 static void tsdu_d_print(const tsdu_t *tsdu)
 {
     switch (tsdu->codop) {
+        case D_CALL_CONNECT:
+            d_call_connect_print((const tsdu_d_call_connect_t *)tsdu);
+            break;
+
         case D_CALL_START:
             d_call_start_print((const tsdu_d_call_start_t *)tsdu);
             break;
@@ -1402,7 +1454,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_CALL_ACTIVATION:
         case D_CALL_ALERT:
         case D_CALL_COMPOSITION:
-        case D_CALL_CONNECT:
         case D_CALL_END:
         case D_CALL_OVERLOAD_ID:
         case D_CALL_SETUP:
