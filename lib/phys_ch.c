@@ -637,9 +637,10 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
             LOG_("OK frame_no=%03i fn=%i%i asb=%i%i data=",
                    data_blk.frame_no, fn1, fn0, asbx, asby);
         } else {
-            LOG_("ERR frame_no=%03i ", data_blk.frame_no);
+            LOG_("ERR frame_no=%03i data=", data_blk.frame_no);
         }
-        print_hex(data_blk.data + 3, 64);
+        char buf[64*3];
+        LOGF("\t%s\n", sprint_hex(buf, data_blk.data + 3, 64));
     }
 
     // For decoding BCH are used always all frames, not only 0-3, 100-103

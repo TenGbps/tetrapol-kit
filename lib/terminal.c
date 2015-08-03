@@ -75,8 +75,9 @@ int terminal_push_hdlc_frame(terminal_t* term, const hdlc_frame_t *hdlc_fr,
 
     if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_UI) {
         LOG_IF(DBG) {
-            LOG_("HDLC info=");
-            print_hex(hdlc_fr->data, hdlc_fr->nbits / 8);
+            char buf[hdlc_fr->nbits / 8 * 3];
+            LOG_("HDLC info=%s\n",
+                    sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
             LOGF("\t");
             addr_print(&hdlc_fr->addr);
             LOGF("\n");
@@ -92,8 +93,9 @@ int terminal_push_hdlc_frame(terminal_t* term, const hdlc_frame_t *hdlc_fr,
         }
         if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
             LOG_IF(WTF) {
-                LOG_("cmd: ACK_DACH, nonzero stuffing");
-                print_hex(hdlc_fr->data, hdlc_fr->nbits / 8);
+                char buf[hdlc_fr->nbits / 8 * 3];
+                LOG_("cmd: ACK_DACH, nonzero stuffing: %s\n",
+                        sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
             }
         }
 
@@ -111,8 +113,9 @@ int terminal_push_hdlc_frame(terminal_t* term, const hdlc_frame_t *hdlc_fr,
 
         if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
             LOG_IF(WTF) {
-                LOG_("cmd: SNMR, nonzero stuffing");
-                print_hex(hdlc_fr->data, hdlc_fr->nbits / 8);
+                char buf[hdlc_fr->nbits / 8 * 3];
+                LOG_("cmd: SNMR, nonzero stuffing: %s\n",
+                        sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
             }
         }
 

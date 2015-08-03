@@ -82,8 +82,9 @@ static int tpdu_push_supervision_frame(tpdu_t *tpdu,
 
     if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
         LOG_IF(WTF) {
-            LOG_("cmd: 0x%02x, nonzero stuffing", hdlc_fr->command.cmd);
-            print_hex(hdlc_fr->data, hdlc_fr->nbits / 8);
+            char buf[hdlc_fr->nbits / 8 * 3];
+            LOG_("cmd: 0x%02x, nonzero stuffing: %s\n", hdlc_fr->command.cmd,
+                    sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
         }
     }
 

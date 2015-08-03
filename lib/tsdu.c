@@ -1070,8 +1070,9 @@ static tsdu_seecret_codop_t *d_unknown_parse(const uint8_t *data, int len)
 static void d_unknown_print(const tsdu_seecret_codop_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    LOGF("\t\tUNKNOWN CODOP len=%d data=", tsdu->len);
-    print_hex(tsdu->data, tsdu->len);
+    char buf[tsdu->len * 3 + 1];
+    LOGF("\t\tUNKNOWN CODOP len=%d data=%s\n", tsdu->len,
+            sprint_hex(buf, tsdu->data, tsdu->len));
 }
 
 static tsdu_d_data_end_t *d_data_end_decode(const uint8_t *data, int len)
@@ -1158,8 +1159,9 @@ static void d_datagram_print(const tsdu_d_datagram_t *tsdu)
     LOGF("\t\tMESSAGE_REFERENCE=%d\n", tsdu->message_reference);
     LOGF("\t\tKEY_REFERENCE: key_type=%d key_index=%d\n",
            tsdu->key_reference.key_type, tsdu->key_reference.key_index);
-    LOGF("\t\tDATA: len=%d data=", tsdu->len);
-    print_hex(tsdu->data, tsdu->len);
+    char buf[tsdu->len * 3 + 1];
+    LOGF("\t\tDATA: len=%d data=%s\n", tsdu->len,
+            sprint_hex(buf, tsdu->data, tsdu->len));
 }
 
 static tsdu_d_explicit_short_data_t *d_explicit_short_data_decode(
@@ -1188,8 +1190,9 @@ static tsdu_d_explicit_short_data_t *d_explicit_short_data_decode(
 static void d_explicit_short_data_print(const tsdu_d_explicit_short_data_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    LOGF("\t\tDATA: len=%d data=", tsdu->len);
-    print_hex(tsdu->data, tsdu->len);
+    char buf[tsdu->len * 3 + 1];
+    LOGF("\t\tDATA: len=%d data=%s\n", tsdu->len,
+            sprint_hex(buf, tsdu->data, tsdu->len));
 }
 
 static tsdu_d_call_start_t *d_call_start_decode(const uint8_t *data, int len)
@@ -1253,8 +1256,9 @@ static void d_call_start_print(const tsdu_d_call_start_t *tsdu)
                 tsdu->key_reference.key_type, tsdu->key_reference.key_index);
     }
     if (tsdu->has_key_of_call) {
-        LOGF("\t\tKEY_OF_CALL: ");
-        print_hex(tsdu->key_of_call, sizeof(key_of_call_t));
+        char buf[sizeof(key_of_call_t) * 3];
+        LOGF("\t\tKEY_OF_CALL: %s\n",
+                sprint_hex(buf, tsdu->key_of_call, sizeof(key_of_call_t)));
     }
 }
 
@@ -1294,11 +1298,13 @@ static void d_call_connect_print(const tsdu_d_call_connect_t *tsdu)
     LOGF("\t\tD_CH_SCRAMBLING=%d\n", tsdu->d_ch_scrambling);
     LOGF("\t\tKEY_REFERENCE: KEY_TYPE=%i KEY_INDEX=%i\n",
            tsdu->key_reference.key_type, tsdu->key_reference.key_index);
-    LOGF("\t\tVALID_RT=0x");
-    print_hex(tsdu->valid_rt, SIZEOF(tsdu_d_call_connect_t, valid_rt));
+    char buf[3 * SIZEOF(tsdu_d_call_connect_t, valid_rt)];
+    LOGF("\t\tVALID_RT=%s\n",
+            sprint_hex(buf, tsdu->valid_rt, SIZEOF(tsdu_d_call_connect_t, valid_rt)));
     if (tsdu->has_key_of_call) {
-        LOGF("\t\t");
-        print_hex(tsdu->key_of_call, sizeof(key_of_call_t));
+        char buf[3 * sizeof(key_of_call_t)];
+        LOGF("\t\tKEY_OF_CALL=%s\n",
+                sprint_hex(buf, tsdu->key_of_call, sizeof(key_of_call_t)));
     }
 }
 

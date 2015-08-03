@@ -86,11 +86,10 @@ bool pch_push_data_block(pch_t *pch, data_block_t* data_blk)
 
 void pch_print(pch_t *pch)
 {
-    LOGF("PCH: activation_bitmap=");
-    for (int i = 0; i < ARRAY_LEN(pch->pch_data.act_bitmap); ++i) {
-        LOGF("0x%02x  ", pch->pch_data.act_bitmap[i]);
-    }
-    LOGF("\n");
+    char buf[ARRAY_LEN(pch->pch_data.act_bitmap) * 3];
+    LOGF("PCH: activation_bitmap=%s\n",
+            sprint_hex(buf, pch->pch_data.act_bitmap,
+                ARRAY_LEN(pch->pch_data.act_bitmap)));
     for (int i = 0; i < pch->pch_data.naddrs; ++i) {
         LOGF("\taddr %d: ", i);
         addr_print(&pch->pch_data.addrs[i]);
