@@ -287,6 +287,25 @@ const int CELL_RADIO_PARAM_RX_LEV_ACCESS_TO_DBM[16] = {
     -60, -56, -52, -48, -44, -40, -36, -32,
 };
 
+static void tsdu_base_set_nopts(tsdu_base_t *tsdu, int noptionals)
+{
+    tsdu->noptionals = noptionals;
+    memset(tsdu->optionals, 0, sizeof(void *[noptionals]));
+}
+
+#define tsdu_create(TSDU_TYPE, noptionals) \
+    (TSDU_TYPE *) tsdu_create_(sizeof(TSDU_TYPE), noptionals)
+
+static tsdu_t *tsdu_create_(int size, int noptionals)
+{
+    tsdu_t *tsdu = malloc(size);
+    if (!tsdu) {
+        return NULL;
+    }
+    tsdu_base_set_nopts(tsdu, noptionals);
+    return tsdu;
+}
+
 void tsdu_destroy(tsdu_base_t *tsdu)
 {
     if (!tsdu) {
@@ -296,12 +315,6 @@ void tsdu_destroy(tsdu_base_t *tsdu)
         free(tsdu->optionals[i]);
     }
     free(tsdu);
-}
-
-static void tsdu_base_set_nopts(tsdu_base_t *tsdu, int noptionals)
-{
-    tsdu->noptionals = noptionals;
-    memset(tsdu->optionals, 0, sizeof(void *[noptionals]));
 }
 
 static void tsdu_base_print(const tsdu_base_t *tsdu)
@@ -424,12 +437,11 @@ static void address_print(const address_t *address)
 static tsdu_d_group_activation_t *
 d_group_activation_decode(const uint8_t *data, int len)
 {
-    tsdu_d_group_activation_t *tsdu = malloc(sizeof(tsdu_d_group_activation_t));
+    tsdu_d_group_activation_t *tsdu = tsdu_create(tsdu_d_group_activation_t, 0);
     if (!tsdu) {
         return NULL;
     }
 
-    tsdu_base_set_nopts(&tsdu->base, 0);
     CHECK_LEN(len, 9, tsdu);
 
     int _zero0;
@@ -486,12 +498,11 @@ static void d_group_activation_print(tsdu_d_group_activation_t *tsdu)
 
 static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int len)
 {
-    tsdu_d_group_list_t *tsdu = malloc(sizeof(tsdu_d_group_list_t));
+    tsdu_d_group_list_t *tsdu = tsdu_create(tsdu_d_group_list_t, 3);
     if (!tsdu) {
         return NULL;
     }
 
-    tsdu_base_set_nopts(&tsdu->base, 3);
     tsdu->nemergency = 0;
     tsdu->ngroup = 0;
     tsdu->nopen = 0;
@@ -641,12 +652,11 @@ static void d_group_list_print(tsdu_d_group_list_t *tsdu)
 static tsdu_d_group_composition_t *d_group_composition_decode(
         const uint8_t *data, int len)
 {
-    tsdu_d_group_composition_t *tsdu = malloc(sizeof(tsdu_d_group_composition_t));
+    tsdu_d_group_composition_t *tsdu = tsdu_create(tsdu_d_group_composition_t, 0);
     if (!tsdu) {
         return NULL;
     }
 
-    tsdu_base_set_nopts(&tsdu->base, 0);
     CHECK_LEN(len, 3, tsdu);
 
     tsdu->group_id = get_bits(12, data + 1, 0);
@@ -724,11 +734,10 @@ addr_list_t *iei_adjacent_bn_list_decode(
 
 static tsdu_d_neighbouring_cell_t *d_neighbouring_cell_decode(const uint8_t *data, int len)
 {
-    tsdu_d_neighbouring_cell_t *tsdu = malloc(sizeof(tsdu_d_neighbouring_cell_t));
+    tsdu_d_neighbouring_cell_t *tsdu = tsdu_create(tsdu_d_neighbouring_cell_t, 2);
     if (!tsdu) {
         return NULL;
     }
-    tsdu_base_set_nopts(&tsdu->base, 2);
     CHECK_LEN(len, 2, tsdu);
 
     uint8_t _zero                               = get_bits(4, data + 1, 0);
@@ -831,12 +840,10 @@ static void d_neighbouring_cell_print(tsdu_d_neighbouring_cell_t *tsdu)
 
 static tsdu_d_system_info_t *d_system_info_decode(const uint8_t *data, int len)
 {
-    tsdu_d_system_info_t *tsdu = malloc(sizeof(tsdu_d_system_info_t));
+    tsdu_d_system_info_t *tsdu = tsdu_create(tsdu_d_system_info_t, 0);
     if (!tsdu) {
         return NULL;
     }
-
-    tsdu_base_set_nopts(&tsdu->base, 0);
 
     // minimal size of disconnected mode
     CHECK_LEN(len, 9, tsdu);
@@ -955,11 +962,10 @@ static void d_system_info_print(tsdu_d_system_info_t *tsdu)
 
 static tsdu_d_registration_ack_t *d_registration_ack_decode(const uint8_t *data, int len)
 {
-    tsdu_d_registration_ack_t *tsdu = malloc(sizeof(tsdu_d_registration_ack_t));
+    tsdu_d_registration_ack_t *tsdu = tsdu_create(tsdu_d_registration_ack_t, 0);
     if (!tsdu) {
         return NULL;
     }
-    tsdu_base_set_nopts(&tsdu->base, 0);
 
     CHECK_LEN(len, 14, tsdu);
 
@@ -1011,11 +1017,10 @@ static void d_registration_ack_print(tsdu_d_registration_ack_t *tsdu)
 
 static tsdu_d_ech_overload_id_t *d_ech_overload_id_decode(const uint8_t *data, int len)
 {
-    tsdu_d_ech_overload_id_t *tsdu = malloc(sizeof(tsdu_d_ech_overload_id_t));
+    tsdu_d_ech_overload_id_t *tsdu = tsdu_create(tsdu_d_ech_overload_id_t, 0);
     if (!tsdu) {
         return NULL;
     }
-    tsdu_base_set_nopts(&tsdu->base, 0);
 
     CHECK_LEN(len, 6, tsdu);
 
@@ -1041,12 +1046,10 @@ static void d_ech_overload_id_print(const tsdu_d_ech_overload_id_t *tsdu)
 
 static tsdu_seecret_codop_t *d_unknown_parse(const uint8_t *data, int len)
 {
-    tsdu_seecret_codop_t *tsdu = malloc(sizeof(tsdu_seecret_codop_t));
+    tsdu_seecret_codop_t *tsdu = tsdu_create(tsdu_seecret_codop_t, 1);
     if (!tsdu) {
         return NULL;
     }
-
-    tsdu_base_set_nopts(&tsdu->base, 1);
 
     tsdu->len = len;
     if (!len) {
@@ -1073,12 +1076,11 @@ static void d_unknown_print(const tsdu_seecret_codop_t *tsdu)
 
 static tsdu_d_data_end_t *d_data_end_decode(const uint8_t *data, int len)
 {
-    tsdu_d_data_end_t *tsdu = malloc(sizeof(tsdu_d_data_end_t));
+    tsdu_d_data_end_t *tsdu = tsdu_create(tsdu_d_data_end_t, 0);
     if (!tsdu) {
         return NULL;
     }
 
-    tsdu_base_set_nopts(&tsdu->base, 0);
     CHECK_LEN(len, 2, tsdu);
     tsdu->cause = data[1];
 
@@ -1093,12 +1095,11 @@ static void d_data_end_print(const tsdu_d_data_end_t *tsdu)
 
 static tsdu_d_datagram_notify_t *d_datagram_notify_decode(const uint8_t *data, int len)
 {
-    tsdu_d_datagram_notify_t *tsdu = malloc(sizeof(tsdu_d_datagram_notify_t));
+    tsdu_d_datagram_notify_t *tsdu = tsdu_create(tsdu_d_datagram_notify_t, 0);
     if (!tsdu) {
         return NULL;
     }
 
-    tsdu_base_set_nopts(&tsdu->base, 0);
     CHECK_LEN(len, 5, tsdu);
 
     tsdu->call_priority         = get_bits(4, data + 1, 4);
@@ -1193,12 +1194,10 @@ static void d_explicit_short_data_print(const tsdu_d_explicit_short_data_t *tsdu
 
 static tsdu_d_call_start_t *d_call_start_decode(const uint8_t *data, int len)
 {
-    tsdu_d_call_start_t *tsdu = malloc(sizeof(tsdu_d_call_start_t));
+    tsdu_d_call_start_t *tsdu = tsdu_create(tsdu_d_call_start_t, 0);
     if (!tsdu) {
         return NULL;
     }
-
-    tsdu_base_set_nopts(&tsdu->base, 0);
 
     tsdu->has_key_reference = false;
     tsdu->has_key_of_call = false;
