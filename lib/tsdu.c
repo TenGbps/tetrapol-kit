@@ -1191,6 +1191,74 @@ static void d_explicit_short_data_print(const tsdu_d_explicit_short_data_t *tsdu
     print_hex(tsdu->data, tsdu->len);
 }
 
+static tsdu_d_call_start_t *d_call_start_decode(const uint8_t *data, int len)
+{
+    tsdu_d_call_start_t *tsdu = malloc(sizeof(tsdu_d_call_start_t));
+    if (!tsdu) {
+        return NULL;
+    }
+
+    tsdu_base_set_nopts(&tsdu->base, 0);
+
+    tsdu->has_key_reference = false;
+    tsdu->has_key_of_call = false;
+    if (len == 1) {
+        return tsdu;
+    }
+
+    CHECK_LEN(len, 2, tsdu);
+    ++data;
+    --len;
+
+    while (len > 0) {
+        const int iei = data[0];
+        ++data;
+        --len;
+        switch (iei) {
+            case IEI_KEY_REFERENCE:
+                tsdu->has_key_reference = true;
+                tsdu->key_reference._data = data[0];
+                ++data;
+                --len;
+                break;
+
+            case IEI_KEY_OF_CALL:
+                if (data[0] > sizeof(key_of_call_t)) {
+                    LOG(WTF, "Wrong IEI size %d", data[0]);
+                } else {
+                    tsdu->has_key_of_call = true;
+                    memcpy(&tsdu->key_of_call, &data[1], data[0]);
+                }
+                len -= data[0] + 1;
+                data += data[0] + 1;
+                break;
+
+            default:
+                LOG(WTF, "Unexpected IEI 0x%x", iei);
+                tsdu_destroy(&tsdu->base);
+                return NULL;
+        }
+    }
+    if (len < 0) {
+        LOG(WTF, "Bufer underflow, len = %d", len);
+    }
+
+    return tsdu;
+}
+
+static void d_call_start_print(const tsdu_d_call_start_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    if (tsdu->has_key_reference) {
+        LOGF("\t\tKEY_REFERENCE: KEY_TYPE=%i KEY_INDEX=%i\n",
+                tsdu->key_reference.key_type, tsdu->key_reference.key_index);
+    }
+    if (tsdu->has_key_of_call) {
+        LOGF("\t\tKEY_OF_CALL: ");
+        print_hex(tsdu->key_of_call, sizeof(key_of_call_t));
+    }
+}
+
 int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **tsdu)
 {
     if (len < 1) {
@@ -1206,6 +1274,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
 
     *tsdu = NULL;
     switch (codop) {
+        case D_CALL_START:
+            *tsdu = (tsdu_t *)d_call_start_decode(data, len);
+            break;
+
         case D_DATA_END:
             *tsdu = (tsdu_t *)d_data_end_decode(data, len);
             break;
@@ -1268,6 +1340,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
 static void tsdu_d_print(const tsdu_t *tsdu)
 {
     switch (tsdu->codop) {
+        case D_CALL_START:
+            d_call_start_print((const tsdu_d_call_start_t *)tsdu);
+            break;
+
         case D_DATA_END:
             d_data_end_print((const tsdu_d_data_end_t *)tsdu);
             break;
@@ -1331,7 +1407,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_CALL_END:
         case D_CALL_OVERLOAD_ID:
         case D_CALL_SETUP:
-        case D_CALL_START:
         case D_CALL_SWITCH:
         case D_CALL_WAITING:
         case D_CCH_OPEN:
