@@ -258,6 +258,30 @@ enum {
     CALL_PRIORITY_TOWER_COMMUNICATION = 13,
 };
 
+/// PAS 0001-3-2 5.3.15
+enum {
+    ORIGIN_TETRAPOL = 0,
+    ORIGIN_PABX = 1,
+    ORIGIN_DISPATCH_CENTRE = 2,
+};
+
+enum {
+    DESTINATION_TETRAPOL = 0,
+    DESTINATION_PABX = 1,
+    DESTINATION_DISPATCH_CENTRE = 2,
+    DESTINATION_MULTIPLE = 7,
+};
+
+typedef union {
+    uint8_t _data;
+    struct {
+        unsigned int origin : 3;
+        unsigned int destination : 3;
+        unsigned int trfs : 1;
+        unsigned int _zero : 1;
+    };
+} call_type_t;
+
 /// PAS 0001-3-2 5.3.16
 typedef struct {
     uint8_t number;
@@ -575,6 +599,19 @@ enum {
     USER_PRIORITY_2 = 2,
     // values 3..15 are reserved
 };
+
+/// PAS 0001-3-2 4.4.12
+typedef struct {
+    tsdu_base_t base;
+    call_type_t call_type;
+    uint16_t channel_id;
+    uint8_t u_ch_scrambling;
+    uint8_t d_ch_scrambling;
+    key_reference_t key_reference;
+    uint8_t valid_rt[8];
+    bool has_key_of_call;
+    key_of_call_t key_of_call;
+} tsdu_d_call_connect_t;
 
 /// PAS 0001-3-2 4.4.14
 typedef struct {
