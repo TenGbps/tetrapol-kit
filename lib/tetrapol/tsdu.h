@@ -428,6 +428,7 @@ enum {
 enum {
     KEY_INDEX_CLEAR_CALL = 0,
     KEY_INDEX_TKK = 14,
+    KEY_INDEX_KEY_SUPPLIED = 15,
     // 15, ciphering key is in TSDU/mode shall be chosen by SwMI
 };
 
