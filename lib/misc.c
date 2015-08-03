@@ -21,13 +21,3 @@ char *sprint_hex(char *str, const uint8_t *bytes, int n)
     return str;
 }
 
-void print_hex(const uint8_t *bytes, int n)
-{
-    for(int i = 0; i < n; i++) {
-        LOGF("%02x ", bytes[i]);
-        if (i % 8 == 7) {
-            LOGF(" ");
-        }
-    }
-    LOGF("\n");
-}
