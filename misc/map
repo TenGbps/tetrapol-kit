@@ -1,0 +1,55 @@
+#!/bin/sh
+
+export USER=root
+export HOME=/root
+PARALLEL=5
+
+probe_channels() {
+	while true
+	do
+		if [ `cat channels |wc -l` -eq 0 ]
+		then
+			break
+		fi
+		P=$PARALLEL
+		until [ $(( `head -$P channels | tail -1 ` - `head -1 channels` )) -lt 70 ]
+		do 
+			P=$(( $P - 1 ))
+		done
+		CHANNELS=`head -${P} channels |tr \\\n , |sed s/,$//`
+#		GPS=`tail -20 gps.log |grep  '<trkpt' |tail -1 |cut -f2,4 -d\"`
+		GPS=`(gpxlogger & PID=$!; sleep 5; kill -9 $PID) |grep  '<trkpt' |tail -1 |cut -f2,4 -d\"`
+		LON=`echo $GPS |cut -f1 -d\"`
+		LAT=`echo $GPS |cut -f2 -d\"`
+		./aaa.py -g 42 -s 1024000 -t 0.35 -p `cat cal` -O "../apps/tetrapol_dump  >%%`date +_%Y%m%d_%H%M%S`_${LON}_${LAT}.log" -c $CHANNELS & 
+		PID=$!
+		sleep 20
+		kill -9 $PID
+		sleep 2
+		tail -n +$(( $P + 1 )) channels >channels.tmp
+		mv channels.tmp channels
+	done
+}
+
+
+COUNT=1
+while true
+do
+	date
+	sh scan |sort -rnk2 |head -10 |sort |cut -f1 -d' ' >channels
+	date
+	probe_channels
+
+	date
+	grep -A 40 D_NEIGHBOURING_CELL *.log |tr ' ' \\n |grep CHANNEL_ID=|cut -f2 -d=|sort |uniq >channels
+	date
+	probe_channels
+
+
+	COUNT=$(( $COUNT + 1 ))
+	if [ $COUNT -eq 20 ]
+	then
+		./calibrate >cal
+		COUNT=0
+	fi
+done
