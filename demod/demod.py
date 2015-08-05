@@ -19,6 +19,7 @@ from optparse import OptionParser
 import osmosdr
 import time
 import threading
+import subprocess
 
 # applies frequency translation, resampling and demodulation
 
@@ -26,31 +27,46 @@ class top_block(gr.top_block):
   def __init__(self):
     gr.top_block.__init__(self)
 
+    bitrate = 8000
+    channel_bw = 12500
+    chan0_freq = 358399864
+
+
     options = get_options()
 
-    self.ifreq = options.frequency
     self.rfgain = options.gain
+
+    self.channels = []
+    for ch in options.channels.split(','):
+        self.channels.append(int(ch))
+
+    if options.frequency is None:
+	self.ifreq = chan0_freq + (max(self.channels) + min(self.channels)) / 2 * channel_bw - 100000
+    else:
+        self.ifreq = options.frequency
 
     self.src = osmosdr.source(options.args)
     self.src.set_center_freq(self.ifreq)
-    self.src.set_sample_rate(int(options.sample_rate))
+    self.src.set_sample_rate(options.sample_rate)
+    self.src.set_freq_corr(options.ppm, 0)
 
     if self.rfgain is None:
-        self.src.set_gain_mode(1)
+        self.src.set_gain_mode(True, 0)
+
         self.iagc = 1
         self.rfgain = 0
     else:
         self.iagc = 0
         self.src.set_gain_mode(0)
         self.src.set_gain(self.rfgain)
+        self.src.set_if_gain(37)
 
     # may differ from the requested rate
-    sample_rate = self.src.get_sample_rate()
+    sample_rate = int(self.src.get_sample_rate())
     sys.stderr.write("sample rate: %d\n" % (sample_rate))
 
-    bitrate = 8000
-
-    first_decim=125
+    first_decim = int(options.sample_rate / bitrate / 2)
+    sys.stderr.write("decim: %d\n" % (first_decim))
 
     out_sample_rate=sample_rate/first_decim
     sys.stderr.write("output sample rate: %d\n" % (out_sample_rate))
@@ -58,35 +74,53 @@ class top_block(gr.top_block):
     sps=out_sample_rate/bitrate
     sys.stderr.write("samples per symbol: %d\n" % (sps))
 
-    self.offset = options.offset
-    sys.stderr.write("offset is: %dHz\n" % self.offset)
+    self.tuners = []
+    self.afc_probes = []
+    for ch in range(0,len(self.channels)):
+        bw = (9200 + options.afc_ppm_threshold)/2
+        taps = filter.firdes.low_pass(1.0, sample_rate, bw, bw*options.transition_width, filter.firdes.WIN_HANN)
+        offset = chan0_freq + channel_bw * self.channels[ch] - self.ifreq
+        sys.stderr.write("channel[%d]: %d frequency=%d, offset=%d Hz\n" % (ch, self.channels[ch], self.ifreq+offset, offset))
 
-    taps = filter.firdes.low_pass(1.0, sample_rate, options.low_pass, options.low_pass * 0.2, filter.firdes.WIN_HANN)
-    self.tuner = filter.freq_xlating_fir_filter_ccf(first_decim, taps, self.offset, sample_rate)
 
-    self.demod = digital.gmsk_demod(samples_per_symbol=sps)
+        tuner = filter.freq_xlating_fir_filter_ccc(first_decim, taps, offset, sample_rate)
+        self.tuners.append(tuner)
 
-    self.output = blocks.file_sink(gr.sizeof_char, options.output_file)
+        demod = digital.gmsk_demod(samples_per_symbol=sps)
 
-    self.connect((self.src, 0), (self.tuner, 0))
-    self.connect((self.tuner, 0), (self.demod, 0))
-    self.connect((self.demod, 0), (self.output, 0))
+        if options.output_pipe is None:
+            file = options.output_file.replace('%%', str(self.channels[ch]))
+            output = blocks.file_sink(gr.sizeof_char, file)
+        else:
+            cmd = options.output_pipe.replace('%%', str(self.channels[ch]))
+            pipe = subprocess.Popen(cmd, stdin=subprocess.PIPE, shell=True)
+	    fd = pipe.stdin.fileno()
+            output = blocks.file_descriptor_sink(gr.sizeof_char, fd)
 
-    self.fm_demod = analog.fm_demod_cf(sample_rate/first_decim, 1, 5000, 3000, 4000)
-    self.integrate = blocks.integrate_ff(32000)
-    self.probe = blocks.probe_signal_f()
+        self.connect((self.src, 0), (tuner, 0))
+        self.connect((tuner, 0), (demod, 0))
+        self.connect((demod, 0), (output, 0))
 
-    self.connect((self.tuner, 0), (self.fm_demod,0))
-    self.connect((self.fm_demod, 0), (self.integrate,0))
-    self.connect((self.integrate, 0), (self.probe, 0))
+        fm_demod = analog.fm_demod_cf(sample_rate/first_decim, 1, 5000, 3000, 4000)
+        integrate = blocks.integrate_ff(32000)
+        afc_probe = blocks.probe_signal_f()
+        self.afc_probes.append(afc_probe)
+
+        self.connect((tuner, 0), (fm_demod,0))
+        self.connect((fm_demod, 0), (integrate,0))
+        self.connect((integrate, 0), (afc_probe, 0))
 
     def _variable_function_probe_0_probe():
         while True:
-            freq = self.tuner.center_freq()
-            freq2 = freq + 0.2*self.probe.level()
-            print "Autotune: fix=%f old=%i new=%i"%(self.probe.level(), self.ifreq+freq, self.ifreq+freq2)
-            self.tuner.set_center_freq(freq2)
-            time.sleep(5.0)
+            time.sleep(options.afc_period)
+            for ch in range(0,len(self.channels)):
+                err = self.afc_probes[ch].level()
+                if abs(err) < options.afc_ppm_threshold:
+                    continue
+                freq = self.tuners[ch].center_freq() + err * options.afc_gain
+                self.tuners[ch].set_center_freq(freq)
+                sys.stderr.write("Chan %d freq err: %5.0f\tfreq: %f\n" % (self.channels[ch], err, freq))
+            sys.stderr.write("\n")
     _variable_function_probe_0_thread = threading.Thread(target=_variable_function_probe_0_probe)
     _variable_function_probe_0_thread.daemon = True
     _variable_function_probe_0_thread.start()
@@ -96,23 +130,18 @@ class top_block(gr.top_block):
 def get_options():
     parser = OptionParser(option_class=eng_option)
 
-    parser.add_option("-a", "--args", type="string", default="",
-        help="gr-osmosdr device arguments")
-    parser.add_option("-s", "--sample-rate", type="eng_float", default=2000000,
-        help="set receiver sample rate (default 2000000)")
-    parser.add_option("-f", "--frequency", type="eng_float", default=394e6,
-        help="set receiver center frequency")
-    parser.add_option("-g", "--gain", type="eng_float", default=None,
-        help="set receiver gain")
-    
-    parser.add_option("-t", "--offset", type="eng_float", default=-267e3,
-        help="set offset (default -267000)")
-
-    # demodulator related settings
-    parser.add_option("-l", "--log", action="store_true", default=False, help="dump debug .dat files")
-    parser.add_option("-L", "--low-pass", type="eng_float", default=12.5e3, help="low pass cut-off", metavar="Hz")
-    parser.add_option("-o", "--output-file", type="string", default="out.float", help="specify the bit output file")
-    parser.add_option("-v", "--verbose", action="store_true", default=False, help="dump demodulation data")
+    parser.add_option("-a", "--args", type="string", default="", help="gr-osmosdr device arguments")
+    parser.add_option("-s", "--sample-rate", type="eng_float", default=1024000, help="receiver sample rate (default %default)")
+    parser.add_option("-f", "--frequency", type="eng_float", default=None, help="receiver center frequency (default %default)")
+    parser.add_option("-g", "--gain", type="eng_float", default=None, help="set receiver gain")
+    parser.add_option("-c", "--channels", type="string", default=None, help="channel numbers")
+    parser.add_option("-p", "--ppm", dest="ppm", type="eng_float", default=eng_notation.num_to_str(0), help="Frequency correction")
+    parser.add_option("-t", "--transition-width", type="eng_float", default=0.2, help="low pass transition width (default %default)")
+    parser.add_option("-G", "--afc-gain", type="eng_float", default=0.2, help="afc gain (default %default)")
+    parser.add_option("-P", "--afc-period", type="eng_float", default=2, help="afc period (default %default)")
+    parser.add_option("-T", "--afc-ppm-threshold", type="eng_float", default=100, help="afc threshold (default %default)")
+    parser.add_option("-o", "--output-file", type="string", default="channel%%.bits", help="specify the bit output file")
+    parser.add_option("-O", "--output-pipe", type="string", default=None, help="specify shell pipe to send output")
     (options, args) = parser.parse_args()
     if len(args) != 0:
         parser.print_help()
@@ -122,4 +151,6 @@ def get_options():
 
 if __name__ == '__main__':
         tb = top_block()
-        tb.run(True)
+#        tb.run(True)
+        tb.start()
+        tb.wait()
