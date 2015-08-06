@@ -1015,6 +1015,32 @@ static void d_registration_ack_print(tsdu_d_registration_ack_t *tsdu)
     }
 }
 
+static tsdu_d_connect_dch_t *d_connect_dch_decode(const uint8_t *data, int len)
+{
+    tsdu_d_connect_dch_t *tsdu = tsdu_create(tsdu_d_connect_dch_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    CHECK_LEN(len, 6, tsdu);
+
+    tsdu->dch_low_layer    = data[1];
+    tsdu->channel_id       = get_bits(12, &data[2], 4);
+    tsdu->u_ch_scrambling  = data[4];
+    tsdu->d_ch_scrambling  = data[5];
+
+    return tsdu;
+}
+
+static void d_connect_dch_print(tsdu_d_connect_dch_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tDCH_LOW_LAYER=%d\n", tsdu->dch_low_layer);
+    LOGF("\t\tCHANNEL_ID=%d\n", tsdu->channel_id);
+    LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
+    LOGF("\t\tD_CH_SCRAMBLING=%d\n", tsdu->d_ch_scrambling);
+}
+
 static tsdu_d_ech_overload_id_t *d_ech_overload_id_decode(const uint8_t *data, int len)
 {
     tsdu_d_ech_overload_id_t *tsdu = tsdu_create(tsdu_d_ech_overload_id_t, 0);
@@ -1375,6 +1401,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_registration_ack_decode(data, len);
             break;
 
+        case D_CONNECT_DCH:
+            *tsdu = (tsdu_t *)d_connect_dch_decode(data, len);
+            break;
+
         default:
             *tsdu = (tsdu_t *)d_unknown_parse(data, len);
             LOG(WTF, "unsupported codop 0x%02x", codop);
@@ -1444,6 +1474,9 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_REGISTRATION_ACK:
             d_registration_ack_print((tsdu_d_registration_ack_t *)tsdu);
             break;
+        case D_CONNECT_DCH:
+            d_connect_dch_print((tsdu_d_connect_dch_t *)tsdu);
+            break;
 
         default:
             LOG(WTF, "Undefined downlink codop=0x%02x", tsdu->codop);
@@ -1467,7 +1500,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_CALL_WAITING:
         case D_CCH_OPEN:
         case D_CONNECT_CCH:
-        case D_CONNECT_DCH:
         case D_CRISIS_NOTIFICATION:
         case D_DATA_AUTHENTICATION:
         case D_DATA_DOWN_STATUS:

@@ -622,6 +622,15 @@ typedef struct {
     key_of_call_t key_of_call;
 } tsdu_d_call_start_t;
 
+/// PAS 0001-3-2 4.4.20
+typedef struct {
+    tsdu_base_t base;
+    uint8_t dch_low_layer;
+    uint16_t channel_id;
+    uint8_t u_ch_scrambling;
+    uint8_t d_ch_scrambling;
+} tsdu_d_connect_dch_t;
+
 /// PAS 0001-3-2 4.4.24
 typedef struct {
     tsdu_base_t base;
