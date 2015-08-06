@@ -277,6 +277,285 @@ static const char *codop_str[256] = {
     "N/A",                          // 0xff,
 };
 
+static const char *cause_str[256] = {
+    // COMMON CAUSES
+    "normal",                                            // 0x00
+    "abnormal release",                                  // 0x01
+    "terminal pre-emption",                              // 0x02
+    "resource pre-emption",                              // 0x03
+    "insufficient TCH quality",                          // 0x04
+    "cleared by user",                                   // 0x05
+    "power supply failure",                              // 0x06
+    "application event",                                 // 0x07
+    "identification error",                              // 0x08
+    "unknown calling party",                             // 0x09
+    "service barred calling party",                      // 0x0a
+    "service barred called party",                       // 0x0b
+    "software fault",                                    // 0x0c
+    "service not implemented",                           // 0x0d
+    "lack of resources",                                 // 0x0e
+    "operator decision",                                 // 0x0f
+    "protected call",                                    // 0x10
+    "end of ringing",                                    // 0x11
+    "voice inactivity",                                  // 0x12
+    "host address not valid",                            // 0x13
+    "Already forwarded",                                 // 0x14
+    "inconsistent address",                              // 0x15
+    "network event",                                     // 0x16
+    "key error",                                         // 0x17
+    "intrusion",                                         // 0x18
+    "encryption error",                                  // 0x19
+    "terminal not configured",                           // 0x1a
+    "remote RT synchronisation",                         // 0x1b
+    "coverage fault",                                    // 0x1c
+    "unreachable master switch",                         // 0x1d
+    "non authorised MOCH",                               // 0x1e
+    "N/A",                                               // 0x1f
+    "unknown TSDU",                                      // 0x20
+    "missing mandatory IE",                              // 0x21
+    "missing conditional IE",                            // 0x22
+    "User erasure indication",                           // 0x23
+
+    "N/A",                                               // 0x24
+    "N/A",                                               // 0x25
+    "N/A",                                               // 0x26
+    "N/A",                                               // 0x27
+    "N/A",                                               // 0x28
+    "N/A",                                               // 0x29
+    "N/A",                                               // 0x2a
+    "N/A",                                               // 0x2b
+    "N/A",                                               // 0x2c
+    "N/A",                                               // 0x2d
+    "N/A",                                               // 0x2e
+    "N/A",                                               // 0x2f
+    "N/A",                                               // 0x30
+    "N/A",                                               // 0x31
+    "N/A",                                               // 0x32
+    "N/A",                                               // 0x33
+    "N/A",                                               // 0x34
+    "N/A",                                               // 0x35
+    "N/A",                                               // 0x36
+    "N/A",                                               // 0x37
+    "N/A",                                               // 0x38
+    "N/A",                                               // 0x39
+    "N/A",                                               // 0x3a
+    "N/A",                                               // 0x3b
+    "N/A",                                               // 0x3c
+    "N/A",                                               // 0x3d
+    "N/A",                                               // 0x3e
+    "N/A",                                               // 0x3f
+
+    // PRIVATE CALL
+    "no reply from called party",                        // 0x40
+    "called party absent",                               // 0x41
+    "called party busy",                                 // 0x42
+    "unreachable remote terminal",                       // 0x43
+    "unknown called user",                               // 0x44
+    "double forwarding",                                 // 0x45
+    "all called parties rejected",                       // 0x46
+    "transfer failure",                                  // 0x47
+    "user refusal",                                      // 0x48
+    "called terminal not configured",                    // 0x49
+    "address cannot be parsed",                          // 0x4a
+    "unknown sub-address field",                         // 0x4b
+    "PABX subscriber busy",                              // 0x4c
+    "Internal TDX link fault",                           // 0x4d
+    "external TDX link fault",                           // 0x4e
+    "internal TDX link re-establishment",                // 0x4f
+    "external TDX link re-establishment",                // 0x50
+    "transfer",                                          // 0x51
+    "silent call",                                       // 0x52
+    "Called Party warned",                               // 0x53
+
+    "N/A",                                               // 0x54
+    "N/A",                                               // 0x55
+    "N/A",                                               // 0x56
+    "N/A",                                               // 0x57
+    "N/A",                                               // 0x58
+    "N/A",                                               // 0x59
+    "N/A",                                               // 0x5a
+    "N/A",                                               // 0x5b
+    "N/A",                                               // 0x5c
+    "N/A",                                               // 0x5d
+    "N/A",                                               // 0x5e
+    "N/A",                                               // 0x5f
+
+    // DATA
+    "buffer not empty",                                  // 0x60
+    "UDT not connected",                                 // 0x61
+    "downlink transfer",                                 // 0x62
+    "message size does not match expected length",       // 0x63
+    "application type error",                            // 0x64
+    "message length error",                              // 0x65
+    "encryption field error",                            // 0x66
+    "priority error",                                    // 0x67
+    "uplink data channel congestion",                    // 0x68
+    "delivery time expired",                             // 0x69
+    "uplink transfer priority",                          // 0x6a
+    "incorrect transmission parameters",                 // 0x6b
+    "incorrect low layer option",                        // 0x6c
+    "transmission inactivity",                           // 0x6d
+    "SDP applications not supported or not opened",      // 0x6e
+    "key renewal",                                       // 0x6f
+
+    "N/A",                                               // 0x70
+    "N/A",                                               // 0x71
+    "N/A",                                               // 0x72
+    "N/A",                                               // 0x73
+    "N/A",                                               // 0x74
+    "N/A",                                               // 0x75
+    "N/A",                                               // 0x76
+    "N/A",                                               // 0x77
+    "N/A",                                               // 0x78
+    "N/A",                                               // 0x79
+    "N/A",                                               // 0x7a
+    "N/A",                                               // 0x7b
+    "N/A",                                               // 0x7c
+    "N/A",                                               // 0x7d
+    "N/A",                                               // 0x7e
+    "N/A",                                               // 0x7f
+
+    // GROUP COMMUNICATION
+    "open channel not created",                          // 0x80
+    "open channel already set-up",                       // 0x81
+    "unknown open channel",                              // 0x82
+    "open channel cannot be set-up",                     // 0x83
+    "coverage not guaranteed",                           // 0x84
+    "open channel number not valid",                     // 0x85
+    "cell out of coverage",                              // 0x86
+    "maximum open channel duration reached",             // 0x87
+    "maximum activation time reached",                   // 0x88
+    "communication change",                              // 0x89
+    "group already activated",                           // 0x8a
+    "maximum OG exceeded",                               // 0x8b
+
+    "N/A",                                               // 0x8c
+    "N/A",                                               // 0x8d
+    "N/A",                                               // 0x8e
+    "N/A",                                               // 0x8f
+    "N/A",                                               // 0x90
+    "N/A",                                               // 0x91
+    "N/A",                                               // 0x92
+    "N/A",                                               // 0x93
+    "N/A",                                               // 0x94
+    "N/A",                                               // 0x95
+    "N/A",                                               // 0x96
+    "N/A",                                               // 0x97
+    "N/A",                                               // 0x98
+    "N/A",                                               // 0x99
+    "N/A",                                               // 0x9a
+    "N/A",                                               // 0x9b
+    "N/A",                                               // 0x9c
+    "N/A",                                               // 0x9d
+    "N/A",                                               // 0x9e
+    "N/A",                                               // 0x9f
+
+    // EMERGENCY OPEN CHANNEL
+    "emergency open channel call",                       // 0xa0
+
+    "N/A",                                               // 0xa1
+    "N/A",                                               // 0xa2
+    "N/A",                                               // 0xa3
+    "N/A",                                               // 0xa4
+    "N/A",                                               // 0xa5
+    "N/A",                                               // 0xa6
+    "N/A",                                               // 0xa7
+    "N/A",                                               // 0xa8
+    "N/A",                                               // 0xa9
+    "N/A",                                               // 0xaa
+    "N/A",                                               // 0xab
+    "N/A",                                               // 0xac
+    "N/A",                                               // 0xad
+    "N/A",                                               // 0xae
+    "N/A",                                               // 0xaf
+
+    // KEY
+    "authentication error",                              // 0xb0
+    "home switch access fault",                          // 0xb1
+
+    "N/A",                                               // 0xb2
+    "N/A",                                               // 0xb3
+    "N/A",                                               // 0xb4
+    "N/A",                                               // 0xb5
+    "N/A",                                               // 0xb6
+    "N/A",                                               // 0xb7
+    "N/A",                                               // 0xb8
+    "N/A",                                               // 0xb9
+    "N/A",                                               // 0xba
+    "N/A",                                               // 0xbb
+    "N/A",                                               // 0xbc
+    "N/A",                                               // 0xbd
+    "N/A",                                               // 0xbe
+    "N/A",                                               // 0xbf
+    "N/A",                                               // 0xc0
+    "N/A",                                               // 0xc1
+    "N/A",                                               // 0xc2
+    "N/A",                                               // 0xc3
+    "N/A",                                               // 0xc4
+    "N/A",                                               // 0xc5
+    "N/A",                                               // 0xc6
+    "N/A",                                               // 0xc7
+    "N/A",                                               // 0xc8
+    "N/A",                                               // 0xc9
+    "N/A",                                               // 0xca
+    "N/A",                                               // 0xcb
+    "N/A",                                               // 0xcc
+    "N/A",                                               // 0xcd
+    "N/A",                                               // 0xce
+    "N/A",                                               // 0xcf
+    "N/A",                                               // 0xd0
+    "N/A",                                               // 0xd1
+    "N/A",                                               // 0xd2
+    "N/A",                                               // 0xd3
+    "N/A",                                               // 0xd4
+    "N/A",                                               // 0xd5
+    "N/A",                                               // 0xd6
+    "N/A",                                               // 0xd7
+    "N/A",                                               // 0xd8
+    "N/A",                                               // 0xd9
+    "N/A",                                               // 0xda
+    "N/A",                                               // 0xdb
+    "N/A",                                               // 0xdc
+    "N/A",                                               // 0xdd
+    "N/A",                                               // 0xde
+    "N/A",                                               // 0xdf
+
+    // REGISTRATION
+    "RT not valid",                                      // 0xe0
+    "inconsistent RT",                                   // 0xe1
+    "unreachable HRSW",                                  // 0xe2
+    "non-explicit address",                              // 0xe3
+    "RT registration disabled",                          // 0xe4
+    "SwMI database updating",                            // 0xe5
+    "RT assigned to an attachment cell",                 // 0xe6
+    "RT cannot be authenticated",                        // 0xe7
+    "congestion",                                        // 0xe8
+    "RSW saturation",                                    // 0xe9
+    "MRSW saturation",                                   // 0xea
+    "HRSW saturation",                                   // 0xeb
+    "out of window",                                     // 0xec
+    "RT registration filtered",                          // 0xed
+
+    "N/A",                                               // 0xee
+    "N/A",                                               // 0xef
+    "N/A",                                               // 0xf0
+    "N/A",                                               // 0xf1
+    "N/A",                                               // 0xf2
+    "N/A",                                               // 0xf3
+    "N/A",                                               // 0xf4
+    "N/A",                                               // 0xf5
+    "N/A",                                               // 0xf6
+    "N/A",                                               // 0xf7
+    "N/A",                                               // 0xf8
+    "N/A",                                               // 0xf9
+    "N/A",                                               // 0xfa
+    "N/A",                                               // 0xfb
+    "N/A",                                               // 0xfc
+    "N/A",                                               // 0xfd
+    "N/A",                                               // 0xfe
+    "N/A",                                               // 0xff
+};
+
 const int CELL_RADIO_PARAM_PWR_TX_ADJUST_TO_DBM[16] = {
     -76, -72, -68, -64, -60, -56, -52, -48,
     -44, -40, -36, -32, -28, -24, -20, -16,
@@ -1041,6 +1320,26 @@ static void d_connect_dch_print(tsdu_d_connect_dch_t *tsdu)
     LOGF("\t\tD_CH_SCRAMBLING=%d\n", tsdu->d_ch_scrambling);
 }
 
+static tsdu_d_return_t *d_return_decode(const uint8_t *data, int len)
+{
+    tsdu_d_return_t *tsdu = tsdu_create(tsdu_d_return_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    CHECK_LEN(len, 2, tsdu);
+
+    tsdu->cause = data[1];
+ 
+    return tsdu;
+}
+
+static void d_return_print(tsdu_d_return_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tCAUSE=0x%02x (%s)\n", tsdu->cause, cause_str[tsdu->cause]);
+}
+ 
 static tsdu_d_ech_overload_id_t *d_ech_overload_id_decode(const uint8_t *data, int len)
 {
     tsdu_d_ech_overload_id_t *tsdu = tsdu_create(tsdu_d_ech_overload_id_t, 0);
@@ -1117,7 +1416,7 @@ static tsdu_d_data_end_t *d_data_end_decode(const uint8_t *data, int len)
 static void d_data_end_print(const tsdu_d_data_end_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
-    LOGF("\t\tCAUSE=0x%02x\n", tsdu->cause);
+    LOGF("\t\tCAUSE=0x%02x (%s)\n", tsdu->cause, cause_str[tsdu->cause]);
 }
 
 static tsdu_d_datagram_notify_t *d_datagram_notify_decode(const uint8_t *data, int len)
@@ -1405,6 +1704,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_connect_dch_decode(data, len);
             break;
 
+        case D_RETURN:
+            *tsdu = (tsdu_t *)d_return_decode(data, len);
+            break;
+
         default:
             *tsdu = (tsdu_t *)d_unknown_parse(data, len);
             LOG(WTF, "unsupported codop 0x%02x", codop);
@@ -1474,8 +1777,13 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_REGISTRATION_ACK:
             d_registration_ack_print((tsdu_d_registration_ack_t *)tsdu);
             break;
+
         case D_CONNECT_DCH:
             d_connect_dch_print((tsdu_d_connect_dch_t *)tsdu);
+            break;
+
+        case D_RETURN:
+            d_return_print((tsdu_d_return_t *)tsdu);
             break;
 
         default:
@@ -1535,7 +1843,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_REGISTRATION_NAK:
         case D_REJECT:
         case D_RELEASE:
-        case D_RETURN:
         case D_SERVICE_DISABLED:
         case D_TRAFFIC_DISABLED:
         case D_TRAFFIC_ENABLED:

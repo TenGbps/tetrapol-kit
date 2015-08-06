@@ -758,6 +758,12 @@ typedef struct {
     uint8_t coverage_id;
 } tsdu_d_registration_ack_t;
 
+/// PAS 0001-3-2 4.4.68
+typedef struct {
+    tsdu_base_t base;
+    uint8_t cause;
+} tsdu_d_return_t;
+
 /// PAS 0001-3-2 4.4.71
 typedef struct {
     tsdu_base_t base;
