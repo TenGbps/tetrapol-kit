@@ -695,6 +695,12 @@ typedef struct {
     uint16_t group_ids[16];   ///< limit shoudl be 10, but og_ng have 4b
 } tsdu_d_group_composition_t;
 
+/// PAS 0001-3-2 4.4.46
+typedef struct {
+    tsdu_base_t base;
+    uint8_t cause;
+} tsdu_d_group_idle_t;
+
 /// PAS 0001-3-2 4.4.47
 typedef struct {
     uint8_t coverage_id;

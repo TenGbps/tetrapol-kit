@@ -1339,6 +1339,26 @@ static void d_return_print(tsdu_d_return_t *tsdu)
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tCAUSE=0x%02x (%s)\n", tsdu->cause, cause_str[tsdu->cause]);
 }
+
+static tsdu_d_group_idle_t *d_group_idle_decode(const uint8_t *data, int len)
+{
+    tsdu_d_group_idle_t *tsdu = tsdu_create(tsdu_d_group_idle_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    CHECK_LEN(len, 2, tsdu);
+
+    tsdu->cause = data[1];
+ 
+    return tsdu;
+}
+
+static void d_group_idle_print(tsdu_d_group_idle_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tCAUSE=0x%02x (%s)\n", tsdu->cause, cause_str[tsdu->cause]);
+}
  
 static tsdu_d_ech_overload_id_t *d_ech_overload_id_decode(const uint8_t *data, int len)
 {
@@ -1708,6 +1728,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_return_decode(data, len);
             break;
 
+        case D_GROUP_IDLE:
+            *tsdu = (tsdu_t *)d_group_idle_decode(data, len);
+            break;
+
         default:
             *tsdu = (tsdu_t *)d_unknown_parse(data, len);
             LOG(WTF, "unsupported codop 0x%02x", codop);
@@ -1786,6 +1810,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_return_print((tsdu_d_return_t *)tsdu);
             break;
 
+        case D_GROUP_IDLE:
+            d_group_idle_print((tsdu_d_group_idle_t *)tsdu);
+            break;
+
         default:
             LOG(WTF, "Undefined downlink codop=0x%02x", tsdu->codop);
 
@@ -1826,7 +1854,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_FORCED_REGISTRATION:
         case D_FUNCTIONAL_SHORT_DATA:
         case D_GROUP_END:
-        case D_GROUP_IDLE:
         case D_GROUP_OVERLOAD_ID:
         case D_GROUP_PAGING:
         case D_GROUP_REJECT:
