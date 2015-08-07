@@ -1330,7 +1330,7 @@ static tsdu_d_return_t *d_return_decode(const uint8_t *data, int len)
     CHECK_LEN(len, 2, tsdu);
 
     tsdu->cause = data[1];
- 
+
     return tsdu;
 }
 
@@ -1350,7 +1350,7 @@ static tsdu_d_group_idle_t *d_group_idle_decode(const uint8_t *data, int len)
     CHECK_LEN(len, 2, tsdu);
 
     tsdu->cause = data[1];
- 
+
     return tsdu;
 }
 
@@ -1359,7 +1359,7 @@ static void d_group_idle_print(tsdu_d_group_idle_t *tsdu)
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tCAUSE=0x%02x (%s)\n", tsdu->cause, cause_str[tsdu->cause]);
 }
- 
+
 static tsdu_d_ech_overload_id_t *d_ech_overload_id_decode(const uint8_t *data, int len)
 {
     tsdu_d_ech_overload_id_t *tsdu = tsdu_create(tsdu_d_ech_overload_id_t, 0);
