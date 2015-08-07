@@ -922,7 +922,7 @@ static void d_group_list_print(tsdu_d_group_list_t *tsdu)
     if (tsdu->nemergency) {
         LOGF("\t\t\tEMERGENCY\n");
         for (int i = 0; i < tsdu->nemergency; ++i) {
-            LOGF("\t\t\tCELL_ID.BS_ID=%d CELL_ID.RWS_ID=%d\n",
+            LOGF("\t\t\tCELL_ID.BS_ID=%d CELL_ID.RSW_ID=%d\n",
                    tsdu->emergency[i].cell_id.bs_id, tsdu->emergency[i].cell_id.rws_id);
         }
     }
@@ -1198,7 +1198,7 @@ static void d_system_info_print(tsdu_d_system_info_t *tsdu)
         LOGF("\t\t\tLOC_ID=%d\n", tsdu->loc_area_id.loc_id);
         LOGF("\t\t\tMODE=%d\n", tsdu->loc_area_id.mode);
         LOGF("\t\tBN_ID=%d\n", tsdu->bn_id);
-        LOGF("\t\tCELL_ID: BS_ID=%d RWS_ID=%d\n",
+        LOGF("\t\tCELL_ID: BS_ID=%d RSW_ID=%d\n",
                tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
         LOGF("\t\tCELL_BN=%d\n", tsdu->cell_bn);
         LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
@@ -1220,7 +1220,7 @@ static void d_system_info_print(tsdu_d_system_info_t *tsdu)
                 tsdu->cell_access.min_reg_class);
         LOGF("\t\tSUPERFRAME_CPT=%d\n", tsdu->superframe_cpt);
     } else {
-        LOGF("\t\tCELL_ID BS_ID=%d RWS_ID=%d\n",
+        LOGF("\t\tCELL_ID BS_ID=%d RSW_ID=%d\n",
                tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
         LOGF("\t\tCELL_BN=%d\n", tsdu->cell_bn);
         LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
@@ -1238,6 +1238,38 @@ static void d_system_info_print(tsdu_d_system_info_t *tsdu)
         LOGF("\t\tCHANNEL_ID=%d\n", tsdu->channel_id);
     }
 }
+
+static tsdu_d_registration_nak_t *d_registration_nak_decode(const uint8_t *data, int len)
+{
+    tsdu_d_registration_nak_t *tsdu = tsdu_create(tsdu_d_registration_nak_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+//FIXME ?
+printf("bagr %i\n", len);
+    CHECK_LEN(len, 10, tsdu);
+
+    tsdu->cause                 = data[1];
+    if (address_decode(&tsdu->host_adr, data + 4)) {
+        LOG(ERR, "Only single address NAK is supported");
+    }
+    tsdu->bn_id                 = data[7];
+    cell_id_decode1(&tsdu->cell_id, data + 8);
+ 
+    return tsdu;
+}
+
+static void d_registration_nak_print(tsdu_d_registration_nak_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tCAUSE=0x%02x (%s)\n", tsdu->cause, cause_str[tsdu->cause]);
+    address_print(&tsdu->host_adr);
+    LOGF("\t\tBN_ID=%d\n", tsdu->bn_id);
+    LOGF("\t\tCELL_ID: BS_ID=%d RSW_ID=%d\n",
+           tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
+}
+
 
 static tsdu_d_registration_ack_t *d_registration_ack_decode(const uint8_t *data, int len)
 {
@@ -1384,7 +1416,7 @@ static void d_ech_overload_id_print(const tsdu_d_ech_overload_id_t *tsdu)
     LOGF("\t\tACTIVATION_MODE: hook=%d type=%d\n",
            tsdu->activation_mode.hook, tsdu->activation_mode.type);
     LOGF("\t\tGROUP_ID=%d", tsdu->group_id);
-    LOGF("\t\tCELL_ID: BS_ID=%d RWS_ID=%d\n",
+    LOGF("\t\tCELL_ID: BS_ID=%d RSW_ID=%d\n",
            tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
     LOGF("\t\tORGANISATION=%d\n", tsdu->organisation);
 }
@@ -1716,6 +1748,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_system_info_decode(data, len);
             break;
 
+        case D_REGISTRATION_NAK:
+            *tsdu = (tsdu_t *)d_registration_nak_decode(data, len);
+            break;
+
         case D_REGISTRATION_ACK:
             *tsdu = (tsdu_t *)d_registration_ack_decode(data, len);
             break;
@@ -1802,6 +1838,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_registration_ack_print((tsdu_d_registration_ack_t *)tsdu);
             break;
 
+        case D_REGISTRATION_NAK:
+            d_registration_nak_print((tsdu_d_registration_nak_t *)tsdu);
+            break;
+
         case D_CONNECT_DCH:
             d_connect_dch_print((tsdu_d_connect_dch_t *)tsdu);
             break;
@@ -1867,7 +1907,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_PRIORITY_GRP_ACTIVATION:
         case D_PRIORITY_GRP_WAITING:
         case D_REFUSAL:
-        case D_REGISTRATION_NAK:
         case D_REJECT:
         case D_RELEASE:
         case D_SERVICE_DISABLED:
