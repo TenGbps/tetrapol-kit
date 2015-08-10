@@ -125,9 +125,10 @@ bool data_block_check_crc(data_block_t *data_blk)
     }
 
     if (data_blk->fr_type == FRAME_TYPE_VOICE) {
-        // TODO
-        LOG(ERR, "CRC checking for VOICE frames not implemented");
-        return false;
+        uint8_t crc[3];
+
+        mk_crc3(crc, data_blk->data, 23);
+        return !memcmp(data_blk->data + 23, crc, 3);
     }
     return false;
 }
