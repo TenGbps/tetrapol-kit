@@ -23,6 +23,24 @@ static void mk_crc5(uint8_t *res, const uint8_t *input, int input_len)
     }
 }
 
+// http://ghsi.de/CRC/index.php?Polynom=1010
+static void mk_crc3(uint8_t *res, const uint8_t *input, int input_len)
+{
+    uint8_t inv;
+    memset(res, 0, 3);
+
+    for (int i = 0; i < input_len; ++i)
+    {
+        inv = input[i] ^ res[0];
+
+        res[0] = res[1];
+        res[1] = res[2] ^ inv;
+        res[2] = inv;
+    }
+    res[0] = res[0] ^ 1;
+    res[1] = res[1] ^ 1;
+    res[2] = res[2] ^ 1;
+}
 /**
   PAS 0001-2 6.1.2
   PAS 0001-2 6.2.2
