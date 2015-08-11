@@ -472,8 +472,24 @@ static const uint8_t interleave_data_UHF[] = {
     18, 92, 54, 131, 36, 110, 72, 149,
 };
 
-static void frame_deinterleave(frame_t *f, const uint8_t *int_table)
+static void frame_deinterleave(frame_t *f, int band, int fr_type)
 {
+    const uint8_t *int_table;
+
+    if (band == TETRAPOL_BAND_VHF) {
+        if (fr_type == FRAME_TYPE_DATA) {
+            int_table = interleave_data_VHF;
+        } else {
+            int_table = interleave_voice_VHF;
+        }
+    } else {
+        if (fr_type == FRAME_TYPE_DATA) {
+            int_table = interleave_data_UHF;
+        } else {
+            int_table = interleave_voice_UHF;
+        }
+    }
+
     uint8_t tmp[FRAME_DATA_LEN];
     memcpy(tmp, f->data, FRAME_DATA_LEN);
 
@@ -551,12 +567,10 @@ static void detect_scr(phys_ch_t *phys_ch, const frame_t *f)
         memcpy(&f_, f, sizeof(f_));
 
         frame_descramble(&f_, scr);
-        if (phys_ch->band == TETRAPOL_BAND_VHF) {
-            frame_deinterleave(&f_, interleave_data_VHF);
-        } else {
+        if (phys_ch->band == TETRAPOL_BAND_UHF) {
             frame_diff_dec(&f_);
-            frame_deinterleave(&f_, interleave_data_UHF);
         }
+        frame_deinterleave(&f_, phys_ch->band, FRAME_TYPE_DATA);
 
         data_block_t data_blk;
         data_block_decode_frame(&data_blk, f_.data, f_.frame_no, FRAME_TYPE_AUTO);
@@ -619,12 +633,10 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
         phys_ch->scr_guess : phys_ch->scr;
 
     frame_descramble(f, scr);
-    if (phys_ch->band == TETRAPOL_BAND_VHF) {
-        frame_deinterleave(f, interleave_data_VHF);
-    } else {
+    if (phys_ch->band == TETRAPOL_BAND_UHF) {
         frame_diff_dec(f);
-        frame_deinterleave(f, interleave_data_UHF);
     }
+    frame_deinterleave(f, phys_ch->band, FRAME_TYPE_DATA);
 
     data_block_t data_blk;
     data_block_decode_frame(&data_blk, f->data, f->frame_no, FRAME_TYPE_DATA);

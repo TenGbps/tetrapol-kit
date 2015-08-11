@@ -34,7 +34,7 @@ static void test_frame_deinterleave(void **state)
         0x2d, 0x77, 0x51, 0x1e,
     };
 
-    frame_deinterleave(&data, interleave_data_UHF);
+    frame_deinterleave(&data, TETRAPOL_BAND_UHF, FRAME_TYPE_DATA);
     assert_memory_equal(data_exp, data.data, FRAME_DATA_LEN);
 }
 
