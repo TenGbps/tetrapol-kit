@@ -23,7 +23,9 @@ make
 
 == Usage
 
-# edit ruh.sh as needed and execute it
+# 1) edit ruh.sh as needed
+# 2) connect SDR (RTL-SDR, BladeRF, HackRF or any supported by osmo-sdr)
+# 3) run it
 ./run.sh
 
 See file run.sh for example of usage. This script should give you basic
