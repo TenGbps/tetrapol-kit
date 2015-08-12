@@ -2,8 +2,8 @@
 
 # This script is example setup for recording a processing of TETRAPOL.
 # This simple setup allows recording of selected tetrapol channel(s).
-# Recorded file constains demodulated channel. Decoding is done as
-# postprocessing by 'tetrapol_dump' latter. For realtime decoding see
+# Recorded .bin file constain demodulated channel data. Decoding is done
+# as postprocessing by 'tetrapol_dump' latter. For realtime decoding see
 # paragraph bellow.
 
 # Tips for realtime processing:
@@ -16,7 +16,12 @@ FREQ=393e6
 PPM=0
 GAIN=40
 SAMPLE_RATE=2000000
-OUTPUT_DIR=../tetrapol_data
+OUTPUT_DIR=../tetrapol_dataxx
+
+if [ ! -d ${OUTPUT_DIR} ]; then
+    echo "'${OUTPUT_DIR}' is not a directory, create it first"
+    exit 1
+fi
 
 # start receiver
 ./demod/tetrapol_rx.py -f ${FREQ} -p ${PPM} -g ${GAIN} -s ${SAMPLE_RATE} -o ${OUTPUT_DIR}/channel%d.bits &

@@ -21,10 +21,10 @@ cd build
 cmake ..
 make
 
-# edit ruh.sh as needed
-./run.sh
-
 == Usage
+
+# edit ruh.sh as needed and execute it
+./run.sh
 
 See file run.sh for example of usage. This script should give you basic
 inspiration what to do and how to use this tool. If you feel totaly lost
