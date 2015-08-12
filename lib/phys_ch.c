@@ -26,6 +26,9 @@
 #define FRAME_DATA_LEN (152)
 #define FRAME_LEN (FRAME_HDR_LEN + FRAME_DATA_LEN)
 
+// used when decoding firts part of frame common to data and voice frames
+#define FRAME_DATA_LEN1 (52)
+
 #define DATA_OFFS (FRAME_LEN/2)
 
 typedef struct {
@@ -472,7 +475,30 @@ static const uint8_t interleave_data_UHF[] = {
     18, 92, 54, 131, 36, 110, 72, 149,
 };
 
-static void frame_deinterleave(frame_t *f, int band, int fr_type)
+/**
+  Deinterleave firts part of frame (common for data and voice frames)
+  */
+static void frame_deinterleave1(frame_t *f, uint8_t *buf, int band)
+{
+    const uint8_t *int_table;
+
+    if (band == TETRAPOL_BAND_VHF) {
+        int_table = interleave_data_VHF;
+    } else {
+        int_table = interleave_data_UHF;
+    }
+
+    memcpy(buf, f->data, FRAME_DATA_LEN);
+
+    for (int j = 0; j < FRAME_DATA_LEN1; ++j) {
+        f->data[j] = buf[int_table[j]];
+    }
+}
+
+/**
+  Deinterleave second part of frame (differs for data and voice frames)
+  */
+static void frame_deinterleave2(frame_t *f, uint8_t *buf, int band, int fr_type)
 {
     const uint8_t *int_table;
 
@@ -490,11 +516,8 @@ static void frame_deinterleave(frame_t *f, int band, int fr_type)
         }
     }
 
-    uint8_t tmp[FRAME_DATA_LEN];
-    memcpy(tmp, f->data, FRAME_DATA_LEN);
-
-    for (int j = 0; j < FRAME_DATA_LEN; ++j) {
-        f->data[j] = tmp[int_table[j]];
+    for (int j = FRAME_DATA_LEN1; j < FRAME_DATA_LEN; ++j) {
+        f->data[j] = buf[int_table[j]];
     }
 }
 
@@ -570,7 +593,9 @@ static void detect_scr(phys_ch_t *phys_ch, const frame_t *f)
         if (phys_ch->band == TETRAPOL_BAND_UHF) {
             frame_diff_dec(&f_);
         }
-        frame_deinterleave(&f_, phys_ch->band, FRAME_TYPE_DATA);
+        uint8_t deint_buf[FRAME_DATA_LEN];
+        frame_deinterleave1(&f_, deint_buf, phys_ch->band);
+        frame_deinterleave2(&f_, deint_buf, phys_ch->band, FRAME_TYPE_DATA);
 
         data_block_t data_blk;
         data_block_decode_frame(&data_blk, f_.data, f_.frame_no, FRAME_TYPE_AUTO);
@@ -636,7 +661,9 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
     if (phys_ch->band == TETRAPOL_BAND_UHF) {
         frame_diff_dec(f);
     }
-    frame_deinterleave(f, phys_ch->band, FRAME_TYPE_DATA);
+    uint8_t deint_buf[FRAME_DATA_LEN];
+    frame_deinterleave1(f, deint_buf, phys_ch->band);
+    frame_deinterleave2(f, deint_buf, phys_ch->band, FRAME_TYPE_DATA);
 
     data_block_t data_blk;
     data_block_decode_frame(&data_blk, f->data, f->frame_no, FRAME_TYPE_DATA);
