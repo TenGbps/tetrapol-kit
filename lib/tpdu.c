@@ -76,8 +76,8 @@ static int tpdu_push_supervision_frame(tpdu_t *tpdu,
         }
         addr_print(&hdlc_fr->addr);
         LOGF("\n\trecv_seq_no: %d P: %d\n",
-               hdlc_fr->command.supervision.recv_seq_no,
-               hdlc_fr->command.supervision.p_e);
+                hdlc_fr->command.supervision.recv_seq_no,
+                hdlc_fr->command.supervision.p_e);
     }
 
     if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
@@ -132,9 +132,9 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
         LOGF("\taddr: ");
         addr_print(&hdlc_fr->addr);
         LOGF("\n\trecv_seq_no: %d send_seq_no: %d P: %d\n",
-               hdlc_fr->command.information.recv_seq_no,
-               hdlc_fr->command.information.send_seq_no,
-               hdlc_fr->command.information.p_e);
+                hdlc_fr->command.information.recv_seq_no,
+                hdlc_fr->command.information.send_seq_no,
+                hdlc_fr->command.information.p_e);
     }
 
     if (seg) {
@@ -150,7 +150,7 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
         switch(code_prefix) {
             case TPDU_CODE_CR:
                 LOG(ERR, "TODO CR seg: %d d: %d TSAP_ref: %d TSAP_id %d QoS: %d len: %d",
-                    seg, d, par_field, dest_ref, qos, len);
+                        seg, d, par_field, dest_ref, qos, len);
                 // check if connection exists, deallocate and WTF
                 // create new connection stuct
                 // set state to REQ
@@ -158,13 +158,13 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
 
             case TPDU_CODE_CC:
                 LOG(ERR, "TODO CC seg: %d d: %d TSAP_ref_send: %d TSAP_ref_recv: %d QoS: %d len: %d",
-                    seg, d, par_field, dest_ref, qos, len);
+                        seg, d, par_field, dest_ref, qos, len);
                 // check if connection exists
                 break;
 
             case TPDU_CODE_FCR:
                 LOG(ERR, "TODO FCR seg: %d d: %d TSAP_ref: %d TSAP_id: %d QoS: %d len: %d",
-                    seg, d, par_field, dest_ref, qos, len);
+                        seg, d, par_field, dest_ref, qos, len);
                 break;
 
             default:

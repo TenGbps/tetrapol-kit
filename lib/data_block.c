@@ -44,7 +44,7 @@ static void mk_crc3(uint8_t *res, const uint8_t *input, int input_len)
 /**
   PAS 0001-2 6.1.2
   PAS 0001-2 6.2.2
-*/
+  */
 static int decode_data_frame(uint8_t *res, uint8_t *err, const uint8_t *in, int res_len)
 {
 #ifdef GET_IN_

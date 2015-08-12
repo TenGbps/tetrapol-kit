@@ -15,8 +15,8 @@ typedef struct {
 } rch_data_t;
 
 struct rch_priv_t {
-     data_frame_t *data_fr;
-     rch_data_t rch_data;
+    data_frame_t *data_fr;
+    rch_data_t rch_data;
 };
 
 rch_t *rch_create(void)

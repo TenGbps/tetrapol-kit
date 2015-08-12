@@ -635,7 +635,7 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
             int fn0 = data_blk.data[1];
             int fn1 = data_blk.data[2];
             LOG_("OK frame_no=%03i fn=%i%i asb=%i%i data=",
-                   data_blk.frame_no, fn1, fn0, asbx, asby);
+                    data_blk.frame_no, fn1, fn0, asbx, asby);
         } else {
             LOG_("ERR frame_no=%03i data=", data_blk.frame_no);
         }

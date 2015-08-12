@@ -599,7 +599,7 @@ void tsdu_destroy(tsdu_base_t *tsdu)
 static void tsdu_base_print(const tsdu_base_t *tsdu)
 {
     LOGF("\tCODOP=0x%02x (%s)\n\tPRIO=%d\n\tID_TSAP=%d\n",
-           tsdu->codop, codop_str[tsdu->codop], tsdu->prio, tsdu->id_tsap);
+            tsdu->codop, codop_str[tsdu->codop], tsdu->prio, tsdu->id_tsap);
     // TODO: print addr
 }
 
@@ -760,14 +760,14 @@ static void d_group_activation_print(tsdu_d_group_activation_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tACTIVATION_MODE: HOOK=%d TYPE=%d\n",
-           tsdu->activation_mode.hook, tsdu->activation_mode.type);
+            tsdu->activation_mode.hook, tsdu->activation_mode.type);
     LOGF("\t\tGROUP_ID=%d\n", tsdu->group_id);
     LOGF("\t\tCOVERAGE_ID=%d\n", tsdu->coverage_id);
     LOGF("\t\tCHANNEL_ID=%d\n", tsdu->channel_id);
     LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
     LOGF("\t\tD_CH_SCRAMBLING=%d\n", tsdu->d_ch_scrambling);
     LOGF("\t\tKEY_REFERENCE: KEY_TYPE=%i KEY_INDEX=%i\n",
-           tsdu->key_reference.key_type, tsdu->key_reference.key_index);
+            tsdu->key_reference.key_type, tsdu->key_reference.key_index);
     if (tsdu->has_addr_tti) {
         LOGF("\t\tADDR_TTI=");
         addr_print(&tsdu->addr_tti);
@@ -888,26 +888,26 @@ static void d_group_list_print(tsdu_d_group_list_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tREFERENCE_LIST REVISION=%d CSG=%d CSO=%d DC=%d\n",
-           tsdu->reference_list.revision, tsdu->reference_list.csg,
-           tsdu->reference_list.cso, tsdu->reference_list.dc);
+            tsdu->reference_list.revision, tsdu->reference_list.csg,
+            tsdu->reference_list.cso, tsdu->reference_list.dc);
     if (tsdu->reference_list.revision == 0) {
         return;
     }
     LOGF("\t\tINDEX_LIST MODE=%d INDEX=%d\n",
-           tsdu->index_list.mode, tsdu->index_list.index);
+            tsdu->index_list.mode, tsdu->index_list.index);
 
     if (tsdu->nopen) {
         LOGF("\t\tOCH\n");
         for (int i = 0; i < tsdu->nopen; ++i) {
             LOGF("\t\t\tCOVERAGE_ID=%d CALL_PRIORITY=%d GROUP_ID=%d "
-                   "OCH_PARAMETERS.ADD=%d OCH_PARAMETERS.MBN=%d "
-                   "NEIGBOURING_CELL=%d\n",
-                   tsdu->open[i].coverage_id,
-                   tsdu->open[i].call_priority,
-                   tsdu->open[i].group_id,
-                   tsdu->open[i].och_parameters.add,
-                   tsdu->open[i].och_parameters.mbn,
-                   tsdu->open[i].neighbouring_cell);
+                    "OCH_PARAMETERS.ADD=%d OCH_PARAMETERS.MBN=%d "
+                    "NEIGBOURING_CELL=%d\n",
+                    tsdu->open[i].coverage_id,
+                    tsdu->open[i].call_priority,
+                    tsdu->open[i].group_id,
+                    tsdu->open[i].och_parameters.add,
+                    tsdu->open[i].och_parameters.mbn,
+                    tsdu->open[i].neighbouring_cell);
         }
     }
 
@@ -915,7 +915,7 @@ static void d_group_list_print(tsdu_d_group_list_t *tsdu)
         LOGF("\t\tGROUP\n");
         for (int i = 0; i < tsdu->ngroup; ++i) {
             LOGF("\t\t\tCOVERAGE_ID=%d NEIGHBOURING_CALL=%d\n",
-                   tsdu->group[i].coverage_id, tsdu->group[i].neighbouring_cell);
+                    tsdu->group[i].coverage_id, tsdu->group[i].neighbouring_cell);
         }
     }
 
@@ -923,7 +923,7 @@ static void d_group_list_print(tsdu_d_group_list_t *tsdu)
         LOGF("\t\t\tEMERGENCY\n");
         for (int i = 0; i < tsdu->nemergency; ++i) {
             LOGF("\t\t\tCELL_ID.BS_ID=%d CELL_ID.RSW_ID=%d\n",
-                   tsdu->emergency[i].cell_id.bs_id, tsdu->emergency[i].cell_id.rws_id);
+                    tsdu->emergency[i].cell_id.bs_id, tsdu->emergency[i].cell_id.rws_id);
         }
     }
 }
@@ -1057,14 +1057,14 @@ static tsdu_d_neighbouring_cell_t *d_neighbouring_cell_decode(const uint8_t *dat
         CHECK_LEN(len, ie_len, tsdu);
         if (iei == IEI_CELL_ID_LIST && ie_len) {
             cell_id_list_t *p = iei_cell_id_list_decode(
-                        tsdu->cell_ids, data, ie_len);
+                    tsdu->cell_ids, data, ie_len);
             if (!p) {
                 break;
             }
             tsdu->cell_ids = p;
         } else if (iei == IEI_ADJACENT_BN_LIST && ie_len) {
             addr_list_t *p = iei_adjacent_bn_list_decode(
-                        tsdu->cell_bns, data, ie_len);
+                    tsdu->cell_bns, data, ie_len);
             if (!p) {
                 break;
             }
@@ -1091,20 +1091,20 @@ static void d_neighbouring_cell_print(tsdu_d_neighbouring_cell_t *tsdu)
     LOGF("\t\tCCR_PARAM=%d\n", tsdu->ccr_param);
     for (int i = 0; i < tsdu->ccr_config.number; ++i) {
         LOGF("\t\t\tBN_NB=%d CHANNEL_ID=%d ADJACENT_PARAM=%d BN=%d LOC=%d EXP=%d RXLEV_ACCESS=%d\n",
-               tsdu->adj_cells[i].bn_nb,
-               tsdu->adj_cells[i].channel_id,
-               tsdu->adj_cells[i].adjacent_param._data,
-               tsdu->adj_cells[i].adjacent_param.bn,
-               tsdu->adj_cells[i].adjacent_param.loc,
-               tsdu->adj_cells[i].adjacent_param.exp,
-               tsdu->adj_cells[i].adjacent_param.rxlev_access);
+                tsdu->adj_cells[i].bn_nb,
+                tsdu->adj_cells[i].channel_id,
+                tsdu->adj_cells[i].adjacent_param._data,
+                tsdu->adj_cells[i].adjacent_param.bn,
+                tsdu->adj_cells[i].adjacent_param.loc,
+                tsdu->adj_cells[i].adjacent_param.exp,
+                tsdu->adj_cells[i].adjacent_param.rxlev_access);
     }
     if (tsdu->cell_ids) {
         LOGF("\t\tCELL_IDs\n");
         for (int i = 0; i < tsdu->cell_ids->len; ++i) {
             LOGF("\t\t\tCELL_ID BS_ID=%d RSW_ID=%d\n",
-                   tsdu->cell_ids->cell_ids[i].bs_id,
-                   tsdu->cell_ids->cell_ids[i].rws_id);
+                    tsdu->cell_ids->cell_ids[i].bs_id,
+                    tsdu->cell_ids->cell_ids[i].rws_id);
         }
     }
     if (tsdu->cell_bns) {
@@ -1199,7 +1199,7 @@ static void d_system_info_print(tsdu_d_system_info_t *tsdu)
         LOGF("\t\t\tMODE=%d\n", tsdu->loc_area_id.mode);
         LOGF("\t\tBN_ID=%d\n", tsdu->bn_id);
         LOGF("\t\tCELL_ID: BS_ID=%d RSW_ID=%d\n",
-               tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
+                tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
         LOGF("\t\tCELL_BN=%d\n", tsdu->cell_bn);
         LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
         LOGF("\t\tCELL_RADIO_PARAM\n");
@@ -1208,10 +1208,10 @@ static void d_system_info_print(tsdu_d_system_info_t *tsdu)
                 tsdu->cell_radio_param.radio_link_timeout);
         LOGF("\t\t\tPWR_TX_ADJUST=%d dBm\n",
                 CELL_RADIO_PARAM_PWR_TX_ADJUST_TO_DBM[
-                    tsdu->cell_radio_param.pwr_tx_adjust]);
+                tsdu->cell_radio_param.pwr_tx_adjust]);
         LOGF("\t\t\tRX_LEV_ACCESS=%d dBm\n",
                 CELL_RADIO_PARAM_RX_LEV_ACCESS_TO_DBM[
-                    tsdu->cell_radio_param.rx_lev_access]);
+                tsdu->cell_radio_param.rx_lev_access]);
         LOGF("\t\tSYSTEM_TIME=%d\n", tsdu->system_time);
         LOGF("\t\tCELL_ACCESS\n");
         LOGF("\t\t\tMIN_SERVICE_CLASS=%d\n",
@@ -1221,7 +1221,7 @@ static void d_system_info_print(tsdu_d_system_info_t *tsdu)
         LOGF("\t\tSUPERFRAME_CPT=%d\n", tsdu->superframe_cpt);
     } else {
         LOGF("\t\tCELL_ID BS_ID=%d RSW_ID=%d\n",
-               tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
+                tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
         LOGF("\t\tCELL_BN=%d\n", tsdu->cell_bn);
         LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
         LOGF("\t\tCELL_RADIO_PARAM\n");
@@ -1230,10 +1230,10 @@ static void d_system_info_print(tsdu_d_system_info_t *tsdu)
                 tsdu->cell_radio_param.radio_link_timeout);
         LOGF("\t\t\tPWR_TX_ADJUST=%d dBm\n",
                 CELL_RADIO_PARAM_PWR_TX_ADJUST_TO_DBM[
-                    tsdu->cell_radio_param.pwr_tx_adjust]);
+                tsdu->cell_radio_param.pwr_tx_adjust]);
         LOGF("\t\t\tRX_LEV_ACCESS=%d dBm\n",
                 CELL_RADIO_PARAM_RX_LEV_ACCESS_TO_DBM[
-                    tsdu->cell_radio_param.rx_lev_access]);
+                tsdu->cell_radio_param.rx_lev_access]);
         LOGF("\t\tBAND=%d\n", tsdu->band);
         LOGF("\t\tCHANNEL_ID=%d\n", tsdu->channel_id);
     }
@@ -1246,8 +1246,8 @@ static tsdu_d_registration_nak_t *d_registration_nak_decode(const uint8_t *data,
         return NULL;
     }
 
-//FIXME ?
-printf("bagr %i\n", len);
+    //FIXME ?
+    printf("bagr %i\n", len);
     CHECK_LEN(len, 10, tsdu);
 
     tsdu->cause                 = data[1];
@@ -1256,7 +1256,7 @@ printf("bagr %i\n", len);
     }
     tsdu->bn_id                 = data[7];
     cell_id_decode1(&tsdu->cell_id, data + 8);
- 
+
     return tsdu;
 }
 
@@ -1267,7 +1267,7 @@ static void d_registration_nak_print(tsdu_d_registration_nak_t *tsdu)
     address_print(&tsdu->host_adr);
     LOGF("\t\tBN_ID=%d\n", tsdu->bn_id);
     LOGF("\t\tCELL_ID: BS_ID=%d RSW_ID=%d\n",
-           tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
+            tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
 }
 
 
@@ -1414,10 +1414,10 @@ static void d_ech_overload_id_print(const tsdu_d_ech_overload_id_t *tsdu)
 {
     LOGF("\tCODOP=0x%0x (D_ECH_OVERLOAD_ID)\n", tsdu->base.codop);
     LOGF("\t\tACTIVATION_MODE: hook=%d type=%d\n",
-           tsdu->activation_mode.hook, tsdu->activation_mode.type);
+            tsdu->activation_mode.hook, tsdu->activation_mode.type);
     LOGF("\t\tGROUP_ID=%d", tsdu->group_id);
     LOGF("\t\tCELL_ID: BS_ID=%d RSW_ID=%d\n",
-           tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
+            tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
     LOGF("\t\tORGANISATION=%d\n", tsdu->organisation);
 }
 
@@ -1499,7 +1499,7 @@ static void d_datagram_notify_print(const tsdu_d_datagram_notify_t *tsdu)
     LOGF("\t\tCALL_PRIORITY=%d\n", tsdu->call_priority);
     LOGF("\t\tMESSAGE_REFERENCE=%d\n", tsdu->message_reference);
     LOGF("\t\tKEY_REFERENCE: key_index=%d key_type=%d\n",
-           tsdu->key_reference.key_index, tsdu->key_reference.key_type);
+            tsdu->key_reference.key_index, tsdu->key_reference.key_type);
     if (tsdu->destination_port != -1) {
         LOGF("\t\tDESTINATION_PORT=%d\n", tsdu->destination_port);
     }
@@ -1535,7 +1535,7 @@ static void d_datagram_print(const tsdu_d_datagram_t *tsdu)
     LOGF("\t\tCALL_PRIORITY=%d\n", tsdu->call_priority);
     LOGF("\t\tMESSAGE_REFERENCE=%d\n", tsdu->message_reference);
     LOGF("\t\tKEY_REFERENCE: key_type=%d key_index=%d\n",
-           tsdu->key_reference.key_type, tsdu->key_reference.key_index);
+            tsdu->key_reference.key_type, tsdu->key_reference.key_index);
     char buf[tsdu->len * 3 + 1];
     LOGF("\t\tDATA: len=%d data=%s\n", tsdu->len,
             sprint_hex(buf, tsdu->data, tsdu->len));
@@ -1551,7 +1551,7 @@ static tsdu_d_explicit_short_data_t *d_explicit_short_data_decode(
     len -= 1;
 
     tsdu_d_explicit_short_data_t *tsdu = malloc(
-                sizeof(tsdu_d_explicit_short_data_t) + len);
+            sizeof(tsdu_d_explicit_short_data_t) + len);
     if (!tsdu) {
         LOG(ERR, "ERR OOM");
         return NULL;
@@ -1674,7 +1674,7 @@ static void d_call_connect_print(const tsdu_d_call_connect_t *tsdu)
     LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
     LOGF("\t\tD_CH_SCRAMBLING=%d\n", tsdu->d_ch_scrambling);
     LOGF("\t\tKEY_REFERENCE: KEY_TYPE=%i KEY_INDEX=%i\n",
-           tsdu->key_reference.key_type, tsdu->key_reference.key_index);
+            tsdu->key_reference.key_type, tsdu->key_reference.key_index);
     char buf[3 * SIZEOF(tsdu_d_call_connect_t, valid_rt)];
     LOGF("\t\tVALID_RT=%s\n",
             sprint_hex(buf, tsdu->valid_rt, SIZEOF(tsdu_d_call_connect_t, valid_rt)));
@@ -1914,7 +1914,7 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_TRAFFIC_ENABLED:
         case D_TRANSFER_NAK:
             LOG(WTF, "print not implemented: downlink codop=0x%02x",
-                tsdu->codop);
+                    tsdu->codop);
             d_unknown_print((tsdu_seecret_codop_t *)tsdu);
     }
 }
@@ -1924,7 +1924,7 @@ static void tsdu_u_print(const tsdu_t *tsdu)
     switch (tsdu->codop) {
         default:
             LOG(WTF, "print not implemented: uplink codop=0x%02x",
-                tsdu->codop);
+                    tsdu->codop);
     }
 }
 
