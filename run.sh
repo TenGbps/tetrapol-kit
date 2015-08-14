@@ -44,7 +44,7 @@ while true; do
 	read -p "Command: " CMD ARG1
 	case "$CMD" in
 		"a")
-			./demod/tetrapol_cli_auto_tune.py $ARG1
+			./demod/tetrapol_cli.py autotune $ARG1
 		;;
 
 		"d")
