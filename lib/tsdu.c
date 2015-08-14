@@ -1246,8 +1246,6 @@ static tsdu_d_registration_nak_t *d_registration_nak_decode(const uint8_t *data,
         return NULL;
     }
 
-    //FIXME ?
-    printf("bagr %i\n", len);
     CHECK_LEN(len, 10, tsdu);
 
     tsdu->cause                 = data[1];
