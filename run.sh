@@ -16,7 +16,7 @@ FREQ=393e6
 PPM=0
 GAIN=40
 SAMPLE_RATE=2000000
-OUTPUT_DIR=../tetrapol_dataxx
+OUTPUT_DIR=../tetrapol_rec
 
 if [ ! -d ${OUTPUT_DIR} ]; then
     echo "'${OUTPUT_DIR}' is not a directory, create it first"
