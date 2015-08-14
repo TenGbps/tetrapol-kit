@@ -48,11 +48,11 @@ while true; do
 		;;
 
 		"d")
-			./demod/tetrapol_cli_output_enabled.py close $ARG1
+			./demod/tetrapol_cli.py output close $ARG1
 		;;
 
 		"e")
-			./demod/tetrapol_cli_output_enabled.py open $ARG1
+			./demod/tetrapol_cli.py output open $ARG1
 		;;
 
 

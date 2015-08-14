@@ -7,8 +7,8 @@ import sys
 
 
 def print_help(prgname=''):
-    print("usage: %s [ help | %s ]" % (
-        prgname, ModAutoTune.name, ))
+    print("usage: %s [ help | %s | %s ]" % (
+        prgname, ModAutoTune.name, ModOutput.name))
 
 
 class ModBase:
@@ -35,6 +35,33 @@ class ModAutoTune(ModBase):
     autotune <CHANNEL>  - set channel to tune to (use -1 to disable autotune)""")
 
 
+class ModOutput:
+    name = 'output'
+
+    def __init__(self, args):
+        ModBase.__init__(self, args)
+
+        if len(args) < 2:
+            ModOutput.help()
+            return
+
+        if args[0] in ("true", "enable", "open", "on"):
+            enabled = True
+        elif args[0] in ("false", "disable", "close", "off"):
+            enabled = False
+        else:
+            ModOutput.help()
+            return
+        channels = list(set([int(c) for c in args[1:]]))
+        self.rpc.set_output_enabled(channels, enabled)
+
+    @staticmethod
+    def help():
+        print("""Enable/disable demodulator output(s):
+    output open <CHANNEL> [<CHANNEL> [<CHANNEL> ... ]]
+    output close <CHANNEL> [<CHANNEL> [<CHANNEL> ... ]]""")
+
+
 if __name__ == '__main__':
     if len (sys.argv) < 2:
         print_help(sys.argv[0])
@@ -42,6 +69,9 @@ if __name__ == '__main__':
 
     if sys.argv[1] == ModAutoTune.name:
         mod = ModAutoTune(sys.argv[2:])
+        exit(0)
+    if sys.argv[1] == ModOutput.name:
+        mod = ModOutput(sys.argv[2:])
         exit(0)
     else:
         print_help(sys.argv[0])
