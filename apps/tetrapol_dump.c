@@ -76,7 +76,7 @@ static int tetrapol_dump_loop(phys_ch_t *phys_ch, int fd)
 
 static void print_help(const char *prg_name)
 {
-                fprintf(stderr, "Usage: %s [-i IN_FILE_PATH] [-b { VHF | UHF } ]\n", prg_name);
+    fprintf(stderr, "Usage: %s [-i IN_FILE_PATH] [-b { VHF | UHF } ]\n", prg_name);
 }
 
 int main(int argc, char* argv[])
