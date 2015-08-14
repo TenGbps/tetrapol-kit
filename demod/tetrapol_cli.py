@@ -7,8 +7,8 @@ import sys
 
 
 def print_help(prgname=''):
-    print("usage: %s [ help | %s | %s ]" % (
-        prgname, ModAutoTune.name, ModOutput.name))
+    print("usage: %s [ help | %s | %s | %s ]" % (
+        prgname, ModAutoTune.name, ModOutput.name, ModPower.name))
 
 
 class ModBase:
@@ -62,6 +62,27 @@ class ModOutput:
     output close <CHANNEL> [<CHANNEL> [<CHANNEL> ... ]]""")
 
 
+class ModPower:
+    """Print out channels power level in dB."""
+    name = 'power'
+
+    def __init__(self, args):
+        ModBase.__init__(self, args)
+
+        if len(args) > 1:
+            pwr = self.rpc.get_channels_pwr([int(ch) for ch in args[1:]])
+        else:
+            pwr = self.rpc.get_channels_pwr()
+        pwr.sort(reverse=True)
+        for p in pwr:
+            print(p)
+
+    @staticmethod
+    def help():
+        print("""Print channel power levels
+    power [<CHANNEL> [<CHANNEL> ... ]]""")
+
+
 if __name__ == '__main__':
     if len (sys.argv) < 2:
         print_help(sys.argv[0])
@@ -72,6 +93,9 @@ if __name__ == '__main__':
         exit(0)
     if sys.argv[1] == ModOutput.name:
         mod = ModOutput(sys.argv[2:])
+        exit(0)
+    if sys.argv[1] == ModPower.name:
+        mod = ModPower(sys.argv[2:])
         exit(0)
     else:
         print_help(sys.argv[0])

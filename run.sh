@@ -62,7 +62,7 @@ while true; do
 
 		"l")
 			# list top 30 channels with strongest power
-			./demod/tetrapol_cli_pwr.py | head -n ${ARG1:-30}
+			./demod/tetrapol_cli.py power | head -n ${ARG1:-30}
 		;;
 
 		"x")
