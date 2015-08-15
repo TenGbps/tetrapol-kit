@@ -66,44 +66,67 @@ static int decode_data_frame(uint8_t *res, uint8_t *err, const uint8_t *in, int 
     return errs;
 }
 
-void data_block_decode_frame(data_block_t *data_blk, const uint8_t *data,
+void data_block_decode_frame1(data_block_t *data_blk, const uint8_t *data,
         int frame_no, frame_type_t fr_type)
 {
     data_blk->frame_no = frame_no;
+    data_blk->fr_type = fr_type;
     data_blk->nerrs = 0;
 
-    if (fr_type == FRAME_TYPE_AUTO) {
-        // TODO: try decode each type of frame
-        fr_type = FRAME_TYPE_DATA;
+    switch (fr_type) {
+        case FRAME_TYPE_AUTO:
+        case FRAME_TYPE_DATA:
+        case FRAME_TYPE_VOICE:
+            // decode first 52 bits of frame
+            data_blk->nerrs = decode_data_frame(
+                    data_blk->data, data_blk->err, data, 26);
+            if (fr_type == FRAME_TYPE_AUTO) {
+                data_blk->fr_type = data_blk->data[0];
+            }
+        break;
+
+        case FRAME_TYPE_HR_DATA:
+            // TODO
+            LOG(ERR, "decoding frame type %d not implemented", fr_type);
+            data_blk->nerrs = INT_MAX;
+            break;
+
+        default:
+            // TODO
+            LOG(ERR, "decoding frame type %d not implemented", fr_type);
+            data_blk->nerrs = INT_MAX;
     }
+}
 
-    if (fr_type == FRAME_TYPE_VOICE) {
-        // TODO (set fr_type = FRAME_TYPE_DATA) when stollen frame
-        LOG(ERR, "decoding frame type %d not implemented", fr_type);
-        data_blk->nerrs = INT_MAX;
-    }
+void data_block_decode_frame2(data_block_t *data_blk, const uint8_t *data)
+{
+    switch (data_blk->fr_type) {
+        case FRAME_TYPE_VOICE:
+            memcpy(data_blk->data + 26, data + 2*26, 100);
+            break;
 
-    data_blk->fr_type = fr_type;
+        case FRAME_TYPE_DATA:
+            // decode remaining part of frame
+            data_blk->nerrs += decode_data_frame(
+                    data_blk->data + 26, data_blk->err + 26, data + 2*26, 50);
+            if (!data_blk->nerrs && ( data_blk->data[74] || data_blk->data[75] )) {
+                LOG(WTF, "nonzero padding in frame %d: %d %d",
+                        data_blk->frame_no,
+                        data_blk->data[74], data_blk->data[75]);
+            }
+        break;
 
-    if (fr_type == FRAME_TYPE_DATA) {
-        // decode first 52 bits of frame
-        data_blk->nerrs = decode_data_frame(
-                data_blk->data, data_blk->err, data, 26);
-        // decode remaining part of frame
-        data_blk->nerrs += decode_data_frame(
-                data_blk->data + 26, data_blk->err + 26, data + 2*26, 50);
-        if (!data_blk->nerrs && ( data_blk->data[74] || data_blk->data[75] )) {
-            LOG(WTF, "nonzero padding in frame %d: %d %d", frame_no,
-                    data_blk->data[74], data_blk->data[75]);
-        }
-    } else if (fr_type == FRAME_TYPE_HR_DATA) {
-        // TODO
-        LOG(ERR, "decoding frame type %d not implemented", fr_type);
-        data_blk->nerrs = INT_MAX;
-    } else {
-        // TODO
-        LOG(ERR, "decoding frame type %d not implemented", fr_type);
-        data_blk->nerrs = INT_MAX;
+        case FRAME_TYPE_HR_DATA:
+            // TODO
+            LOG(ERR, "decoding frame type %d not implemented", data_blk->fr_type);
+            data_blk->nerrs = INT_MAX;
+            break;
+
+        case FRAME_TYPE_AUTO:
+        default:
+            // TODO
+            LOG(ERR, "decoding frame type %d not implemented", data_blk->fr_type);
+            data_blk->nerrs = INT_MAX;
     }
 }
 

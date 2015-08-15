@@ -33,7 +33,8 @@ static void test_frame_decode_data(void **state)
 
         data_block_t res;
         memset(&res, 3, sizeof(res));
-        data_block_decode_frame(&res, data, FRAME_NO_UNKNOWN, FRAME_TYPE_DATA);
+        data_block_decode_frame1(&res, data, FRAME_NO_UNKNOWN, FRAME_TYPE_DATA);
+        data_block_decode_frame2(&res, data);
         assert_memory_equal(res_exp, res.data, sizeof(res_exp));
         assert_int_equal(res.nerrs, 0);
     }
@@ -60,7 +61,8 @@ static void test_frame_decode_data(void **state)
 
         data_block_t res;
         memset(&res, 3, sizeof(res));
-        data_block_decode_frame(&res, data, FRAME_NO_UNKNOWN, FRAME_TYPE_DATA);
+        data_block_decode_frame1(&res, data, FRAME_NO_UNKNOWN, FRAME_TYPE_DATA);
+        data_block_decode_frame2(&res, data);
         assert_memory_equal(res_exp, res.data, sizeof(res_exp));
         assert_int_equal(res.nerrs, 0);
     }
@@ -87,7 +89,8 @@ static void test_frame_decode_data(void **state)
 
         data_block_t res;
         memset(&res, 3, sizeof(res));
-        data_block_decode_frame(&res, data, FRAME_NO_UNKNOWN, FRAME_TYPE_DATA);
+        data_block_decode_frame1(&res, data, FRAME_NO_UNKNOWN, FRAME_TYPE_DATA);
+        data_block_decode_frame2(&res, data);
         assert_memory_equal(res_exp, res.data, sizeof(res_exp));
         assert_int_equal(res.nerrs, 0);
     }

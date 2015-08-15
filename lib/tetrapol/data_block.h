@@ -38,9 +38,20 @@ typedef struct {
 bool data_block_check_crc(data_block_t *data_blk);
 
 /**
-  Decode data from frame.
+  Decode frame, decodes only firts part of frame, common to data and voice
+  frames.
 
+  @param data_blk pointer to struct data_block_t for storing result.
   @param data Should contains frame data (withought synchronization block).
   */
-void data_block_decode_frame(data_block_t *data_blk, const uint8_t *data,
+void data_block_decode_frame1(data_block_t *data_blk, const uint8_t *data,
         int frame_no, frame_type_t fr_type);
+
+/**
+  Decode remaining part of frame.
+
+  @param data_blk Block initialized by data_block_decode_frame1.
+  @param data Input, frame data.
+  */
+void data_block_decode_frame2(data_block_t *data_blk, const uint8_t *data);
+

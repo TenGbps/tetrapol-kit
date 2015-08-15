@@ -593,12 +593,15 @@ static void detect_scr(phys_ch_t *phys_ch, const frame_t *f)
         if (phys_ch->band == TETRAPOL_BAND_UHF) {
             frame_diff_dec(&f_);
         }
-        uint8_t deint_buf[FRAME_DATA_LEN];
-        frame_deinterleave1(&f_, deint_buf, phys_ch->band);
-        frame_deinterleave2(&f_, deint_buf, phys_ch->band, FRAME_TYPE_DATA);
 
+        uint8_t deint_buf[FRAME_DATA_LEN];
         data_block_t data_blk;
-        data_block_decode_frame(&data_blk, f_.data, f_.frame_no, FRAME_TYPE_AUTO);
+
+        frame_deinterleave1(&f_, deint_buf, phys_ch->band);
+        data_block_decode_frame1(&data_blk, f_.data, f_.frame_no, FRAME_TYPE_AUTO);
+        frame_deinterleave2(&f_, deint_buf, phys_ch->band, data_blk.fr_type);
+        data_block_decode_frame2(&data_blk, f_.data);
+
         if (data_blk.nerrs) {
             phys_ch->scr_stat[scr] -= 2;
             if (phys_ch->scr_stat[scr] < 0) {
@@ -661,12 +664,14 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
     if (phys_ch->band == TETRAPOL_BAND_UHF) {
         frame_diff_dec(f);
     }
-    uint8_t deint_buf[FRAME_DATA_LEN];
-    frame_deinterleave1(f, deint_buf, phys_ch->band);
-    frame_deinterleave2(f, deint_buf, phys_ch->band, FRAME_TYPE_DATA);
 
+    uint8_t deint_buf[FRAME_DATA_LEN];
     data_block_t data_blk;
-    data_block_decode_frame(&data_blk, f->data, f->frame_no, FRAME_TYPE_DATA);
+
+    frame_deinterleave1(f, deint_buf, phys_ch->band);
+    data_block_decode_frame1(&data_blk, f->data, f->frame_no, FRAME_TYPE_DATA);
+    frame_deinterleave2(f, deint_buf, phys_ch->band, FRAME_TYPE_DATA);
+    data_block_decode_frame2(&data_blk, f->data);
     LOG_IF(DBG) {
         if (!data_blk.nerrs) {
             int asbx = data_blk.data[67];
