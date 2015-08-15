@@ -95,16 +95,12 @@ static void command_parse(command_t *cmd, uint8_t data)
 
 bool hdlc_frame_parse(hdlc_frame_t *hdlc_frame, const uint8_t *data, int nbits)
 {
-    if (!check_fcs(data, nbits)) {
-        // TODO: check for stuffing frames, detect other broken frames
-        return false;
-    }
-
     addr_parse(&hdlc_frame->addr, data, 0);
     command_parse(&hdlc_frame->command, data[2]);
-    // nbits - HDLC_header_nbits - FCS_len
+    // nbits - HDLC_header_nbits - FCS_nbits
     hdlc_frame->nbits = nbits - 3*8 - 2*8;
-    memcpy(hdlc_frame->data, data + 3, (hdlc_frame->nbits + 7) / 8);
+    // copy FCS behind the data for future use
+    memcpy(hdlc_frame->data, data + 3, (hdlc_frame->nbits + 2*8 + 7) / 8);
 
-    return true;
+    return check_fcs(data, nbits);
 }
