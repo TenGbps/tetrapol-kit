@@ -1,4 +1,4 @@
-#define LOG_EFIX "hdlc"
+#define LOG_PREFIX "hdlc"
 #include <tetrapol/log.h>
 #include <tetrapol/hdlc_frame.h>
 #include <tetrapol/bit_utils.h>
