@@ -20,6 +20,7 @@ add_library (tetrapol
     hdlc_frame.c
     link.c
     log.c
+    lsdu_cd.c
     misc.c
     phys_ch.c
     pch.c
@@ -84,6 +85,7 @@ add_executable (test_phys_ch
     hdlc_frame.c
     link.c
     log.c
+    lsdu_cd.c
     misc.c
     pch.c
     rch.c
