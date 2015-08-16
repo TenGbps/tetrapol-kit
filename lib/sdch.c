@@ -70,6 +70,12 @@ bool sdch_dl_push_data_frame(sdch_t *sdch, data_block_t *data_blk)
 
     if (!hdlc_frame_parse(&hdlc_fr, data, size)) {
         // PAS 0001-3-3 7.4.1.9 stuffing frames are dropped, FCS does not match
+        int idx = hdlc_frame_stuffing_idx(&hdlc_fr);
+        if (idx == -1) {
+            LOG(INFO, "HDLC: broken frame");
+        } else {
+            LOG(INFO, "HDLC: stuffing idx=%d", idx);
+        }
         return false;
     }
 
