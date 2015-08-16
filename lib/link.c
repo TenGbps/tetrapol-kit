@@ -2,6 +2,7 @@
 
 #include <tetrapol/link.h>
 #include <tetrapol/log.h>
+#include <tetrapol/lsdu_cd.h>
 #include <tetrapol/misc.h>
 #include <tetrapol/tpdu.h>
 
@@ -173,7 +174,13 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
             addr_print(&hdlc_fr->addr);
             LOGF("\n");
         }
-        LOG(ERR, "TODO CMD UI_CD");
+
+        lsdu_cd_t *lsdu;
+        if (!lsdu_cd_decode(hdlc_fr->data, hdlc_fr->nbits / 8, &lsdu)) {
+            // LSDU should be send upwards like TSDU
+            lsdu_cd_print(lsdu);
+            lsdu_cd_destroy(lsdu);
+        }
         return 0;
     }
 
