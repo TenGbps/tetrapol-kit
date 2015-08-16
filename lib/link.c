@@ -112,10 +112,34 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
         return 0;
     }
 
+    if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_UI_VCH) {
+        LOG_IF(DBG) {
+            char buf[hdlc_fr->nbits / 8 * 3];
+            LOG_("HDLC info=%s\n",
+                    sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
+            LOGF("\t");
+            addr_print(&hdlc_fr->addr);
+            LOGF("\n");
+        }
+        LOG(ERR, "TODO CMD UI_VCH");
+        return 0;
+    }
+
+    if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_UI_CD) {
+        LOG_IF(DBG) {
+            char buf[hdlc_fr->nbits / 8 * 3];
+            LOG_("HDLC info=%s\n",
+                    sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
+            LOGF("\t");
+            addr_print(&hdlc_fr->addr);
+            LOGF("\n");
+        }
+        LOG(ERR, "TODO CMD UI_CD");
+        return 0;
+    }
+
     LOG(INFO, "TODO CMD 0x%02x", hdlc_fr->command.cmd);
 
-    // TODO
-    return -1;
     return -1;
 }
 
