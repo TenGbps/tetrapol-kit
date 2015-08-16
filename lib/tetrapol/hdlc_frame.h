@@ -86,3 +86,10 @@ extern const addr_t addr_all;
   */
 bool hdlc_frame_parse(hdlc_frame_t *hdlc_frame, const uint8_t *data, int len);
 
+/**
+  @param hdlc_frame HDLC frame to check (stuffing frames have bad FCS)
+
+  @return index of stuffing pattern if stuffing frame is detected, -1 otherwise
+  */
+int hdlc_frame_stuffing_idx(const hdlc_frame_t *hdlc_frame);
+
