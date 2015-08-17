@@ -142,6 +142,13 @@ phys_ch_t *tetrapol_phys_ch_create(int band, int radio_ch_type)
         timer_register(phys_ch->timer, sdch_tick, phys_ch->sdch);
     }
 
+    if (radio_ch_type == RADIO_CH_TYPE_TRAFFIC) {
+        phys_ch->sdch = sdch_create();
+        if (!phys_ch->sdch) {
+            goto err_sdch;
+        }
+    }
+
     return phys_ch;
 
 err_sdch:
@@ -166,6 +173,9 @@ void tetrapol_phys_ch_destroy(phys_ch_t *phys_ch)
         bch_destroy(phys_ch->bch);
         pch_destroy(phys_ch->pch);
         rch_destroy(phys_ch->rch);
+        sdch_destroy(phys_ch->sdch);
+    }
+    if (phys_ch->radio_ch_type == RADIO_CH_TYPE_TRAFFIC) {
         sdch_destroy(phys_ch->sdch);
     }
     timer_destroy(phys_ch->timer);
@@ -370,7 +380,9 @@ int tetrapol_phys_ch_process(phys_ch_t *phys_ch)
         }
         LOG(INFO, "Frame sync found");
         phys_ch->frame_no = FRAME_NO_UNKNOWN;
-        pch_reset(phys_ch->pch);
+        if (phys_ch->pch) {
+            pch_reset(phys_ch->pch);
+        }
     }
 
     int r = 1;
@@ -635,7 +647,7 @@ static void detect_scr(phys_ch_t *phys_ch, const frame_t *f)
         }
     }
     if (phys_ch->scr_stat[scr_max] - phys_ch->scr_confidence > phys_ch->scr_stat[scr_max2]) {
-        phys_ch->scr = scr_max;
+        tetrapol_phys_ch_set_scr(phys_ch, scr_max);
         LOG(INFO, "SCR detected %d", scr_max);
     }
 
@@ -767,7 +779,53 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
 
 static int process_traffic_radio_ch(phys_ch_t *phys_ch, frame_t *f)
 {
-    // TODO
-    LOG(ERR, "process_traffic_radio_ch() not implemented");
+    const int scr = (phys_ch->scr == PHYS_CH_SCR_DETECT) ?
+        phys_ch->scr_guess : phys_ch->scr;
+
+    bool crc_ok;
+    data_block_t data_blk;
+    uint8_t deint_buf[FRAME_DATA_LEN];
+
+    frame_descramble(f, scr);
+    if (phys_ch->band == TETRAPOL_BAND_UHF) {
+        frame_diff_dec(f);
+    }
+
+    frame_deinterleave1(f, deint_buf, phys_ch->band);
+    data_block_decode_frame1(&data_blk, f->data, f->frame_no, FRAME_TYPE_AUTO);
+    frame_deinterleave2(f, deint_buf, phys_ch->band, data_blk.fr_type);
+    data_block_decode_frame2(&data_blk, f->data);
+
+    crc_ok = data_block_check_crc(&data_blk);
+
+    // TODO: separate VCH, SCH, SCH_TI
+
+    if (data_blk.nerrs == 0 && crc_ok && (data_blk.fr_type == FRAME_TYPE_VOICE)) {
+        LOG(INFO,"VOICE FRAME scr=%i", scr);
+    }
+
+    else if (data_blk.nerrs == 0 && crc_ok && (data_blk.fr_type == FRAME_TYPE_DATA)) {
+        LOG(INFO,"DATA FRAME scr=%i", scr);
+
+        if (sdch_dl_push_data_frame(phys_ch->sdch, &data_blk)) {
+            tsdu_t *tsdu = sdch_get_tsdu(phys_ch->sdch);
+            if (tsdu) {
+                LOG_IF(INFO) {
+                    LOG_("\n");
+                    tsdu_print(tsdu);
+                }
+            }
+            tsdu_destroy(tsdu);
+            return 0;
+        }
+    }
+
+    else {
+        if (phys_ch->scr != PHYS_CH_SCR_DETECT) {
+            phys_ch->scr = PHYS_CH_SCR_DETECT;
+            phys_ch->scr_stat[scr] += 3;
+        }
+    }
+
     return -1;
 }
