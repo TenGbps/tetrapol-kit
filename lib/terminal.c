@@ -58,7 +58,7 @@ static inline void addr_free(gpointer data)
     free(data);
 }
 
-gint addr_cmp(gconstpointer _a1, gconstpointer _a2, gpointer user_data)
+static gint addr_cmp(gconstpointer _a1, gconstpointer _a2, gpointer user_data)
 {
     const addr_t *a1 = _a1;
     const addr_t *a2 = _a2;
