@@ -76,19 +76,21 @@ static int tetrapol_dump_loop(phys_ch_t *phys_ch, int fd)
 
 static void print_help(const char *prg_name)
 {
-    fprintf(stderr, "Usage: %s [-i IN_FILE_PATH] [-b { VHF | UHF } ]\n", prg_name);
+    fprintf(stderr,
+            "Usage: %s [-i IN_FILE_PATH] [-b { VHF | UHF } ] [ -t { CCH | TCH } ]\n",
+            prg_name);
 }
 
 int main(int argc, char* argv[])
 {
     // TODO: move to config
     int band = TETRAPOL_BAND_UHF;
-    const int radio_ch_type = RADIO_CH_TYPE_CONTROL;
+    int radio_ch_type = RADIO_CH_TYPE_CONTROL;
 
     const char *in = NULL;
 
     int opt;
-    while ((opt = getopt(argc, argv, "b:hi:")) != -1) {
+    while ((opt = getopt(argc, argv, "b:hi:t:")) != -1) {
         switch (opt) {
             case 'b':
                 if (!strcmp(optarg, "VHF")) {
@@ -103,6 +105,17 @@ int main(int argc, char* argv[])
 
             case 'i':
                 in = optarg;
+                break;
+
+            case 't':
+                if (!strcmp("CCH", optarg)) {
+                    radio_ch_type = RADIO_CH_TYPE_CONTROL;
+                } else if (!strcmp("TCH", optarg)) {
+                    radio_ch_type = RADIO_CH_TYPE_TRAFFIC;
+                } else {
+                    print_help(argv[0]);
+                    exit(EXIT_FAILURE);
+                }
                 break;
 
             case 'h':
