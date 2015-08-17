@@ -1,17 +1,15 @@
 #define LOG_PREFIX "terminal"
 
 #include <tetrapol/log.h>
-#include <tetrapol/misc.h>
 #include <tetrapol/terminal.h>
-#include <tetrapol/tpdu.h>
+#include <tetrapol/link.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <glib.h>
 
 struct terminal_priv_t {
-    tpdu_t *tpdu;
-    tpdu_ui_t *tpdu_ui;
+    link_t *link;
 };
 
 struct terminal_list_priv_t {
@@ -24,17 +22,9 @@ static terminal_t* terminal_create(void)
     if (!term) {
         return NULL;
     }
-    memset(term, 0, sizeof(terminal_t));
 
-    term->tpdu_ui = tpdu_ui_create(FRAME_TYPE_DATA);
-    if (!term->tpdu_ui) {
-        free(term);
-        return NULL;
-    }
-
-    term->tpdu = tpdu_create();
-    if (!term->tpdu) {
-        tpdu_ui_destroy(term->tpdu_ui);
+    term->link = link_create();
+    if (!term->link) {
         free(term);
         return NULL;
     }
@@ -44,11 +34,11 @@ static terminal_t* terminal_create(void)
 
 static void terminal_destroy(terminal_t *term)
 {
-    if (term) {
-        tpdu_destroy(term->tpdu);
-        tpdu_ui_destroy(term->tpdu_ui);
+    if (!term) {
+        return;
     }
 
+    link_destroy(term->link);
     free(term);
 }
 
@@ -60,74 +50,7 @@ static inline void terminal_destroy_(gpointer term)
 int terminal_push_hdlc_frame(terminal_t* term, const hdlc_frame_t *hdlc_fr,
         tsdu_t **tsdu)
 {
-    if (!tsdu) {
-        LOG(ERR, "terminal_push_hdlc_frame() tsdu == NULL");
-        return -1;
-    }
-    *tsdu = NULL;
-
-    if (hdlc_fr->command.cmd == COMMAND_INFORMATION ||
-            hdlc_fr->command.cmd == COMMAND_SUPERVISION_RR ||
-            hdlc_fr->command.cmd == COMMAND_SUPERVISION_RNR ||
-            hdlc_fr->command.cmd == COMMAND_SUPERVISION_REJ) {
-        return tpdu_push_hdlc_frame(term->tpdu, hdlc_fr, tsdu);
-    }
-
-    if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_UI) {
-        LOG_IF(DBG) {
-            char buf[hdlc_fr->nbits / 8 * 3];
-            LOG_("HDLC info=%s\n",
-                    sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
-            LOGF("\t");
-            addr_print(&hdlc_fr->addr);
-            LOGF("\n");
-        }
-        return tpdu_ui_push_hdlc_frame(term->tpdu_ui, hdlc_fr, tsdu);
-    }
-
-    if (hdlc_fr->command.cmd == COMMAND_DACH) {
-        LOG_IF(INFO) {
-            LOG_("\n\tcmd ACK_DACH\n\taddr: ");
-            addr_print(&hdlc_fr->addr);
-            LOGF("\n");
-        }
-        if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
-            LOG_IF(WTF) {
-                char buf[hdlc_fr->nbits / 8 * 3];
-                LOG_("cmd: ACK_DACH, nonzero stuffing: %s\n",
-                        sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
-            }
-        }
-
-        LOG(ERR, "TODO: ACK_DACH");
-        // TODO: report ACK_DACH to application layer
-        return 0;
-    }
-
-    if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_SNRM) {
-        LOG_IF(INFO) {
-            LOG_("\n\tcmd SNMR\n\taddr: ");
-            addr_print(&hdlc_fr->addr);
-            LOGF("\n");
-        }
-
-        if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
-            LOG_IF(WTF) {
-                char buf[hdlc_fr->nbits / 8 * 3];
-                LOG_("cmd: SNMR, nonzero stuffing: %s\n",
-                        sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
-            }
-        }
-
-        LOG(ERR, "TODO: SNMR");
-        // TODO: report SNMR to upper layer
-        return 0;
-    }
-
-    LOG(INFO, "TODO CMD 0x%02x", hdlc_fr->command.cmd);
-
-    // TODO
-    return -1;
+    return link_push_hdlc_frame(term->link, hdlc_fr, tsdu);
 }
 
 static inline void addr_free(gpointer data)
@@ -225,7 +148,7 @@ static gboolean terminal_tick(gpointer key, gpointer value,
     terminal_t *term = value;
     const timeval_t *tv = data;
 
-    tpdu_du_tick(tv, term->tpdu_ui);
+    link_tick(tv, term->link);
 
     return false;
 }

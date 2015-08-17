@@ -73,6 +73,7 @@ add_executable (test_phys_ch
     data_block.c
     data_frame.c
     hdlc_frame.c
+    link.c
     log.c
     misc.c
     pch.c
