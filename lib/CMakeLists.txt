@@ -13,6 +13,7 @@ add_library (tetrapol
     data_block.c
     data_frame.c
     hdlc_frame.c
+    link.c
     log.c
     misc.c
     phys_ch.c
@@ -29,6 +30,7 @@ add_library (tetrapol
     tetrapol/data_block.h
     tetrapol/data_frame.h
     tetrapol/hdlc_frame.h
+    tetrapol/link.h
     tetrapol/log.h
     tetrapol/misc.h
     tetrapol/phys_ch.h
