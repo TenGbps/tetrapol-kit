@@ -801,11 +801,11 @@ static int process_traffic_radio_ch(phys_ch_t *phys_ch, frame_t *f)
     // TODO: separate VCH, SCH, SCH_TI
 
     if (data_blk.nerrs == 0 && crc_ok && (data_blk.fr_type == FRAME_TYPE_VOICE)) {
-        LOG(INFO,"VOICE FRAME scr=%i", scr);
+        LOG(INFO,"VOICE FRAME scr=%i asb=%i", scr, data_block_get_asb(&data_blk).xy);
     }
 
     else if (data_blk.nerrs == 0 && crc_ok && (data_blk.fr_type == FRAME_TYPE_DATA)) {
-        LOG(INFO,"DATA FRAME scr=%i", scr);
+        LOG(INFO,"DATA FRAME scr=%i, asb=%i", scr, data_block_get_asb(&data_blk).xy);
 
         if (sdch_dl_push_data_frame(phys_ch->sdch, &data_blk)) {
             tsdu_t *tsdu = sdch_get_tsdu(phys_ch->sdch);

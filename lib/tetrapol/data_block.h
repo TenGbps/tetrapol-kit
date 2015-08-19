@@ -16,6 +16,14 @@ typedef enum {
     FRAME_TYPE_SCH_TI,
 } frame_type_t;
 
+typedef union {
+    struct {
+        unsigned int y : 1;
+        unsigned int x : 1;
+    };
+    unsigned int xy : 2;
+} asb_t;
+
 // now only data frame, in future might comprise different types of frame
 typedef struct {
     frame_type_t fr_type;
@@ -54,4 +62,6 @@ void data_block_decode_frame1(data_block_t *data_blk, const uint8_t *data,
   @param data Input, frame data.
   */
 void data_block_decode_frame2(data_block_t *data_blk, const uint8_t *data);
+
+asb_t data_block_get_asb(data_block_t *data_blk);
 

@@ -155,3 +155,21 @@ bool data_block_check_crc(data_block_t *data_blk)
     }
     return false;
 }
+
+asb_t data_block_get_asb(data_block_t *data_blk)
+{
+    asb_t asb;
+
+    if (data_blk->fr_type == FRAME_TYPE_DATA) {
+        asb.x = data_blk->data[67];
+        asb.y = data_blk->data[68];
+    } else if (data_blk->fr_type == FRAME_TYPE_VOICE) {
+        asb.x = data_blk->data[21];
+        asb.y = data_blk->data[22];
+    } else {
+        LOG(WTF, "Invalid frame type for get_ASB: %d", data_blk->fr_type);
+        asb.xy = 0x3;
+    }
+
+    return asb;
+}
