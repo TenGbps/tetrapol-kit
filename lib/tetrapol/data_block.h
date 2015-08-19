@@ -31,7 +31,7 @@ typedef struct {
     uint8_t data[126];
     union {
         uint8_t err[74];
-        uint8_t _tmpe[76];  // extra space, data frame have 2 stuffing bist
+        uint8_t _tmpe[76];  // extra space, data frame have 2 stuffing bits
     };
 } data_block_t;
 
