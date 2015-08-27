@@ -62,7 +62,9 @@ class tetrapol_multi_rx(gr.top_block):
         self.xmlrpc_server_0 = SimpleXMLRPCServer.SimpleXMLRPCServer(
                 ("localhost", listen_port), allow_none=True)
         self.xmlrpc_server_0.register_instance(self)
-        threading.Thread(target=self.xmlrpc_server_0.serve_forever).start()
+        self.rpc = threading.Thread(target=self.xmlrpc_server_0.serve_forever)
+        self.rpc.daemon = True
+        self.rpc.start()
 
         ##################################################
         # Blocks - RX, demod, sink

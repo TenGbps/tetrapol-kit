@@ -83,6 +83,23 @@ class ModPower:
     power [<CHANNEL> [<CHANNEL> ... ]]""")
 
 
+class ModStop:
+    """Stop server."""
+    name = 'stop'
+
+    def __init__(self, args):
+        ModBase.__init__(self, args)
+        if len(args) > 1:
+            self.help()
+            return
+        self.rpc.stop()
+
+    @staticmethod
+    def help():
+        print("""Stop the server
+    stop""")
+
+
 if __name__ == '__main__':
     if len (sys.argv) < 2:
         print_help(sys.argv[0])
@@ -96,6 +113,9 @@ if __name__ == '__main__':
         exit(0)
     if sys.argv[1] == ModPower.name:
         mod = ModPower(sys.argv[2:])
+        exit(0)
+    if sys.argv[1] == ModStop.name:
+        mod = ModStop(sys.argv[2:])
         exit(0)
     else:
         print_help(sys.argv[0])
