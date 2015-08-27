@@ -25,7 +25,7 @@ import time
 class tetrapol_multi_rx(gr.top_block):
 
     def __init__(self, freq=394e6, gain=0, sample_rate=2400000, args="",
-            channel_bw=12500, listen_port=60100, ppm=0,
+            channel_bw=12500, listen="60100", ppm=0,
             output="channel%d.bits", output_offset=None, auto_tune=-1):
         gr.top_block.__init__(self, "TETRAPOL multichannel reciever")
 
@@ -37,7 +37,12 @@ class tetrapol_multi_rx(gr.top_block):
         self.sample_rate = sample_rate
         self.args = args
         self.channel_bw = channel_bw
-        self.listen_port = listen_port
+        if listen.find(':') != -1:
+            listen = listen.rsplit(':', 1)
+            self.listen = (listen[0], int(listen[1]))
+            pass
+        else:
+            self.listen = ('localhost', int(listen))
         self.ppm = ppm
         self.output = output
         self.auto_tune = auto_tune
@@ -60,7 +65,7 @@ class tetrapol_multi_rx(gr.top_block):
         # Blocks - RPC server
         ##################################################
         self.xmlrpc_server_0 = SimpleXMLRPCServer.SimpleXMLRPCServer(
-                ("localhost", listen_port), allow_none=True)
+                self.listen, allow_none=True)
         self.xmlrpc_server_0.register_instance(self)
         self.rpc = threading.Thread(target=self.xmlrpc_server_0.serve_forever)
         self.rpc.daemon = True
@@ -219,8 +224,8 @@ class tetrapol_multi_rx(gr.top_block):
     def get_channel_bw(self):
         return self.channel_bw
 
-    def get_listen_port(self):
-        return self.listen_port
+    def get_listen(self):
+        return self.listen
 
     def get_ppm(self):
         return self.ppm
@@ -261,8 +266,8 @@ if __name__ == '__main__':
             help="Set osmo-sdr arguments [default=%default]")
     parser.add_option("-b", "--channel-bw", dest="channel_bw", type="intx",
             default=12500, help="Set Channel band width [default=%default]")
-    parser.add_option("-l", "--listen-port", dest="listen_port", type="intx",
-            default=60100, help="Set Server port [default=%default]")
+    parser.add_option("-l", "--listen", dest="listen",
+            default="localhost:60100", help="Server RPC [host:]port [default=%default]")
     parser.add_option("-p", "--ppm", dest="ppm", type="eng_float",
             default=eng_notation.num_to_str(0),
             help="Set Frequency correction [default=%default]")
@@ -279,7 +284,7 @@ if __name__ == '__main__':
         sample_rate=options.sample_rate,
         args=options.args,
         channel_bw=options.channel_bw,
-        listen_port=options.listen_port,
+        listen=options.listen,
         ppm=options.ppm,
         output=options.output,
         output_offset=options.output_offset,
