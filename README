@@ -1,12 +1,22 @@
-TETRAPOL receiver
+TETRAPOL radio processing kit.
 
-For lisense see file COPYING.
+For license see file COPYING.
 
-This is set of software tool which together with SDR receiver allows:
-  - find TETRAPOL control channels and identify base stations
-  - TODO: recieve TETRAPOL downlink transmissions
+The intention is to create scientific research tool for analysis of TETRAPOL
+radio networks and its warious aspects.
+The project is under constant development, there is no stable release.
+
+With this tools You should be able:
+  - find TETRAPOL radio channels and identify base stations
+  - recieve TETRAPOL downlink transmissions
+  - monitor traffic
+  - receive text messages
   - TODO: detect and decode uplink transmission
-  - TODO: decode recieved audio
+  - TODO: decode received audio
+  - TODO: detect and receive direct calls
+
+Tools are in variou stage of development and usability, compoments marked
+TODO are not implemented at all.
 
 == Installation
 
@@ -23,12 +33,13 @@ make
 
 == Usage
 
-# 1) edit ruh.sh as needed
-# 2) connect SDR (RTL-SDR, BladeRF, HackRF or any supported by osmo-sdr)
-# 3) run it
+  * edit ruh.sh as needed
+  * connect SDR (RTL-SDR, BladeRF, HackRF or any other supported by osmo-sdr)
+  * run the script
+
 ./run.sh
 
-See file run.sh for example of usage. This script should give you basic
-inspiration what to do and how to use this tool. If you feel totaly lost
-you should try harder or start playing with something simpler.
+See file run.sh for example of tools usage. This script should give you basic
+inspiration how to use individual tools. If you feel totaly lost you should
+try harder or start playing with something simpler.
 
