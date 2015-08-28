@@ -100,6 +100,27 @@ class ModStop:
     stop""")
 
 
+class ModStatus:
+    """Get server status (running/stopped)."""
+    name = 'status'
+
+    def __init__(self, args):
+        ModBase.__init__(self, args)
+        if len(args) > 1:
+            self.help()
+            return
+        try:
+            self.rpc.get_auto_tune()
+            exit(0)
+        except ConnectionRefusedError:
+            exit(2)
+
+    @staticmethod
+    def help():
+        print("""Return server status
+    status""")
+
+
 if __name__ == '__main__':
     if len (sys.argv) < 2:
         print_help(sys.argv[0])
@@ -116,6 +137,9 @@ if __name__ == '__main__':
         exit(0)
     if sys.argv[1] == ModStop.name:
         mod = ModStop(sys.argv[2:])
+        exit(0)
+    if sys.argv[1] == ModStatus.name:
+        mod = ModStatus(sys.argv[2:])
         exit(0)
     else:
         print_help(sys.argv[0])
