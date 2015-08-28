@@ -93,8 +93,8 @@ static uint8_t scramb_table[127] = {
 };
 
 static int process_frame(phys_ch_t *phys_ch, frame_t *frame);
-static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f);
-static int process_traffic_radio_ch(phys_ch_t *phys_ch, frame_t *f);
+static int process_control_radio_ch(phys_ch_t *phys_ch, data_block_t *data_blk);
+static int process_traffic_radio_ch(phys_ch_t *phys_ch, data_block_t *data_blk);
 
 phys_ch_t *tetrapol_phys_ch_create(int band, int radio_ch_type)
 {
@@ -668,11 +668,23 @@ static int process_frame(phys_ch_t *phys_ch, frame_t *f)
         frame_diff_dec(f);
     }
 
+    uint8_t deint_buf[FRAME_DATA_LEN];
+    data_block_t data_blk;
+
+    const int fr_type = (phys_ch->radio_ch_type == RADIO_CH_TYPE_CONTROL) ?
+        FRAME_TYPE_DATA : FRAME_TYPE_AUTO;
+    frame_deinterleave1(f, deint_buf, phys_ch->band);
+    data_block_decode_frame1(&data_blk, f->data, f->frame_no, fr_type);
+    frame_deinterleave2(f, deint_buf, phys_ch->band, data_blk.fr_type);
+    data_block_decode_frame2(&data_blk, f->data);
+
     if (phys_ch->radio_ch_type == RADIO_CH_TYPE_CONTROL) {
-        return process_control_radio_ch(phys_ch, f);
+        const int r = process_control_radio_ch(phys_ch, &data_blk);
+        f->frame_no = data_blk.frame_no;
+        return r;
     }
 
-    if (!process_traffic_radio_ch(phys_ch, f)) {
+    if (!process_traffic_radio_ch(phys_ch, &data_blk)) {
         return 0;
     }
 
@@ -685,34 +697,27 @@ static int process_frame(phys_ch_t *phys_ch, frame_t *f)
     return 0;
 }
 
-static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
+static int process_control_radio_ch(phys_ch_t *phys_ch, data_block_t *data_blk)
 {
-    uint8_t deint_buf[FRAME_DATA_LEN];
-    data_block_t data_blk;
-
-    frame_deinterleave1(f, deint_buf, phys_ch->band);
-    data_block_decode_frame1(&data_blk, f->data, f->frame_no, FRAME_TYPE_DATA);
-    frame_deinterleave2(f, deint_buf, phys_ch->band, FRAME_TYPE_DATA);
-    data_block_decode_frame2(&data_blk, f->data);
     LOG_IF(DBG) {
-        if (!data_blk.nerrs) {
-            int asbx = data_blk.data[67];
-            int asby = data_blk.data[68];
-            int fn0 = data_blk.data[1];
-            int fn1 = data_blk.data[2];
+        if (!data_blk->nerrs) {
+            int asbx = data_blk->data[67];
+            int asby = data_blk->data[68];
+            int fn0 = data_blk->data[1];
+            int fn1 = data_blk->data[2];
             LOG_("OK frame_no=%03i fn=%i%i asb=%i%i data=",
-                    data_blk.frame_no, fn1, fn0, asbx, asby);
+                    data_blk->frame_no, fn1, fn0, asbx, asby);
         } else {
-            LOG_("ERR frame_no=%03i data=", data_blk.frame_no);
+            LOG_("ERR frame_no=%03i data=", data_blk->frame_no);
         }
         char buf[64*3];
-        LOGF("\t%s\n", sprint_hex(buf, data_blk.data + 3, 64));
+        LOGF("\t%s\n", sprint_hex(buf, data_blk->data + 3, 64));
     }
 
     // For decoding BCH are used always all frames, not only 0-3, 100-103
     // Firs of all for detection BCH (frame 0/100 in superblock).
     // The second reason is just to check frame synchronization.
-    if (bch_push_data_block(phys_ch->bch, &data_blk)) {
+    if (bch_push_data_block(phys_ch->bch, data_blk)) {
         tsdu_d_system_info_t *tsdu = bch_get_tsdu(phys_ch->bch);
         if (tsdu) {
             phys_ch->cch_mux_type = tsdu->cell_config.mux_type;
@@ -726,23 +731,22 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
                 tsdu_print(&tsdu->base);
             }
             tsdu_destroy(&tsdu->base);
-            f->frame_no = data_blk.frame_no;
             return 0;
         }
     }
 
-    if (f->frame_no == FRAME_NO_UNKNOWN) {
+    if (data_blk->frame_no == FRAME_NO_UNKNOWN) {
         return 0;
     }
 
-    const int fn_mod = f->frame_no % 100;
+    const int fn_mod = data_blk->frame_no % 100;
     // BCH is processed above
     if (fn_mod >= 0 && fn_mod <= 3) {
         return 0;
     }
 
     if (fn_mod == 98 || fn_mod == 99) {
-        if (pch_push_data_block(phys_ch->pch, &data_blk)) {
+        if (pch_push_data_block(phys_ch->pch, data_blk)) {
             LOG_IF(INFO) {
                 LOG_("\n");
                 pch_print(phys_ch->pch);
@@ -752,7 +756,7 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
     }
     if (phys_ch->cch_mux_type == CELL_CONFIG_MUX_TYPE_TYPE_2) {
         if (fn_mod == 48 || fn_mod == 49) {
-            if (pch_push_data_block(phys_ch->pch, &data_blk)) {
+            if (pch_push_data_block(phys_ch->pch, data_blk)) {
                 LOG_IF(INFO) {
                     LOG_("\n");
                     pch_print(phys_ch->pch);
@@ -762,8 +766,8 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
         }
     }
 
-    if (f->frame_no % 25 == 14) {
-        if (rch_push_data_block(phys_ch->rch, &data_blk)) {
+    if (data_blk->frame_no % 25 == 14) {
+        if (rch_push_data_block(phys_ch->rch, data_blk)) {
             LOG_IF(INFO) {
                 LOG_("\n");
                 rch_print(phys_ch->rch);
@@ -772,7 +776,7 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
         return 0;
     }
 
-    if (sdch_dl_push_data_frame(phys_ch->sdch, &data_blk)) {
+    if (sdch_dl_push_data_frame(phys_ch->sdch, data_blk)) {
         tsdu_t *tsdu = sdch_get_tsdu(phys_ch->sdch);
         if (tsdu) {
             LOG_IF(INFO) {
@@ -787,30 +791,22 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, frame_t *f)
     return 0;
 }
 
-static int process_traffic_radio_ch(phys_ch_t *phys_ch, frame_t *f)
+static int process_traffic_radio_ch(phys_ch_t *phys_ch, data_block_t *data_blk)
 {
-    bool crc_ok;
-    data_block_t data_blk;
-    uint8_t deint_buf[FRAME_DATA_LEN];
-
-    frame_deinterleave1(f, deint_buf, phys_ch->band);
-    data_block_decode_frame1(&data_blk, f->data, f->frame_no, FRAME_TYPE_AUTO);
-    frame_deinterleave2(f, deint_buf, phys_ch->band, data_blk.fr_type);
-    data_block_decode_frame2(&data_blk, f->data);
-
-    crc_ok = data_block_check_crc(&data_blk);
+    const bool crc_ok = data_block_check_crc(data_blk);
 
     // TODO: separate VCH, SCH, SCH_TI
 
-    if (data_blk.nerrs == 0 && crc_ok && (data_blk.fr_type == FRAME_TYPE_VOICE)) {
-        LOG(INFO,"VOICE FRAME asb=%i", data_block_get_asb(&data_blk).xy);
+    if (data_blk->nerrs == 0 && crc_ok && (data_blk->fr_type == FRAME_TYPE_VOICE)) {
+        LOG(INFO,"VOICE FRAME asb=%i", data_block_get_asb(data_blk).xy);
+
         return 0;
     }
 
-    else if (data_blk.nerrs == 0 && crc_ok && (data_blk.fr_type == FRAME_TYPE_DATA)) {
-        LOG(INFO,"DATA FRAME asb=%i", data_block_get_asb(&data_blk).xy);
+    else if (data_blk->nerrs == 0 && crc_ok && (data_blk->fr_type == FRAME_TYPE_DATA)) {
+        LOG(INFO,"DATA FRAME asb=%i", data_block_get_asb(data_blk).xy);
 
-        if (sdch_dl_push_data_frame(phys_ch->sdch, &data_blk)) {
+        if (sdch_dl_push_data_frame(phys_ch->sdch, data_blk)) {
             tsdu_t *tsdu = sdch_get_tsdu(phys_ch->sdch);
             if (tsdu) {
                 LOG_IF(INFO) {
@@ -819,6 +815,7 @@ static int process_traffic_radio_ch(phys_ch_t *phys_ch, frame_t *f)
                 }
             }
             tsdu_destroy(tsdu);
+
             return 0;
         }
     }
