@@ -23,10 +23,31 @@ if [ ! -d ${OUTPUT_DIR} ]; then
     exit 1
 fi
 
+while true; do
+
+    if ! ./demod/tetrapol_cli.py status; then
+        action="start"
+        break
+    fi
+
+    echo -n "TETRAPOL RX server already runnig, restart (y/n)"
+    read action
+
+    if [ "${action}" = "n" ]; then
+        break
+    fi
+
+    ./demod/tetrapol_cli.py stop
+    action="start"
+    sleep 1
+done
+
 # start receiver
-./demod/tetrapol_rx.py -f ${FREQ} -p ${PPM} -g ${GAIN} -s ${SAMPLE_RATE} -o ${OUTPUT_DIR}/channel%d.bits &
-DEMOD_PID=$!
-sleep 2
+if [ "${action}" = "start" ]; then
+    ./demod/tetrapol_rx.py -f ${FREQ} -p ${PPM} -g ${GAIN} -s ${SAMPLE_RATE} -o ${OUTPUT_DIR}/channel%d.bits &
+    DEMOD_PID=$!
+    sleep 2
+fi
 
 print_help()
 {
