@@ -10,6 +10,7 @@ add_library (tetrapol
     addr.c
     bch.c
     bit_utils.c
+    cch.c
     data_block.c
     data_frame.c
     hdlc_frame.c
@@ -28,6 +29,7 @@ add_library (tetrapol
     tetrapol/addr.h
     tetrapol/bch.h
     tetrapol/bit_utils.h
+    tetrapol/cch.h
     tetrapol/data_block.h
     tetrapol/data_frame.h
     tetrapol/hdlc_frame.h
@@ -72,6 +74,7 @@ add_executable (test_phys_ch
     addr.c
     bch.c
     bit_utils.c
+    cch.c
     data_block.c
     data_frame.c
     hdlc_frame.c
