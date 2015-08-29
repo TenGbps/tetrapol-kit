@@ -35,17 +35,20 @@ void tch_destroy(tch_t *tch)
 
 int tch_push_data_block(tch_t *tch, data_block_t *data_blk)
 {
-    const bool crc_ok = data_block_check_crc(data_blk);
+    if (!data_block_check_crc(data_blk)) {
+        LOG(INFO, "Broken frame (bad CRC)");
+        return -1;
+    }
 
     // TODO: separate VCH, SCH, SCH_TI
 
-    if (data_blk->nerrs == 0 && crc_ok && (data_blk->fr_type == FRAME_TYPE_VOICE)) {
+    if (data_blk->nerrs == 0 && (data_blk->fr_type == FRAME_TYPE_VOICE)) {
         LOG(INFO,"VOICE FRAME asb=%i", data_block_get_asb(data_blk).xy);
 
         return 0;
     }
 
-    else if (data_blk->nerrs == 0 && crc_ok && (data_blk->fr_type == FRAME_TYPE_DATA)) {
+    else if (data_blk->nerrs == 0 && (data_blk->fr_type == FRAME_TYPE_DATA)) {
         LOG(INFO,"DATA FRAME asb=%i", data_block_get_asb(data_blk).xy);
 
         if (sdch_dl_push_data_frame(tch->sdch, data_blk)) {
