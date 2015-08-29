@@ -7,11 +7,8 @@
 #include <tetrapol/misc.h>
 #include <tetrapol/data_block.h>
 #include <tetrapol/phys_ch.h>
-#include <tetrapol/bch.h>
-#include <tetrapol/pch.h>
-#include <tetrapol/rch.h>
-#include <tetrapol/sdch.h>
 #include <tetrapol/timer.h>
+#include <tetrapol/cch.h>
 #include <tetrapol/tch.h>
 
 #include <limits.h>
@@ -51,12 +48,8 @@ struct phys_ch_priv_t {
     uint8_t *data_end;      ///< end of unprocessed part of data
     uint8_t data[10*FRAME_LEN];
     // CCH specific data, will be union with traffich CH specicic data
-    int cch_mux_type;   ///< control CH multiplexing, see PAS 0001-3-3 5.1.3
     timer_t *timer;
-    bch_t *bch;
-    pch_t *pch;
-    rch_t *rch;
-    sdch_t *sdch;
+    cch_t *cch;
     tch_t *tch;
 };
 
@@ -95,7 +88,6 @@ static uint8_t scramb_table[127] = {
 };
 
 static int process_frame(phys_ch_t *phys_ch, frame_t *frame);
-static int process_control_radio_ch(phys_ch_t *phys_ch, data_block_t *data_blk);
 
 phys_ch_t *tetrapol_phys_ch_create(int band, int radio_ch_type)
 {
@@ -124,45 +116,21 @@ phys_ch_t *tetrapol_phys_ch_create(int band, int radio_ch_type)
     phys_ch->timer = timer_create();
 
     if (radio_ch_type == TETRAPOL_CCH) {
-        phys_ch->bch = bch_create();
-        if (!phys_ch->bch) {
-            goto err_bch;
+        phys_ch->cch = cch_create();
+        if (phys_ch->cch) {
+            timer_register(phys_ch->timer, cch_tick, phys_ch->cch);
+            return phys_ch;
         }
-        phys_ch->pch = pch_create();
-        if (!phys_ch->pch) {
-            goto err_pch;
-        }
-        phys_ch->rch = rch_create();
-        if (!phys_ch->rch) {
-            goto err_rch;
-        }
-        phys_ch->sdch = sdch_create();
-        if (!phys_ch->sdch) {
-            goto err_sdch;
-        }
-        timer_register(phys_ch->timer, sdch_tick, phys_ch->sdch);
     }
 
     if (radio_ch_type == TETRAPOL_TCH) {
         phys_ch->tch = tch_create();
-        if (!phys_ch->tch) {
-            goto err_bch;
+        if (phys_ch->tch) {
+            timer_register(phys_ch->timer, tch_tick, phys_ch->tch);
+            return phys_ch;
         }
-        timer_register(phys_ch->timer, tch_tick, phys_ch->tch);
     }
 
-    return phys_ch;
-
-err_sdch:
-    rch_destroy(phys_ch->rch);
-
-err_rch:
-    pch_destroy(phys_ch->pch);
-
-err_pch:
-    bch_destroy(phys_ch->bch);
-
-err_bch:
     timer_destroy(phys_ch->timer);
     free(phys_ch);
 
@@ -172,10 +140,7 @@ err_bch:
 void tetrapol_phys_ch_destroy(phys_ch_t *phys_ch)
 {
     if (phys_ch->radio_ch_type == TETRAPOL_CCH) {
-        bch_destroy(phys_ch->bch);
-        pch_destroy(phys_ch->pch);
-        rch_destroy(phys_ch->rch);
-        sdch_destroy(phys_ch->sdch);
+        cch_destroy(phys_ch->cch);
     }
     if (phys_ch->radio_ch_type == TETRAPOL_TCH) {
         tch_destroy(phys_ch->tch);
@@ -382,8 +347,8 @@ int tetrapol_phys_ch_process(phys_ch_t *phys_ch)
         }
         LOG(INFO, "Frame sync found");
         phys_ch->frame_no = FRAME_NO_UNKNOWN;
-        if (phys_ch->pch) {
-            pch_reset(phys_ch->pch);
+        if (phys_ch->cch) {
+            cch_fr_error(phys_ch->cch);
         }
     }
 
@@ -681,7 +646,7 @@ static int process_frame(phys_ch_t *phys_ch, frame_t *f)
     data_block_decode_frame2(&data_blk, f->data);
 
     if (phys_ch->radio_ch_type == TETRAPOL_CCH) {
-        const int r = process_control_radio_ch(phys_ch, &data_blk);
+        const int r = cch_push_data_block(phys_ch->cch, &data_blk);
         f->frame_no = data_blk.frame_no;
         return r;
     }
@@ -694,100 +659,6 @@ static int process_frame(phys_ch_t *phys_ch, frame_t *f)
     if (phys_ch->scr != PHYS_CH_SCR_DETECT) {
         phys_ch->scr = PHYS_CH_SCR_DETECT;
         phys_ch->scr_stat[scr] += 3;
-    }
-
-    return 0;
-}
-
-static int process_control_radio_ch(phys_ch_t *phys_ch, data_block_t *data_blk)
-{
-    LOG_IF(DBG) {
-        if (!data_blk->nerrs) {
-            int asbx = data_blk->data[67];
-            int asby = data_blk->data[68];
-            int fn0 = data_blk->data[1];
-            int fn1 = data_blk->data[2];
-            LOG_("OK frame_no=%03i fn=%i%i asb=%i%i data=",
-                    data_blk->frame_no, fn1, fn0, asbx, asby);
-        } else {
-            LOG_("ERR frame_no=%03i data=", data_blk->frame_no);
-        }
-        char buf[64*3];
-        LOGF("\t%s\n", sprint_hex(buf, data_blk->data + 3, 64));
-    }
-
-    // For decoding BCH are used always all frames, not only 0-3, 100-103
-    // Firs of all for detection BCH (frame 0/100 in superblock).
-    // The second reason is just to check frame synchronization.
-    if (bch_push_data_block(phys_ch->bch, data_blk)) {
-        tsdu_d_system_info_t *tsdu = bch_get_tsdu(phys_ch->bch);
-        if (tsdu) {
-            phys_ch->cch_mux_type = tsdu->cell_config.mux_type;
-            if (phys_ch->cch_mux_type != CELL_CONFIG_MUX_TYPE_DEFAULT &&
-                    phys_ch->cch_mux_type != CELL_CONFIG_MUX_TYPE_TYPE_2) {
-                LOG(ERR, "Unknown channel multiplexing type");
-                return -1;
-            }
-            LOG_IF(INFO) {
-                LOG_("\n");
-                tsdu_print(&tsdu->base);
-            }
-            tsdu_destroy(&tsdu->base);
-            return 0;
-        }
-    }
-
-    if (data_blk->frame_no == FRAME_NO_UNKNOWN) {
-        return 0;
-    }
-
-    const int fn_mod = data_blk->frame_no % 100;
-    // BCH is processed above
-    if (fn_mod >= 0 && fn_mod <= 3) {
-        return 0;
-    }
-
-    if (fn_mod == 98 || fn_mod == 99) {
-        if (pch_push_data_block(phys_ch->pch, data_blk)) {
-            LOG_IF(INFO) {
-                LOG_("\n");
-                pch_print(phys_ch->pch);
-            }
-        }
-        return 0;
-    }
-    if (phys_ch->cch_mux_type == CELL_CONFIG_MUX_TYPE_TYPE_2) {
-        if (fn_mod == 48 || fn_mod == 49) {
-            if (pch_push_data_block(phys_ch->pch, data_blk)) {
-                LOG_IF(INFO) {
-                    LOG_("\n");
-                    pch_print(phys_ch->pch);
-                }
-            }
-            return 0;
-        }
-    }
-
-    if (data_blk->frame_no % 25 == 14) {
-        if (rch_push_data_block(phys_ch->rch, data_blk)) {
-            LOG_IF(INFO) {
-                LOG_("\n");
-                rch_print(phys_ch->rch);
-            }
-        }
-        return 0;
-    }
-
-    if (sdch_dl_push_data_frame(phys_ch->sdch, data_blk)) {
-        tsdu_t *tsdu = sdch_get_tsdu(phys_ch->sdch);
-        if (tsdu) {
-            LOG_IF(INFO) {
-                LOG_("\n");
-                tsdu_print(tsdu);
-            }
-        }
-        tsdu_destroy(tsdu);
-        return 0;
     }
 
     return 0;
