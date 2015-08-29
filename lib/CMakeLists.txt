@@ -20,6 +20,7 @@ add_library (tetrapol
     pch.c
     rch.c
     sdch.c
+    tch.c
     terminal.c
     timer.c
     tpdu.c
@@ -39,6 +40,7 @@ add_library (tetrapol
     tetrapol/sdch.h
     tetrapol/system_config.h
     tetrapol/terminal.h
+    tetrapol/tch.h
     tetrapol/timer.h
     tetrapol/tpdu.h
     tetrapol/tsdu.h
@@ -79,6 +81,7 @@ add_executable (test_phys_ch
     pch.c
     rch.c
     sdch.c
+    tch.c
     terminal.c
     test_phys_ch.c
     timer.c
