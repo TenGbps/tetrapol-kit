@@ -12,6 +12,7 @@
 #include <tetrapol/rch.h>
 #include <tetrapol/sdch.h>
 #include <tetrapol/timer.h>
+#include <tetrapol/tch.h>
 
 #include <limits.h>
 #include <stdlib.h>
@@ -56,6 +57,7 @@ struct phys_ch_priv_t {
     pch_t *pch;
     rch_t *rch;
     sdch_t *sdch;
+    tch_t *tch;
 };
 
 /**
@@ -94,7 +96,6 @@ static uint8_t scramb_table[127] = {
 
 static int process_frame(phys_ch_t *phys_ch, frame_t *frame);
 static int process_control_radio_ch(phys_ch_t *phys_ch, data_block_t *data_blk);
-static int process_traffic_radio_ch(phys_ch_t *phys_ch, data_block_t *data_blk);
 
 phys_ch_t *tetrapol_phys_ch_create(int band, int radio_ch_type)
 {
@@ -143,10 +144,11 @@ phys_ch_t *tetrapol_phys_ch_create(int band, int radio_ch_type)
     }
 
     if (radio_ch_type == TETRAPOL_TCH) {
-        phys_ch->sdch = sdch_create();
-        if (!phys_ch->sdch) {
-            goto err_sdch;
+        phys_ch->tch = tch_create();
+        if (!phys_ch->tch) {
+            goto err_bch;
         }
+        timer_register(phys_ch->timer, tch_tick, phys_ch->tch);
     }
 
     return phys_ch;
@@ -176,7 +178,7 @@ void tetrapol_phys_ch_destroy(phys_ch_t *phys_ch)
         sdch_destroy(phys_ch->sdch);
     }
     if (phys_ch->radio_ch_type == TETRAPOL_TCH) {
-        sdch_destroy(phys_ch->sdch);
+        tch_destroy(phys_ch->tch);
     }
     timer_destroy(phys_ch->timer);
     free(phys_ch);
@@ -684,7 +686,7 @@ static int process_frame(phys_ch_t *phys_ch, frame_t *f)
         return r;
     }
 
-    if (!process_traffic_radio_ch(phys_ch, &data_blk)) {
+    if (!tch_push_data_block(phys_ch->tch, &data_blk)) {
         return 0;
     }
 
@@ -789,36 +791,4 @@ static int process_control_radio_ch(phys_ch_t *phys_ch, data_block_t *data_blk)
     }
 
     return 0;
-}
-
-static int process_traffic_radio_ch(phys_ch_t *phys_ch, data_block_t *data_blk)
-{
-    const bool crc_ok = data_block_check_crc(data_blk);
-
-    // TODO: separate VCH, SCH, SCH_TI
-
-    if (data_blk->nerrs == 0 && crc_ok && (data_blk->fr_type == FRAME_TYPE_VOICE)) {
-        LOG(INFO,"VOICE FRAME asb=%i", data_block_get_asb(data_blk).xy);
-
-        return 0;
-    }
-
-    else if (data_blk->nerrs == 0 && crc_ok && (data_blk->fr_type == FRAME_TYPE_DATA)) {
-        LOG(INFO,"DATA FRAME asb=%i", data_block_get_asb(data_blk).xy);
-
-        if (sdch_dl_push_data_frame(phys_ch->sdch, data_blk)) {
-            tsdu_t *tsdu = sdch_get_tsdu(phys_ch->sdch);
-            if (tsdu) {
-                LOG_IF(INFO) {
-                    LOG_("\n");
-                    tsdu_print(tsdu);
-                }
-            }
-            tsdu_destroy(tsdu);
-
-            return 0;
-        }
-    }
-
-    return -1;
 }
