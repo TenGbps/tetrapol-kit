@@ -75,8 +75,6 @@ int tch_push_data_block(tch_t *tch, data_block_t *data_blk)
         return -1;
     }
 
-    LOG(INFO,"DATA FRAME asb=%i", data_block_get_asb(data_blk).xy);
-
     if (sdch_dl_push_data_frame(tch->sch, data_blk)) {
         tsdu_t *tsdu = sdch_get_tsdu(tch->sch);
         if (tsdu) {
