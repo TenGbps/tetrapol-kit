@@ -103,8 +103,8 @@ phys_ch_t *tetrapol_phys_ch_create(int band, int radio_ch_type)
         return NULL;
     }
 
-    if (radio_ch_type != RADIO_CH_TYPE_CONTROL &&
-            radio_ch_type != RADIO_CH_TYPE_TRAFFIC) {
+    if (radio_ch_type != TETRAPOL_CCH &&
+            radio_ch_type != TETRAPOL_TCH) {
         LOG(ERR, "tetrapol_phys_ch_create() invalid param 'radio_ch_type'");
         return NULL;
     }
@@ -122,7 +122,7 @@ phys_ch_t *tetrapol_phys_ch_create(int band, int radio_ch_type)
     phys_ch->scr_confidence = 50;
     phys_ch->timer = timer_create();
 
-    if (radio_ch_type == RADIO_CH_TYPE_CONTROL) {
+    if (radio_ch_type == TETRAPOL_CCH) {
         phys_ch->bch = bch_create();
         if (!phys_ch->bch) {
             goto err_bch;
@@ -142,7 +142,7 @@ phys_ch_t *tetrapol_phys_ch_create(int band, int radio_ch_type)
         timer_register(phys_ch->timer, sdch_tick, phys_ch->sdch);
     }
 
-    if (radio_ch_type == RADIO_CH_TYPE_TRAFFIC) {
+    if (radio_ch_type == TETRAPOL_TCH) {
         phys_ch->sdch = sdch_create();
         if (!phys_ch->sdch) {
             goto err_sdch;
@@ -169,13 +169,13 @@ err_bch:
 
 void tetrapol_phys_ch_destroy(phys_ch_t *phys_ch)
 {
-    if (phys_ch->radio_ch_type == RADIO_CH_TYPE_CONTROL) {
+    if (phys_ch->radio_ch_type == TETRAPOL_CCH) {
         bch_destroy(phys_ch->bch);
         pch_destroy(phys_ch->pch);
         rch_destroy(phys_ch->rch);
         sdch_destroy(phys_ch->sdch);
     }
-    if (phys_ch->radio_ch_type == RADIO_CH_TYPE_TRAFFIC) {
+    if (phys_ch->radio_ch_type == TETRAPOL_TCH) {
         sdch_destroy(phys_ch->sdch);
     }
     timer_destroy(phys_ch->timer);
@@ -671,14 +671,14 @@ static int process_frame(phys_ch_t *phys_ch, frame_t *f)
     uint8_t deint_buf[FRAME_DATA_LEN];
     data_block_t data_blk;
 
-    const int fr_type = (phys_ch->radio_ch_type == RADIO_CH_TYPE_CONTROL) ?
+    const int fr_type = (phys_ch->radio_ch_type == TETRAPOL_CCH) ?
         FRAME_TYPE_DATA : FRAME_TYPE_AUTO;
     frame_deinterleave1(f, deint_buf, phys_ch->band);
     data_block_decode_frame1(&data_blk, f->data, f->frame_no, fr_type);
     frame_deinterleave2(f, deint_buf, phys_ch->band, data_blk.fr_type);
     data_block_decode_frame2(&data_blk, f->data);
 
-    if (phys_ch->radio_ch_type == RADIO_CH_TYPE_CONTROL) {
+    if (phys_ch->radio_ch_type == TETRAPOL_CCH) {
         const int r = process_control_radio_ch(phys_ch, &data_blk);
         f->frame_no = data_blk.frame_no;
         return r;
