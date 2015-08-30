@@ -21,6 +21,7 @@ add_library (tetrapol
     link.c
     log.c
     lsdu_cd.c
+    lsdu_vch.c
     misc.c
     phys_ch.c
     pch.c
@@ -40,6 +41,7 @@ add_library (tetrapol
     tetrapol/hdlc_frame.h
     tetrapol/link.h
     tetrapol/log.h
+    tetrapol/lsdu_vch.h
     tetrapol/misc.h
     tetrapol/phys_ch.h
     tetrapol/pch.h
@@ -86,6 +88,7 @@ add_executable (test_phys_ch
     link.c
     log.c
     lsdu_cd.c
+    lsdu_vch.c
     misc.c
     pch.c
     rch.c
