@@ -5,6 +5,7 @@
 #include <tetrapol/lsdu_cd.h>
 #include <tetrapol/misc.h>
 #include <tetrapol/tpdu.h>
+#include <tetrapol/lsdu_vch.h>
 
 #include <stdlib.h>
 
@@ -161,7 +162,14 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
             addr_print(&hdlc_fr->addr);
             LOGF("\n");
         }
-        LOG(ERR, "TODO CMD UI_VCH");
+
+        lsdu_vch_t *lsdu;
+        if (!lsdu_vch_decode_hdlc_frame(hdlc_fr, &lsdu)) {
+            // LSDU should be send upwards like TSDU
+            lsdu_vch_print(lsdu);
+            lsdu_vch_destroy(lsdu);
+        }
+
         return 0;
     }
 
