@@ -62,8 +62,8 @@ int tch_push_data_block(tch_t *tch, data_block_t *data_blk)
                     LOG_("\n");
                     tsdu_print(tsdu);
                 }
+                tsdu_destroy(tsdu);
             }
-            tsdu_destroy(tsdu);
         }
         return 0;
     }
@@ -82,8 +82,8 @@ int tch_push_data_block(tch_t *tch, data_block_t *data_blk)
                 LOG_("\n");
                 tsdu_print(tsdu);
             }
+            tsdu_destroy(tsdu);
         }
-        tsdu_destroy(tsdu);
     }
 
     return 0;
