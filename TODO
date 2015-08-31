@@ -1,10 +1,17 @@
- * I/O interface to external toosl
-   * use protobuffers
- * create struct tpol_t - container for phys_ch and common infrastructure
- * improve logging
- * remove channel logs
- * support multiple signal sources (multiple SDRs devices)
- * Xtal runtime calibration
+ * I/O interface for export of processed informations
+   * use Google protocolbuffers?
  * receive uplink channel(s)
+ * support multiple signal sources at least for uplink and downlink
+ * Improve demodulator and frame decoder
+   * Current implementation causes frame coruption whenever single bit
+     in input stream is broken!
+   suggestions:
+   * frame decoder should use soft decisions
+   * output from demodulator should be something like:
+     a) single floating point value <-1, 1> representing probabale state of
+        radio signal, or
+     b) two values, one with <-1, 1> representing probably demodulated value
+        and second with "relative signal quality" or something
+ * improve logging
  * implement audio codec
 
