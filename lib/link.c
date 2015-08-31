@@ -55,6 +55,15 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
     *tsdu = NULL;
 
     if (hdlc_fr->command.cmd == COMMAND_INFORMATION) {
+        LOG_IF(INFO) {
+            LOG_("cmd=Information\n\t");
+            addr_print(&hdlc_fr->addr);
+            LOGF("\n\tn_r=%d n_s=%d P=%d\n",
+                    hdlc_fr->command.information.recv_seq_no,
+                    hdlc_fr->command.information.send_seq_no,
+                    hdlc_fr->command.information.p_e);
+        }
+
         return tpdu_push_hdlc_frame(link->tpdu, hdlc_fr, tsdu);
     }
 
@@ -64,15 +73,15 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
         LOG_IF(INFO) {
             switch(hdlc_fr->command.cmd) {
                 case COMMAND_SUPERVISION_RR:
-                    LOG_("\n\tcmd: RR\n\taddr=");
+                    LOG_("cmd=RR\n\t");
                     break;
 
                 case COMMAND_SUPERVISION_RNR:
-                    LOG_("\n\tcmd: RNR\n\taddr=");
+                    LOG_("cmd=RNR\n\t");
                     break;
 
                 case COMMAND_SUPERVISION_REJ:
-                    LOG_("\n\tcmd: REJ\n\taddr=");
+                    LOG_("cmd=REJ\n\t");
                     break;
             }
             addr_print(&hdlc_fr->addr);

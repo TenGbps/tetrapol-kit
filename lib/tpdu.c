@@ -74,16 +74,6 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
 
     const uint8_t len = (d && !seg) ? hdlc_fr->data[2] : 0;
 
-    LOG_IF(INFO) {
-        LOG_("information cmd\n");
-        LOGF("\taddr: ");
-        addr_print(&hdlc_fr->addr);
-        LOGF("\n\trecv_seq_no: %d send_seq_no: %d P: %d\n",
-                hdlc_fr->command.information.recv_seq_no,
-                hdlc_fr->command.information.send_seq_no,
-                hdlc_fr->command.information.p_e);
-    }
-
     if (seg) {
         LOG(ERR, "TPDU: TODO segmentation");
         return -1;
