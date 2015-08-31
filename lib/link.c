@@ -54,11 +54,41 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
     }
     *tsdu = NULL;
 
-    if (hdlc_fr->command.cmd == COMMAND_INFORMATION ||
-            hdlc_fr->command.cmd == COMMAND_SUPERVISION_RR ||
+    if (hdlc_fr->command.cmd == COMMAND_INFORMATION) {
+        return tpdu_push_hdlc_frame(link->tpdu, hdlc_fr, tsdu);
+    }
+
+    if (hdlc_fr->command.cmd == COMMAND_SUPERVISION_RR ||
             hdlc_fr->command.cmd == COMMAND_SUPERVISION_RNR ||
             hdlc_fr->command.cmd == COMMAND_SUPERVISION_REJ) {
-        return tpdu_push_hdlc_frame(link->tpdu, hdlc_fr, tsdu);
+        LOG_IF(INFO) {
+            switch(hdlc_fr->command.cmd) {
+                case COMMAND_SUPERVISION_RR:
+                    LOG_("\n\tcmd: RR\n\taddr=");
+                    break;
+
+                case COMMAND_SUPERVISION_RNR:
+                    LOG_("\n\tcmd: RNR\n\taddr=");
+                    break;
+
+                case COMMAND_SUPERVISION_REJ:
+                    LOG_("\n\tcmd: REJ\n\taddr=");
+                    break;
+            }
+            addr_print(&hdlc_fr->addr);
+            LOGF("\n\tn_r=%d P=%d\n",
+                    hdlc_fr->command.supervision.recv_seq_no,
+                    hdlc_fr->command.supervision.p_e);
+        }
+
+        if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
+            char buf[hdlc_fr->nbits / 8 * 3];
+            LOG(WTF, "cmd=0x%02x, nonzero stuffing: %s\n",
+                    hdlc_fr->command.cmd,
+                    sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
+        }
+
+        return 0;
     }
 
     if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_UI) {

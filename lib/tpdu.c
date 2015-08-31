@@ -55,59 +55,6 @@ tpdu_t *tpdu_create(void)
     return tpdu;
 }
 
-static int tpdu_push_supervision_frame(tpdu_t *tpdu,
-        const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu)
-{
-    *tsdu = NULL;
-
-    LOG_IF(INFO) {
-        switch(hdlc_fr->command.cmd) {
-            case COMMAND_SUPERVISION_RR:
-                LOG_("\n\tcmd: RR\n\taddr: ");
-                break;
-
-            case COMMAND_SUPERVISION_RNR:
-                LOG_("\n\tcmd: RNR\n\taddr: ");
-                break;
-
-            case COMMAND_SUPERVISION_REJ:
-                LOG_("\n\tcmd: REJ\n\taddr: ");
-                break;
-        }
-        addr_print(&hdlc_fr->addr);
-        LOGF("\n\trecv_seq_no: %d P: %d\n",
-                hdlc_fr->command.supervision.recv_seq_no,
-                hdlc_fr->command.supervision.p_e);
-    }
-
-    if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
-        LOG_IF(WTF) {
-            char buf[hdlc_fr->nbits / 8 * 3];
-            LOG_("cmd: 0x%02x, nonzero stuffing: %s\n", hdlc_fr->command.cmd,
-                    sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
-        }
-    }
-
-    switch(hdlc_fr->command.cmd) {
-        case COMMAND_SUPERVISION_RR:
-            // TODO: do something with TPDU
-            LOG(ERR, "TODO RR");
-            break;
-
-        case COMMAND_SUPERVISION_RNR:
-            // TODO: do something with TPDU
-            LOG(ERR, "TODO RNR");
-            break;
-
-        case COMMAND_SUPERVISION_REJ:
-            // TODO: do something with TPDU
-            LOG(ERR, "TODO REJ");
-            break;
-    }
-
-    return -1;
-}
-
 static int tpdu_push_information_frame(tpdu_t *tpdu,
         const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu)
 {
@@ -212,21 +159,7 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
 
 int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu)
 {
-    switch (hdlc_fr->command.cmd) {
-        case COMMAND_SUPERVISION_RR:
-        case COMMAND_SUPERVISION_RNR:
-        case COMMAND_SUPERVISION_REJ:
-            return tpdu_push_supervision_frame(tpdu, hdlc_fr, tsdu);
-
-        case COMMAND_INFORMATION:
-            return tpdu_push_information_frame(tpdu, hdlc_fr, tsdu);
-
-        default:
-            break;
-    }
-
-    LOG(WTF, "invalid cmd for TPDU (%d)", hdlc_fr->command.cmd);
-    return -1;
+    return tpdu_push_information_frame(tpdu, hdlc_fr, tsdu);
 }
 
 void tpdu_destroy(tpdu_t *tpdu)
