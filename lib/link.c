@@ -59,8 +59,8 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
             LOG_("cmd=Information\n\t");
             addr_print(&hdlc_fr->addr);
             LOGF("\n\tn_r=%d n_s=%d P=%d\n",
-                    hdlc_fr->command.information.recv_seq_no,
-                    hdlc_fr->command.information.send_seq_no,
+                    hdlc_fr->command.information.n_r,
+                    hdlc_fr->command.information.n_s,
                     hdlc_fr->command.information.p_e);
         }
 
@@ -86,7 +86,7 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
             }
             addr_print(&hdlc_fr->addr);
             LOGF("\n\tn_r=%d P=%d\n",
-                    hdlc_fr->command.supervision.recv_seq_no,
+                    hdlc_fr->command.supervision.n_r,
                     hdlc_fr->command.supervision.p_e);
         }
 

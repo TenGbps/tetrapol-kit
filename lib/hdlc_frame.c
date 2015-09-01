@@ -43,15 +43,15 @@ static void command_parse(command_t *cmd, uint8_t data)
 
     switch (cmd->cmd) {
         case COMMAND_INFORMATION:
-            cmd->information.recv_seq_no    = get_bits(3, &data, 0);
+            cmd->information.n_r            = get_bits(3, &data, 0);
             cmd->information.p_e            = get_bits(1, &data, 3);
-            cmd->information.send_seq_no    = get_bits(3, &data, 4);
+            cmd->information.n_s            = get_bits(3, &data, 4);
             break;
 
         case COMMAND_SUPERVISION_RR:
         case COMMAND_SUPERVISION_RNR:
         case COMMAND_SUPERVISION_REJ:
-            cmd->supervision.recv_seq_no    = get_bits(3, &data, 0);
+            cmd->supervision.n_r            = get_bits(3, &data, 0);
             cmd->supervision.p_e            = get_bits(1, &data, 3);
             break;
 

@@ -38,25 +38,25 @@ typedef struct {
     uint8_t cmd;
     union {
         struct {
-            uint8_t recv_seq_no;    ///< N(R)
-            uint8_t send_seq_no;    ///< N(S)
-            uint8_t p_e;            ///< P/E
+            uint8_t n_r;    ///< N(R)
+            uint8_t n_s;    ///< N(S)
+            uint8_t p_e;    ///< P/E
         } information;
 
         struct {
-            uint8_t recv_seq_no;    ///< N(R)
-            uint8_t p_e;            ///< P/E
+            uint8_t n_r;    ///< N(R)
+            uint8_t p_e;    ///< P/E
         } supervision;
 
         struct {
-            uint8_t seq_no;         ///< N'(R) or N'(S)
-            uint8_t retry;          ///< R
+            uint8_t seq_no; ///< N'(R) or N'(S)
+            uint8_t retry;  ///< R
         } dach_access;
 
         struct {
             union {
-                bool p_e;           ///< P, P/E, E
-                bool ra;            ///< RA
+                bool p_e;   ///< P, P/E, E
+                bool ra;    ///< RA
             };
             uint8_t response_format;    ///< RSP
         } unnumbered;
