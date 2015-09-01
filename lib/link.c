@@ -12,6 +12,7 @@
 struct link_priv_t {
     tpdu_t *tpdu;
     tpdu_ui_t *tpdu_ui;
+    uint8_t v_r;    ///< v(r) PAS 0001-3-3 7.5.4.22
 };
 
 link_t *link_create(void)
@@ -33,6 +34,8 @@ link_t *link_create(void)
         free(link);
         return NULL;
     }
+
+    link->v_r = 0;
 
     return link;
 }
@@ -65,6 +68,13 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
                     hdlc_fr->command.information.n_s,
                     hdlc_fr->command.information.p_e);
         }
+
+        if (hdlc_fr->command.information.n_s != link->v_r) {
+            LOG(INFO, "BROKEN LINK");
+            link->v_r = hdlc_fr->command.information.n_s;
+        }
+
+        link->v_r = (link->v_r + 1) % 8;
 
         return tpdu_push_hdlc_frame(link->tpdu, hdlc_fr, tsdu);
     }
