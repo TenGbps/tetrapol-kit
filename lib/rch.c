@@ -45,7 +45,7 @@ void rch_destroy(rch_t *rch)
 
 bool rch_push_data_block(rch_t *rch, data_block_t *data_blk)
 {
-    if (!data_frame_push_data_block(rch->data_fr, data_blk)) {
+    if (data_frame_push_data_block(rch->data_fr, data_blk) <= 0) {
         LOG(DBG, "RCH: block fail");
         return false;
     }

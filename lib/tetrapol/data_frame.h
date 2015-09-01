@@ -21,9 +21,14 @@ int data_frame_blocks(data_frame_t *data_fr);
 /**
   Add new decoded frame into data frame processing chain.
 
-  @return true if new data frame is decoded, false otherwise.
+  @return
+    2 when new data frame is decoded but some data have been discarded
+        (previously unrecognizable fail reported as 0)
+    1 when new data frame is decoded
+    0 when more data blocks is required
+    -1 when block reconstruction fails.
   */
-bool data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk);
+int data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk);
 
 /**
   Get data from data_frame, data are packe into bytes.

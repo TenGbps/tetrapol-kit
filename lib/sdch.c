@@ -59,7 +59,7 @@ void sdch_destroy(sdch_t *sdch)
 
 bool sdch_dl_push_data_frame(sdch_t *sdch, data_block_t *data_blk)
 {
-    if (!data_frame_push_data_block(sdch->data_fr, data_blk)) {
+    if (data_frame_push_data_block(sdch->data_fr, data_blk) <= 0) {
         return false;
     }
 

@@ -53,7 +53,7 @@ void bch_destroy(bch_t *bch)
 
 bool bch_push_data_block(bch_t *bch, data_block_t* data_blk)
 {
-    if (!data_frame_push_data_block(bch->data_fr, data_blk)) {
+    if (data_frame_push_data_block(bch->data_fr, data_blk) <= 0) {
         return false;
     }
 

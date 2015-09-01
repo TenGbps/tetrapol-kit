@@ -92,7 +92,7 @@ static void fix_by_parity(data_frame_t *data_fr)
     }
 }
 
-static bool data_frame_check_multiblock(data_frame_t *data_fr)
+static int data_frame_check_multiblock(data_frame_t *data_fr)
 {
     if (data_fr->nerrs) {
         fix_by_parity(data_fr);
@@ -100,14 +100,28 @@ static bool data_frame_check_multiblock(data_frame_t *data_fr)
         if (!check_parity(data_fr)) {
             LOG(ERR, "MB parity error %d", data_fr->nblks);
             data_frame_reset(data_fr);
-            return false;
+            return -1;
         }
     }
 
-    return true;
+    return 1;
 }
 
-bool data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
+static int data_frame_push_data_block_(data_frame_t *data_fr, data_block_t *data_blk)
+{
+    const int r = data_frame_push_data_block(data_fr, data_blk);
+
+    switch (r) {
+        case 0:
+            return -1;
+        case 1:
+            return 2;
+        default:
+            return r;
+    }
+}
+
+int data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
 {
     if (data_fr->nblks == ARRAY_LEN(data_fr->data_blks)) {
         data_frame_reset(data_fr);
@@ -119,7 +133,7 @@ bool data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
 
     if (data_fr->nerrs > 1) {
         data_frame_reset(data_fr);
-        return false;
+        return -1;
     }
 
     const int fn = data_blk->data[1] | (data_blk->data[2] << 1);
@@ -131,16 +145,17 @@ bool data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
     // single frame
     if (data_fr->nblks == 1) {
         if (!crc_ok) {
-            return false;
+            return 0;
         }
         if (fn == FN_00) {
-            return true;
+            return 1;
         }
         if (fn != FN_01) {
             LOG(DBG, "MB err");
             data_frame_reset(data_fr);
+            return -1;
         }
-        return false;
+        return 0;
     }
 
     const int fn_prev = data_fr->fn[data_fr->nblks - 2];
@@ -152,36 +167,37 @@ bool data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
             if (fn_prev != FN_01) {
                 LOG(DBG, "MB err");
                 data_frame_reset(data_fr);
+                return -1;
             }
-            return false;
+            return 0;
         }
         if (fn == FN_11) {
             if (!crc_ok_prev) {
                 LOG(DBG, "MB err");
                 data_frame_reset(data_fr);
-                return false;
+                return -1;
             }
-            return true;
+            return 1;
         }
         if (fn != FN_10) {
             LOG(DBG, "MB err");
             data_frame_reset(data_fr);
-            return data_frame_push_data_block(data_fr, data_blk);
+            return data_frame_push_data_block_(data_fr, data_blk);
         }
-        return false;
+        return 0;
     }
 
     // check multiframe, inner frames
     if (data_fr->nblks == 3) {
         if (!crc_ok) {
-            return false;
+            return 0;
         }
         if (fn != FN_10 && fn != FN_11) {
             LOG(DBG, "MB err");
             data_frame_reset(data_fr);
-            return data_frame_push_data_block(data_fr, data_blk);
+            return data_frame_push_data_block_(data_fr, data_blk);
         }
-        return false;
+        return 0;
     }
 
     // end of multiframe, final frame is invalid
@@ -189,15 +205,16 @@ bool data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
         if (fn_prev == FN_10) {
             return data_frame_check_multiblock(data_fr);
         }
-        return false;
+        return 0;
     }
 
     if (fn == FN_11) {
         if (fn_prev != FN_11 && crc_ok_prev) {
             LOG(DBG, "MB err");
             data_frame_reset(data_fr);
+            return -1;
         }
-        return false;
+        return 0;
     }
 
     // check multiframe, pre-end of multiframe
@@ -205,22 +222,23 @@ bool data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
         if (fn_prev != FN_11 && crc_ok_prev) {
             LOG(DBG, "MB err");
             data_frame_reset(data_fr);
+            return -1;
         }
-        return false;
+        return 0;
     }
 
     if (fn == FN_01) {
         if (fn_prev != FN_10 && crc_ok_prev) {
             LOG(DBG, "MB err");
             data_frame_reset(data_fr);
-            return false;
+            return -1;
         }
         return data_frame_check_multiblock(data_fr);
     }
 
     LOG(DBG, "MB err");
     data_frame_reset(data_fr);
-    return data_frame_push_data_block(data_fr, data_blk);
+    return data_frame_push_data_block_(data_fr, data_blk);
 }
 
 /**
