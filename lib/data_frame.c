@@ -123,7 +123,7 @@ bool data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
     }
 
     const int fn = data_blk->data[1] | (data_blk->data[2] << 1);
-    data_fr->fn[data_fr->nblks] = fn;
+    data_fr->fn[data_fr->nblks] = crc_ok ? fn : -1;
 
     memcpy(&data_fr->data_blks[data_fr->nblks], data_blk, sizeof(data_block_t));
     ++data_fr->nblks;
