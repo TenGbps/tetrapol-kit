@@ -1,6 +1,10 @@
 find_library(CMOCKA_LIBRARY
     NAMES
     cmocka)
+if (NOT CMOCKA_LIBRARY)
+    message(FATAL_ERROR "libcmocka unit test framework mising")
+endif(NOT CMOCKA_LIBRARY)
+
 find_package(PkgConfig)
 pkg_check_modules(GLIB2 REQUIRED glib-2.0)
 
