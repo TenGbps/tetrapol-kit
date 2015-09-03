@@ -141,12 +141,12 @@ typedef struct {
     void *optionals[];
 } tsdu_base_t;
 
-/// structure for commands not in specification (probably seecret)
+/// structure for commands not in specification
 typedef struct {
     tsdu_base_t base;
     uint8_t *data;
     int len;
-} tsdu_seecret_codop_t;
+} tsdu_unknown_codop_t;
 
 /// PAS 0001-3-2 5.3.2
 enum {

@@ -1419,9 +1419,9 @@ static void d_ech_overload_id_print(const tsdu_d_ech_overload_id_t *tsdu)
     LOGF("\t\tORGANISATION=%d\n", tsdu->organisation);
 }
 
-static tsdu_seecret_codop_t *d_unknown_parse(const uint8_t *data, int len)
+static tsdu_unknown_codop_t *d_unknown_parse(const uint8_t *data, int len)
 {
-    tsdu_seecret_codop_t *tsdu = tsdu_create(tsdu_seecret_codop_t, 1);
+    tsdu_unknown_codop_t *tsdu = tsdu_create(tsdu_unknown_codop_t, 1);
     if (!tsdu) {
         return NULL;
     }
@@ -1442,7 +1442,7 @@ static tsdu_seecret_codop_t *d_unknown_parse(const uint8_t *data, int len)
     return tsdu;
 }
 
-static void d_unknown_print(const tsdu_seecret_codop_t *tsdu)
+static void d_unknown_print(const tsdu_unknown_codop_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     char buf[tsdu->len * 3 + 1];
@@ -1913,7 +1913,7 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_TRANSFER_NAK:
             LOG(WTF, "print not implemented: downlink codop=0x%02x",
                     tsdu->codop);
-            d_unknown_print((tsdu_seecret_codop_t *)tsdu);
+            d_unknown_print((tsdu_unknown_codop_t *)tsdu);
     }
 }
 
