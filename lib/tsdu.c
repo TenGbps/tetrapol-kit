@@ -1613,7 +1613,7 @@ static tsdu_d_call_start_t *d_call_start_decode(const uint8_t *data, int len)
                     LOG(WTF, "Wrong IEI size %d", data[0]);
                 } else {
                     tsdu->has_key_of_call = true;
-                    memcpy(&tsdu->key_of_call, &data[1], data[0]);
+                    memcpy(tsdu->key_of_call, &data[1], data[0]);
                 }
                 len -= data[0] + 1;
                 data += data[0] + 1;
@@ -1659,13 +1659,13 @@ static tsdu_d_call_connect_t *d_call_connect_decode(const uint8_t *data, int len
     tsdu->u_ch_scrambling       = data[4];
     tsdu->d_ch_scrambling       = data[5];
     tsdu->key_reference._data   = data[6];
-    memcpy(&tsdu->valid_rt, &data[7], SIZEOF(tsdu_d_call_connect_t, valid_rt));
+    memcpy(tsdu->valid_rt, &data[7], SIZEOF(tsdu_d_call_connect_t, valid_rt));
     tsdu->has_key_of_call =
         (tsdu->key_reference.key_type == KEY_TYPE_ESC) &&
         (tsdu->key_reference.key_index == KEY_INDEX_KEY_SUPPLIED);
     if (tsdu->has_key_of_call) {
         CHECK_LEN(len, 31, tsdu);
-        memcpy(&tsdu->key_of_call, &data[15], sizeof(key_of_call_t));
+        memcpy(tsdu->key_of_call, &data[15], sizeof(key_of_call_t));
     }
 
     return tsdu;
