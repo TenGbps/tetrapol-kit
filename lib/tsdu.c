@@ -1652,7 +1652,7 @@ static tsdu_d_call_connect_t *d_call_connect_decode(const uint8_t *data, int len
     if (!tsdu) {
         return NULL;
     }
-    CHECK_LEN(15, len, tsdu);
+    CHECK_LEN(len, 15, tsdu);
 
     tsdu->call_type._data       = data[1];
     tsdu->channel_id            = get_bits(12, &data[2], 4);
@@ -1664,7 +1664,7 @@ static tsdu_d_call_connect_t *d_call_connect_decode(const uint8_t *data, int len
         (tsdu->key_reference.key_type == KEY_TYPE_ESC) &&
         (tsdu->key_reference.key_index == KEY_INDEX_KEY_SUPPLIED);
     if (tsdu->has_key_of_call) {
-        CHECK_LEN(31, len, tsdu);
+        CHECK_LEN(len, 31, tsdu);
         memcpy(&tsdu->key_of_call, &data[15], sizeof(key_of_call_t));
     }
 
