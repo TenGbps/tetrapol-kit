@@ -818,6 +818,10 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int len)
             }
             tsdu->emergency = p;
             for ( ; tsdu->nemergency < n; ++tsdu->nemergency) {
+                rlen += 2;
+                if (rlen > len) {
+                    break;
+                }
                 const int i = tsdu->nemergency;
                 cell_id_decode1(&tsdu->emergency[i].cell_id, data);
                 int zero = get_bits(4, data + 1, 4);
@@ -825,20 +829,23 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int len)
                     LOG(WTF, "nonzero padding (%d)", zero);
                 }
                 data += 2;
-                rlen += 2;
             }
         }
 
         if (type_nb.type == TYPE_NB_TYPE_OPEN) {
             const int n = tsdu->nopen + type_nb.number;
             const int l = sizeof(tsdu_d_group_list_open_t[n]);
-            tsdu_d_group_list_open_t *p = realloc(tsdu->open,l);
+            tsdu_d_group_list_open_t *p = realloc(tsdu->open, l);
             if (!p) {
                 tsdu_destroy(&tsdu->base);
                 return NULL;
             }
             tsdu->open = p;
             for ( ; tsdu->nopen < n; ++tsdu->nopen) {
+                rlen += 5;
+                if (rlen > len) {
+                    break;
+                }
                 const int i = tsdu->nopen;
                 tsdu->open[i].coverage_id           = get_bits(8, data, 0);
                 tsdu->open[i].call_priority         = get_bits(4, data + 1, 0);
@@ -851,7 +858,6 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int len)
                 tsdu->open[i].och_parameters.mbn    = get_bits(1, data + 3, 3);
                 tsdu->open[i].neighbouring_cell     = get_bits(12, data + 3, 4);
                 data += 5;
-                rlen += 5;
             }
         }
         if (type_nb.type == TYPE_NB_TYPE_TALK_GROUP) {
@@ -864,6 +870,10 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int len)
             }
             tsdu->group = p;
             for ( ; tsdu->ngroup < n; ++tsdu->ngroup) {
+                rlen += 4;
+                if (rlen > len) {
+                    break;
+                }
                 const int i = tsdu->ngroup;
                 tsdu->group[i].coverage_id          = get_bits(8, data, 0);
                 uint8_t zero                        = get_bits(8, data + 1, 0);
@@ -876,7 +886,6 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int len)
                 }
                 tsdu->group[i].neighbouring_cell    = get_bits(12, data + 2, 4);
                 data += 4;
-                rlen += 4;
             }
         }
     } while(true);
