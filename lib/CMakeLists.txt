@@ -84,33 +84,8 @@ add_executable (test_timer
     test_timer.c)
 target_link_libraries (test_timer ${CMOCKA_LIBRARY})
 
-add_executable (test_phys_ch
-    addr.c
-    bch.c
-    bit_utils.c
-    cch.c
-    data_block.c
-    data_frame.c
-    hdlc_frame.c
-    link.c
-    log.c
-    lsdu_cd.c
-    lsdu_vch.c
-    misc.c
-    pch.c
-    rch.c
-    sdch.c
-    tch.c
-    terminal.c
-    test_phys_ch.c
-    timer.c
-    tpdu.c
-    tsdu.c)
-target_link_libraries (test_phys_ch ${CMOCKA_LIBRARY} ${GLIB2_LIBRARIES})
-
 add_test(test_data_block ${CMAKE_CURRENT_BINARY_DIR}/test_data_block)
 add_test(test_data_frame ${CMAKE_CURRENT_BINARY_DIR}/test_data_frame)
 add_test(test_frame ${CMAKE_CURRENT_BINARY_DIR}/test_frame)
 add_test(test_bit_utils ${CMAKE_CURRENT_BINARY_DIR}/test_bit_utils)
-add_test(test_phys_ch ${CMAKE_CURRENT_BINARY_DIR}/test_phys_ch)
 add_test(test_timer ${CMAKE_CURRENT_BINARY_DIR}/test_timer)
