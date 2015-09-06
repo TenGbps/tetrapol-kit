@@ -29,11 +29,6 @@
 
 #define DATA_OFFS (FRAME_LEN/2)
 
-typedef struct {
-    int frame_no;
-    uint8_t data[FRAME_DATA_LEN];
-} frame_t;
-
 struct phys_ch_priv_t {
     int band;           ///< VHF or UHF
     int radio_ch_type;  ///< control or traffic
@@ -87,7 +82,7 @@ static uint8_t scramb_table[127] = {
     1, 0, 0, 0, 0, 0, 0,
 };
 
-static int process_frame(phys_ch_t *phys_ch, frame_t *frame);
+static int process_frame(phys_ch_t *phys_ch, uint8_t *fr_data);
 
 phys_ch_t *tetrapol_phys_ch_create(int band, int radio_ch_type)
 {
@@ -239,17 +234,16 @@ static int find_frame_sync(phys_ch_t *phys_ch)
     return 0;
 }
 
-static void copy_frame(phys_ch_t *phys_ch, frame_t *frame)
+static void copy_frame_data(phys_ch_t *phys_ch, uint8_t *fr_data)
 {
-    memcpy(frame->data, phys_ch->data_begin + FRAME_HDR_LEN, FRAME_DATA_LEN);
+    memcpy(fr_data, phys_ch->data_begin + FRAME_HDR_LEN, FRAME_DATA_LEN);
     phys_ch->data_begin += FRAME_LEN;
 
-    frame->frame_no = phys_ch->frame_no;
-    differential_dec(frame->data, FRAME_DATA_LEN, 0);
+    differential_dec(fr_data, FRAME_DATA_LEN, 0);
 }
 
 /// return number of acquired frames (0 or 1) or -1 on error
-static int get_frame(phys_ch_t *phys_ch, frame_t *frame)
+static int get_frame(phys_ch_t *phys_ch, uint8_t *fr_data)
 {
     if (phys_ch->data_end - phys_ch->data_begin < FRAME_LEN) {
         return 0;
@@ -257,7 +251,7 @@ static int get_frame(phys_ch_t *phys_ch, frame_t *frame)
 
     // are we in sync?
     if (cmp_frame_sync(phys_ch->data_begin) == 0) {
-        copy_frame(phys_ch, frame);
+        copy_frame_data(phys_ch, fr_data);
         if (phys_ch->sync_errs > 0) {
             --phys_ch->sync_errs;
         }
@@ -329,7 +323,7 @@ static int get_frame(phys_ch_t *phys_ch, frame_t *frame)
 
     phys_ch->data_begin = (sync_errs1 < sync_errs2) ? sync_pos1 : sync_pos2;
 
-    copy_frame(phys_ch, frame);
+    copy_frame_data(phys_ch, fr_data);
     LOG(INFO, "get_frame() sync fail sync_errs=%d", phys_ch->sync_errs);
 
     return 1;
@@ -353,13 +347,13 @@ int tetrapol_phys_ch_process(phys_ch_t *phys_ch)
     }
 
     int r = 1;
-    frame_t frame;
-    while ((r = get_frame(phys_ch, &frame)) > 0) {
-        process_frame(phys_ch, &frame);
-        if (frame.frame_no != FRAME_NO_UNKNOWN) {
-            phys_ch->frame_no = (frame.frame_no + 1) % 200;
-        }
+    uint8_t fr_data[FRAME_DATA_LEN];
+    while ((r = get_frame(phys_ch, fr_data)) > 0) {
+        process_frame(phys_ch, fr_data);
         timer_tick(phys_ch->timer, 20000);
+        if (phys_ch->frame_no != FRAME_NO_UNKNOWN) {
+            phys_ch->frame_no = (phys_ch->frame_no + 1) % 200;
+        }
     }
 
     if (r == 0) {
@@ -457,7 +451,7 @@ static const uint8_t interleave_data_UHF[] = {
 /**
   Deinterleave firts part of frame (common for data and voice frames)
   */
-static void frame_deinterleave1(frame_t *f, uint8_t *buf, int band)
+static void frame_deinterleave1(uint8_t *fr_data, uint8_t *buf, int band)
 {
     const uint8_t *int_table;
 
@@ -467,17 +461,17 @@ static void frame_deinterleave1(frame_t *f, uint8_t *buf, int band)
         int_table = interleave_data_UHF;
     }
 
-    memcpy(buf, f->data, FRAME_DATA_LEN);
+    memcpy(buf, fr_data, FRAME_DATA_LEN);
 
     for (int j = 0; j < FRAME_DATA_LEN1; ++j) {
-        f->data[j] = buf[int_table[j]];
+        fr_data[j] = buf[int_table[j]];
     }
 }
 
 /**
   Deinterleave second part of frame (differs for data and voice frames)
   */
-static void frame_deinterleave2(frame_t *f, uint8_t *buf, int band, int fr_type)
+static void frame_deinterleave2(uint8_t *fr_data, uint8_t *buf, int band, int fr_type)
 {
     const uint8_t *int_table;
 
@@ -496,7 +490,7 @@ static void frame_deinterleave2(frame_t *f, uint8_t *buf, int band, int fr_type)
     }
 
     for (int j = FRAME_DATA_LEN1; j < FRAME_DATA_LEN; ++j) {
-        f->data[j] = buf[int_table[j]];
+        fr_data[j] = buf[int_table[j]];
     }
 }
 
@@ -538,21 +532,21 @@ static const int diff_precod_UHF[] = {
     1, 1, 2, 1, 1, 2, 1, 1,
 };
 
-static void frame_diff_dec(frame_t *f)
+static void frame_diff_dec(uint8_t *fr_data)
 {
     for (int j = FRAME_DATA_LEN - 1; j > 0; --j) {
-        f->data[j] ^= f->data[j - diff_precod_UHF[j]];
+        fr_data[j] ^= fr_data[j - diff_precod_UHF[j]];
     }
 }
 
-static void frame_descramble(frame_t *f, int scr)
+static void frame_descramble(uint8_t *fr_data, int scr)
 {
     if (scr == 0) {
         return;
     }
 
     for(int k = 0 ; k < FRAME_DATA_LEN; k++) {
-        f->data[k] ^= scramb_table[(k + scr) % 127];
+        fr_data[k] ^= scramb_table[(k + scr) % 127];
     }
 }
 
@@ -561,25 +555,26 @@ static void frame_descramble(frame_t *f, int scr)
 
   @return SCR wich have now best score
   */
-static void detect_scr(phys_ch_t *phys_ch, const frame_t *f)
+static void detect_scr(phys_ch_t *phys_ch, const uint8_t *fr_data)
 {
     // compute SCR statistics
     for(int scr = 0; scr < ARRAY_LEN(phys_ch->scr_stat); ++scr) {
-        frame_t f_;
-        memcpy(&f_, f, sizeof(f_));
+        uint8_t fr_data_tmp[FRAME_DATA_LEN];
+        memcpy(fr_data_tmp, fr_data, FRAME_DATA_LEN);
 
-        frame_descramble(&f_, scr);
+        frame_descramble(fr_data_tmp, scr);
         if (phys_ch->band == TETRAPOL_BAND_UHF) {
-            frame_diff_dec(&f_);
+            frame_diff_dec(fr_data_tmp);
         }
 
         uint8_t deint_buf[FRAME_DATA_LEN];
         data_block_t data_blk;
 
-        frame_deinterleave1(&f_, deint_buf, phys_ch->band);
-        data_block_decode_frame1(&data_blk, f_.data, f_.frame_no, FRAME_TYPE_AUTO);
-        frame_deinterleave2(&f_, deint_buf, phys_ch->band, data_blk.fr_type);
-        data_block_decode_frame2(&data_blk, f_.data);
+        frame_deinterleave1(fr_data_tmp, deint_buf, phys_ch->band);
+        data_block_decode_frame1(&data_blk, fr_data_tmp, phys_ch->frame_no,
+                FRAME_TYPE_AUTO);
+        frame_deinterleave2(fr_data_tmp, deint_buf, phys_ch->band, data_blk.fr_type);
+        data_block_decode_frame2(&data_blk, fr_data_tmp);
 
         if (data_blk.nerrs) {
             phys_ch->scr_stat[scr] -= 2;
@@ -621,18 +616,18 @@ static void detect_scr(phys_ch_t *phys_ch, const frame_t *f)
     phys_ch->scr_guess = scr_max;
 }
 
-static int process_frame(phys_ch_t *phys_ch, frame_t *f)
+static int process_frame(phys_ch_t *phys_ch, uint8_t *fr_data)
 {
     if (phys_ch->scr == PHYS_CH_SCR_DETECT) {
-        detect_scr(phys_ch, f);
+        detect_scr(phys_ch, fr_data);
     }
 
     const int scr = (phys_ch->scr == PHYS_CH_SCR_DETECT) ?
         phys_ch->scr_guess : phys_ch->scr;
-    frame_descramble(f, scr);
+    frame_descramble(fr_data, scr);
 
     if (phys_ch->band == TETRAPOL_BAND_UHF) {
-        frame_diff_dec(f);
+        frame_diff_dec(fr_data);
     }
 
     uint8_t deint_buf[FRAME_DATA_LEN];
@@ -640,14 +635,17 @@ static int process_frame(phys_ch_t *phys_ch, frame_t *f)
 
     const int fr_type = (phys_ch->radio_ch_type == TETRAPOL_CCH) ?
         FRAME_TYPE_DATA : FRAME_TYPE_AUTO;
-    frame_deinterleave1(f, deint_buf, phys_ch->band);
-    data_block_decode_frame1(&data_blk, f->data, f->frame_no, fr_type);
-    frame_deinterleave2(f, deint_buf, phys_ch->band, data_blk.fr_type);
-    data_block_decode_frame2(&data_blk, f->data);
+    frame_deinterleave1(fr_data, deint_buf, phys_ch->band);
+    data_block_decode_frame1(&data_blk, fr_data, phys_ch->frame_no, fr_type);
+    frame_deinterleave2(fr_data, deint_buf, phys_ch->band, data_blk.fr_type);
+    data_block_decode_frame2(&data_blk, fr_data);
 
     if (phys_ch->radio_ch_type == TETRAPOL_CCH) {
         const int r = cch_push_data_block(phys_ch->cch, &data_blk);
-        f->frame_no = data_blk.frame_no;
+        if (data_blk.frame_no != FRAME_NO_UNKNOWN) {
+            phys_ch->frame_no = data_blk.frame_no;
+        }
+
         return r;
     }
 

@@ -12,9 +12,9 @@ static void test_frame_deinterleave(void **state)
 {
     (void) state;   // unused
 
-    frame_t data;
+    uint8_t frame_data[FRAME_DATA_LEN];
     for (int i = 0; i < FRAME_DATA_LEN; ++i) {
-        data.data[i] = 0x7f & (i + 1 + 8);
+        frame_data[i] = 0x7f & (i + 1 + 8);
     }
 
     uint8_t data_exp[FRAME_DATA_LEN] = {
@@ -35,9 +35,9 @@ static void test_frame_deinterleave(void **state)
     };
 
     uint8_t deint_buf[FRAME_DATA_LEN];
-    frame_deinterleave1(&data, deint_buf, TETRAPOL_BAND_UHF);
-    frame_deinterleave2(&data, deint_buf, TETRAPOL_BAND_UHF, FRAME_TYPE_DATA);
-    assert_memory_equal(data_exp, data.data, FRAME_DATA_LEN);
+    frame_deinterleave1(frame_data, deint_buf, TETRAPOL_BAND_UHF);
+    frame_deinterleave2(frame_data, deint_buf, TETRAPOL_BAND_UHF, FRAME_TYPE_DATA);
+    assert_memory_equal(data_exp, frame_data, FRAME_DATA_LEN);
 }
 
 // the goal is just to make sure the function provides the same results
@@ -46,9 +46,9 @@ static void test_frame_diff_dec(void **state)
 {
     (void) state;   // unused
 
-    frame_t data_in;
+    uint8_t frame_data[FRAME_DATA_LEN];
     for (int i = 0; i < FRAME_DATA_LEN; ++i) {
-        data_in.data[i] = 1 << (i % 7);
+        frame_data[i] = 1 << (i % 7);
     }
     uint8_t data_exp[FRAME_DATA_LEN] = {
         0x01, 0x03, 0x06, 0x0c, 0x18, 0x30, 0x60, 0x21, 0x03, 0x06, 0x0a, 0x18,
@@ -66,8 +66,8 @@ static void test_frame_diff_dec(void **state)
         0x18, 0x30, 0x50, 0x41, 0x03, 0x05, 0x0c, 0x18,
     };
 
-    frame_diff_dec(&data_in);
-    assert_memory_equal(data_exp, data_in.data, FRAME_DATA_LEN);
+    frame_diff_dec(frame_data);
+    assert_memory_equal(data_exp, frame_data, FRAME_DATA_LEN);
 }
 
 int main(void)
