@@ -8,6 +8,7 @@
 #include <tetrapol/data_block.h>
 #include <tetrapol/phys_ch.h>
 #include <tetrapol/timer.h>
+#include <tetrapol/frame.h>
 #include <tetrapol/cch.h>
 #include <tetrapol/tch.h>
 
@@ -19,10 +20,6 @@
 
 // max error rate for 2 frame synchronization sequences
 #define MAX_FRAME_SYNC_ERR 1
-
-#define FRAME_HDR_LEN (8)
-#define FRAME_DATA_LEN (152)
-#define FRAME_LEN (FRAME_HDR_LEN + FRAME_DATA_LEN)
 
 // used when decoding firts part of frame common to data and voice frames
 #define FRAME_DATA_LEN1 (52)
