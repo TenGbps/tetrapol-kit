@@ -159,7 +159,6 @@ int cch_push_data_block(cch_t *cch, data_block_t *data_blk)
         return 0;
     }
 
-    return 0;
     return -1;
 }
 
