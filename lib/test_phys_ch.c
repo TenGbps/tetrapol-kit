@@ -34,10 +34,10 @@ static void test_frame_deinterleave(void **state)
         0x2d, 0x77, 0x51, 0x1e,
     };
 
-    uint8_t deint_buf[FRAME_DATA_LEN];
-    frame_deinterleave1(frame_data, deint_buf, TETRAPOL_BAND_UHF);
-    frame_deinterleave2(frame_data, deint_buf, TETRAPOL_BAND_UHF, FRAME_TYPE_DATA);
-    assert_memory_equal(data_exp, frame_data, FRAME_DATA_LEN);
+    uint8_t frame_data_deint[FRAME_DATA_LEN];
+    frame_deinterleave1(frame_data_deint, frame_data, TETRAPOL_BAND_UHF);
+    frame_deinterleave2(frame_data_deint, frame_data, TETRAPOL_BAND_UHF, FRAME_TYPE_DATA);
+    assert_memory_equal(data_exp, frame_data_deint, FRAME_DATA_LEN);
 }
 
 // the goal is just to make sure the function provides the same results
