@@ -571,8 +571,7 @@ static void detect_scr(phys_ch_t *phys_ch, const uint8_t *fr_data)
         data_block_t data_blk;
 
         frame_deinterleave1(fr_data_deint, fr_data_tmp, phys_ch->band);
-        data_block_decode_frame1(&data_blk, fr_data_deint, phys_ch->frame_no,
-                FRAME_TYPE_AUTO);
+        data_block_decode_frame1(&data_blk, fr_data_deint, FRAME_TYPE_AUTO);
         frame_deinterleave2(fr_data_deint, fr_data_tmp, phys_ch->band, data_blk.fr_type);
         data_block_decode_frame2(&data_blk, fr_data_deint);
 
@@ -636,17 +635,13 @@ static int process_frame(phys_ch_t *phys_ch, uint8_t *fr_data)
     const int fr_type = (phys_ch->radio_ch_type == TETRAPOL_CCH) ?
         FRAME_TYPE_DATA : FRAME_TYPE_AUTO;
     frame_deinterleave1(fr_data_deint, fr_data, phys_ch->band);
-    data_block_decode_frame1(&data_blk, fr_data_deint, phys_ch->frame_no, fr_type);
+    data_block_decode_frame1(&data_blk, fr_data_deint, fr_type);
     frame_deinterleave2(fr_data_deint, fr_data, phys_ch->band, data_blk.fr_type);
     data_block_decode_frame2(&data_blk, fr_data_deint);
 
     if (phys_ch->radio_ch_type == TETRAPOL_CCH) {
-        const int r = cch_push_data_block(phys_ch->cch, &data_blk);
-        if (data_blk.frame_no != FRAME_NO_UNKNOWN) {
-            phys_ch->frame_no = data_blk.frame_no;
-        }
-
-        return r;
+        // TODO: report when frame_no is detected
+        return cch_push_data_block(phys_ch->cch, &data_blk, &phys_ch->frame_no);
     }
 
     if (!tch_push_data_block(phys_ch->tch, &data_blk)) {

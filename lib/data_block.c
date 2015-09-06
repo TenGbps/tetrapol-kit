@@ -67,9 +67,8 @@ static int decode_data_frame(uint8_t *res, uint8_t *err, const uint8_t *in, int 
 }
 
 void data_block_decode_frame1(data_block_t *data_blk, const uint8_t *data,
-        int frame_no, frame_type_t fr_type)
+        frame_type_t fr_type)
 {
-    data_blk->frame_no = frame_no;
     data_blk->fr_type = fr_type;
     data_blk->nerrs = 0;
 
@@ -110,8 +109,7 @@ void data_block_decode_frame2(data_block_t *data_blk, const uint8_t *data)
             data_blk->nerrs += decode_data_frame(
                     data_blk->data + 26, data_blk->err + 26, data + 2*26, 50);
             if (!data_blk->nerrs && ( data_blk->data[74] || data_blk->data[75] )) {
-                LOG(WTF, "nonzero padding in frame %d: %d %d",
-                        data_blk->frame_no,
+                LOG(WTF, "nonzero padding in frame: %d %d",
                         data_blk->data[74], data_blk->data[75]);
             }
         break;

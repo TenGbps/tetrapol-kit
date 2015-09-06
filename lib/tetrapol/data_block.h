@@ -27,7 +27,6 @@ typedef union {
 // now only data frame, in future might comprise different types of frame
 typedef struct {
     frame_type_t fr_type;
-    int frame_no;
     int nerrs;      ///< nonzero value indicate uncorrected errors in block
     // 74 bytes is required for data frame, but 2 extra bits are reqired
     // because they are used by decoding algorithm
@@ -51,9 +50,10 @@ bool data_block_check_crc(data_block_t *data_blk);
 
   @param data_blk pointer to struct data_block_t for storing result.
   @param data Should contains frame data (withought synchronization block).
+  @param fr_type Expected frame type.
   */
 void data_block_decode_frame1(data_block_t *data_blk, const uint8_t *data,
-        int frame_no, frame_type_t fr_type);
+        frame_type_t fr_type);
 
 /**
   Decode remaining part of frame.

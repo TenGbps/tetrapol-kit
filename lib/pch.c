@@ -47,10 +47,10 @@ void pch_reset(pch_t *pch)
     data_frame_reset(pch->data_fr);
 }
 
-bool pch_push_data_block(pch_t *pch, data_block_t* data_blk)
+bool pch_push_data_block(pch_t *pch, data_block_t* data_blk, int frame_no)
 {
     if (data_frame_push_data_block(pch->data_fr, data_blk) <= 0) {
-        if (data_blk->frame_no % 2) {
+        if (frame_no % 2) {
             LOG(DBG, "PCH frame broken");
             // TODO: PCH block lost
         }
