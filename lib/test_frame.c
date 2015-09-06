@@ -70,11 +70,49 @@ static void test_frame_deinterleave(void **state)
     assert_memory_equal(data_exp, fr_data_deint, FRAME_DATA_LEN);
 }
 
+// the goal is just to make sure the function provides the same results
+// after refactorization
+static void test_frame_decoder_data_01(void **state)
+{
+    (void) state;   // unused
+
+    const uint8_t fr_data[FRAME_DATA_LEN] = {
+        0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0,
+        0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0,
+        0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0,
+        1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1,
+        0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+        1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1,
+        1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0,
+        0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0,
+        1, 1, 0, 1, 1, 1, 0, 0
+    };
+
+    const uint8_t data_exp[] = {
+        1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1,
+        1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1,
+        1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0
+    };
+
+    frame_t fr;
+    frame_decoder_t *fd = frame_decoder_create(TETRAPOL_BAND_UHF, 67, FRAME_TYPE_DATA);
+    assert_non_null(fd);
+    frame_decoder_decode(fd, &fr, fr_data);
+    assert_int_equal(sizeof(data_exp), sizeof(frame_data_t));
+    assert_memory_equal(data_exp, fr.blob_, sizeof(frame_data_t));
+    assert_int_equal(0, fr.errors);
+    frame_decoder_destroy(fd);
+}
+
 int main(void)
 {
     const UnitTest tests[] = {
         unit_test(test_frame_diff_dec),
         unit_test(test_frame_deinterleave),
+        unit_test(test_frame_decoder_data_01),
     };
 
     return run_tests(tests);
