@@ -400,6 +400,80 @@ void frame_decoder_set_scr(frame_decoder_t *fd, int scr)
     fd->scr = scr;
 }
 
+/**
+  Fix some errors in frame. This routine is pretty naive, suboptimal and does
+  not use all possible potential of error correction.
+  TODO, FIXME ...
+
+  For those who want to improve it (or rather write new one from scratch!).
+  Each sigle bit error in fr_data can be found by characteristic pattern
+  (syndrome) in fr_errs and fixed by inverting invalid bits in fr_data.
+  Trivial syndromes are are 101 and 111, both can be fixed by xoring
+  fr_data with pattern 001 (xor last bit of syndrome).
+
+  If more errors occures the resulting syndrome is linear combination of
+  two trivial syndromes, the same stay for correction.
+
+Example for 2 bit error:
+syndrome    correction
+  101       001
+    111       001
+  10011     00101
+  */
+int frame_fix_errs(uint8_t *fr_data, uint8_t *fr_errs, int len)
+{
+    int nerrs = 0;
+    for (int i = 0; i < len; ++i) {
+        // Fixe some 3 bit error with 5 bit syndromes. There is few cases of
+        // those even for single bite error in demodulated frame.
+        if (!(fr_errs[i] |
+                    (fr_errs[(i + 1) % len]) |
+                    (fr_errs[(i + 2) % len]) |
+                    (fr_errs[(i + 3) % len]) |
+                    (fr_errs[(i + 4) % len] ^ 1) |
+                    //
+                    (fr_errs[(i + 8) % len] ^ 1) |
+                    (fr_errs[(i + 9) % len]) |
+                    (fr_errs[(i + 10) % len]) |
+                    (fr_errs[(i + 11) % len]) |
+                    (fr_errs[(i + 12) % len])
+             )) {
+            nerrs += 2 + fr_errs[(i + 5) % len] +
+                fr_errs[(i + 6) % len] +
+                fr_errs[(i + 7) % len];
+            fr_data[(i + 6) % len] ^= 1;
+            fr_data[(i + 7) % len] ^= fr_errs[(i + 6) % len];
+            fr_data[(i + 8) % len] ^= 1;
+            fr_errs[(i + 4) % len] = 0;
+            fr_errs[(i + 5) % len] = 0;
+            fr_errs[(i + 6) % len] = 0;
+            fr_errs[(i + 7) % len] = 0;
+            fr_errs[(i + 8) % len] = 0;
+            i += 6;
+            continue;
+        }
+        // Fix some 1 bit error with 3 bit syndromes.
+        if (!(fr_errs[i] |
+                (fr_errs[(i + 1) % len]) |
+                (fr_errs[(i + 2) % len] ^ 1) |
+                //
+                (fr_errs[(i + 4) % len] ^ 1) |
+                (fr_errs[(i + 5) % len]) |
+                (fr_errs[(i + 6) % len])
+             )) {
+            nerrs += 2 + (fr_errs[(i + 3) % len]);
+            fr_data[(i + 4) % len] ^= 1;
+            fr_errs[(i + 2) % len] = 0;
+            fr_errs[(i + 3) % len] = 0;
+            fr_errs[(i + 4) % len] = 0;
+            i += 4;
+            continue;
+        }
+    }
+
+    return nerrs;
+}
+
 void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_data)
 {
     if (fd->fr_type != FRAME_TYPE_AUTO &&
@@ -426,11 +500,14 @@ void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_da
     fr->fr_type = (fd->fr_type == FRAME_TYPE_AUTO) ? fr->d : fd->fr_type;
 
     if (fr->errors) {
-        return;
+        fr->errors -= frame_fix_errs(fr->blob_, fr_errs, 26);
+        if (fr->errors > 0) {
+            return;
+        }
     }
 
     frame_deinterleave2(fr_data_deint, fr_data_tmp, fd->band, fr->fr_type);
-    fr->errors += frame_decode2(fr->blob_, fr_errs, fr_data_deint, fr->fr_type);
+    fr->errors = frame_decode2(fr->blob_, fr_errs, fr_data_deint, fr->fr_type);
 
     if (fr->fr_type == FRAME_TYPE_VOICE) {
         fr->errors = frame_check_crc(fr->blob_, fr->fr_type) ? 0 : -1;
@@ -438,7 +515,10 @@ void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_da
     }
 
     if (fr->errors) {
-        return;
+        fr->errors -= frame_fix_errs(fr->blob_ + 26, fr_errs + 26, 50);
+        if (fr->errors > 0) {
+            return;
+        }
     }
 
     fr->errors = frame_check_crc(fr->blob_, fr->fr_type) ? 0 : -1;
