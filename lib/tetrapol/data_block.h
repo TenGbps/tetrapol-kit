@@ -1,20 +1,10 @@
 #pragma once
 
+#include <tetrapol/frame.h>
 #include <stdbool.h>
 #include <stdint.h>
 
 #define FRAME_NO_UNKNOWN -1
-
-typedef enum {
-    FRAME_TYPE_AUTO = -1,
-    FRAME_TYPE_VOICE = 0,
-    FRAME_TYPE_DATA = 1,
-    FRAME_TYPE_HR_DATA,
-    FRAME_TYPE_RANDOM_ACCESS,
-    FRAME_TYPE_TRAINING,
-    FRAME_TYPE_DM_EMERGENCY,
-    FRAME_TYPE_SCH_TI,
-} frame_type_t;
 
 typedef union {
     struct {
