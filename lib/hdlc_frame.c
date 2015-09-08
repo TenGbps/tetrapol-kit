@@ -188,7 +188,7 @@ int hdlc_frame_stuffing_idx(const hdlc_frame_t *hdlc_frame)
 
     int pos = ARRAY_LEN(stuff_pat) / 2;
     int lo = 0, hi = ARRAY_LEN(stuff_pat) - 1;
-    while (lo != hi) {
+    while (lo < hi) {
         const int cmp = memcmp(hdlc_frame->data, stuff_pat[pos].data, 5);
         if (!cmp) {
             return stuff_pat[pos].index;
@@ -197,14 +197,15 @@ int hdlc_frame_stuffing_idx(const hdlc_frame_t *hdlc_frame)
             ++pos;
         } else {
             if (cmp > 0) {
-                lo = pos;
+                lo = pos + 1;
             } else {
-                hi = pos;
+                hi = pos - 1;
             }
             pos = (lo + hi) / 2;
         }
     }
 
-    return -1;
+    return memcmp(hdlc_frame->data, stuff_pat[pos].data, 5) ?
+        -1 : stuff_pat[pos].index;
 }
 
