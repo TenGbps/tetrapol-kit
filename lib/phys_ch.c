@@ -5,7 +5,6 @@
 #include <tetrapol/system_config.h>
 #include <tetrapol/tsdu.h>
 #include <tetrapol/misc.h>
-#include <tetrapol/data_block.h>
 #include <tetrapol/phys_ch.h>
 #include <tetrapol/timer.h>
 #include <tetrapol/frame.h>

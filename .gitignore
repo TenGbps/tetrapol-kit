@@ -7,7 +7,6 @@ cmake_install.cmake
 CTestTestfile.cmake
 lib/libtetrapol.a
 lib/test_bit_utils
-lib/test_data_block
 lib/test_data_frame
 lib/test_frame
 lib/test_hdlc_frame

@@ -15,7 +15,6 @@ add_library (tetrapol
     bch.c
     bit_utils.c
     cch.c
-    data_block.c
     data_frame.c
     frame.c
     hdlc_frame.c
@@ -37,7 +36,6 @@ add_library (tetrapol
     tetrapol/bch.h
     tetrapol/bit_utils.h
     tetrapol/cch.h
-    tetrapol/data_block.h
     tetrapol/data_frame.h
     tetrapol/hdlc_frame.h
     tetrapol/frame.h
@@ -59,14 +57,9 @@ add_library (tetrapol
 target_link_libraries (tetrapol ${GLIB2_LIBRARIES})
 include_directories(${GLIB2_INCLUDE_DIRS})
 
-add_executable (test_data_block
-    log.c
-    test_data_block.c)
-target_link_libraries (test_data_block ${CMOCKA_LIBRARY})
-
 add_executable (test_data_frame
+    frame.c
     log.c
-    data_block.c
     test_data_frame.c)
 target_link_libraries (test_data_frame ${CMOCKA_LIBRARY})
 
@@ -84,7 +77,6 @@ add_executable (test_timer
     test_timer.c)
 target_link_libraries (test_timer ${CMOCKA_LIBRARY})
 
-add_test(test_data_block ${CMAKE_CURRENT_BINARY_DIR}/test_data_block)
 add_test(test_data_frame ${CMAKE_CURRENT_BINARY_DIR}/test_data_frame)
 add_test(test_frame ${CMAKE_CURRENT_BINARY_DIR}/test_frame)
 add_test(test_bit_utils ${CMAKE_CURRENT_BINARY_DIR}/test_bit_utils)
