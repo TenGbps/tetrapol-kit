@@ -18,7 +18,6 @@ enum {
 struct data_frame_priv_t {
     frame_t frames[SYS_PAR_DATA_FRAME_BLOCKS_MAX + 1];
     int fn[SYS_PAR_DATA_FRAME_BLOCKS_MAX + 1];
-    bool crc_ok[SYS_PAR_DATA_FRAME_BLOCKS_MAX + 1];
     int nframes;
     int nerrs;
 };
@@ -71,7 +70,7 @@ static void fix_by_parity(data_frame_t *data_fr)
     int err_fr_no = 0;
 
     for (int fr_no = 0; fr_no < data_fr->nframes; ++fr_no) {
-        if (!data_fr->crc_ok[fr_no]) {
+        if (data_fr->frames[fr_no].errors) {
             err_fr_no = fr_no;
             break;
         }
@@ -128,9 +127,7 @@ int data_frame_push_frame(data_frame_t *data_fr, const frame_t *fr)
         data_frame_reset(data_fr);
     }
 
-    const bool crc_ok = !fr->errors;
-    data_fr->nerrs += crc_ok ? 0 : 1;
-    data_fr->crc_ok[data_fr->nframes] = crc_ok;
+    data_fr->nerrs += fr->errors ? 1 : 0;
 
     if (data_fr->nerrs > 1) {
         data_frame_reset(data_fr);
@@ -138,14 +135,14 @@ int data_frame_push_frame(data_frame_t *data_fr, const frame_t *fr)
     }
 
     const int fn = fr->data.data[0] | (fr->data.data[1] << 1);
-    data_fr->fn[data_fr->nframes] = crc_ok ? fn : -1;
+    data_fr->fn[data_fr->nframes] = fr->errors ? -1 : fn;
 
     memcpy(&data_fr->frames[data_fr->nframes], fr, sizeof(frame_t));
     ++data_fr->nframes;
 
     // single frame
     if (data_fr->nframes == 1) {
-        if (!crc_ok) {
+        if (fr->errors) {
             return 0;
         }
         if (fn == FN_00) {
@@ -160,11 +157,11 @@ int data_frame_push_frame(data_frame_t *data_fr, const frame_t *fr)
     }
 
     const int fn_prev = data_fr->fn[data_fr->nframes - 2];
-    const bool crc_ok_prev = data_fr->crc_ok[data_fr->nframes - 2];
+    const bool fr_errors_prev = data_fr->frames[data_fr->nframes - 2].errors;
 
     // check for dualframe or multiframe
     if (data_fr->nframes == 2) {
-        if (!crc_ok) {
+        if (fr->errors) {
             if (fn_prev != FN_01) {
                 LOG(DBG, "MB err");
                 data_frame_reset(data_fr);
@@ -173,7 +170,7 @@ int data_frame_push_frame(data_frame_t *data_fr, const frame_t *fr)
             return 0;
         }
         if (fn == FN_11) {
-            if (!crc_ok_prev) {
+            if (fr_errors_prev) {
                 LOG(DBG, "MB err");
                 data_frame_reset(data_fr);
                 return -1;
@@ -190,7 +187,7 @@ int data_frame_push_frame(data_frame_t *data_fr, const frame_t *fr)
 
     // check multiframe, inner frames
     if (data_fr->nframes == 3) {
-        if (!crc_ok) {
+        if (fr->errors) {
             return 0;
         }
         if (fn != FN_10 && fn != FN_11) {
@@ -202,7 +199,7 @@ int data_frame_push_frame(data_frame_t *data_fr, const frame_t *fr)
     }
 
     // end of multiframe, final frame is invalid
-    if (!crc_ok) {
+    if (fr->errors) {
         if (fn_prev == FN_10) {
             return data_frame_check_multiblock(data_fr);
         }
@@ -210,7 +207,7 @@ int data_frame_push_frame(data_frame_t *data_fr, const frame_t *fr)
     }
 
     if (fn == FN_11) {
-        if (fn_prev != FN_11 && crc_ok_prev) {
+        if (fn_prev != FN_11 && !fr_errors_prev) {
             LOG(DBG, "MB err");
             data_frame_reset(data_fr);
             return -1;
@@ -220,7 +217,7 @@ int data_frame_push_frame(data_frame_t *data_fr, const frame_t *fr)
 
     // check multiframe, pre-end of multiframe
     if (fn == FN_10) {
-        if (fn_prev != FN_11 && crc_ok_prev) {
+        if (fn_prev != FN_11 && !fr_errors_prev) {
             LOG(DBG, "MB err");
             data_frame_reset(data_fr);
             return -1;
@@ -229,7 +226,7 @@ int data_frame_push_frame(data_frame_t *data_fr, const frame_t *fr)
     }
 
     if (fn == FN_01) {
-        if (fn_prev != FN_10 && crc_ok_prev) {
+        if (fn_prev != FN_10 && !fr_errors_prev) {
             LOG(DBG, "MB err");
             data_frame_reset(data_fr);
             return -1;
