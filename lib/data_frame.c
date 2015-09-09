@@ -4,6 +4,7 @@
 #include <tetrapol/data_frame.h>
 #include <tetrapol/misc.h>
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -15,10 +16,10 @@ enum {
 };
 
 struct data_frame_priv_t {
-    data_block_t data_blks[SYS_PAR_DATA_FRAME_BLOCKS_MAX + 1];
+    frame_t frames[SYS_PAR_DATA_FRAME_BLOCKS_MAX + 1];
     int fn[SYS_PAR_DATA_FRAME_BLOCKS_MAX + 1];
     bool crc_ok[SYS_PAR_DATA_FRAME_BLOCKS_MAX + 1];
-    int nblks;
+    int nframes;
     int nerrs;
 };
 
@@ -41,12 +42,12 @@ void data_frame_destroy(data_frame_t *data_fr)
 
 int data_frame_blocks(data_frame_t *data_fr)
 {
-    return data_fr->nblks;
+    return data_fr->nframes;
 }
 
 void data_frame_reset(data_frame_t *data_fr)
 {
-    data_fr->nblks = 0;
+    data_fr->nframes = 0;
     data_fr->nerrs = 0;
 }
 
@@ -54,8 +55,8 @@ static bool check_parity(data_frame_t *data_fr)
 {
     for (int i = 3; i < 3 + 64; ++i) {
         int parity = 0;
-        for (int blk_no = 0; blk_no < data_fr->nblks; ++blk_no) {
-            parity ^= data_fr->data_blks[blk_no].data[i];
+        for (int fr_no = 0; fr_no < data_fr->nframes; ++fr_no) {
+            parity ^= data_fr->frames[fr_no].data.data[i];
         }
         if (parity) {
             return false;
@@ -67,27 +68,27 @@ static bool check_parity(data_frame_t *data_fr)
 
 static void fix_by_parity(data_frame_t *data_fr)
 {
-    int err_blk_no = 0;
+    int err_fr_no = 0;
 
-    for (int blk_no = 0; blk_no < data_fr->nblks; ++blk_no) {
-        if (!data_fr->crc_ok[blk_no]) {
-            err_blk_no = blk_no;
+    for (int fr_no = 0; fr_no < data_fr->nframes; ++fr_no) {
+        if (!data_fr->crc_ok[fr_no]) {
+            err_fr_no = fr_no;
             break;
         }
     }
 
     // do not fix parity frame
-    if (err_blk_no == data_fr->nblks - 1) {
+    if (err_fr_no == data_fr->nframes - 1) {
         return;
     }
 
     for (int i = 1; i < 1 + 64 + 2; ++i) {
         int bit = 0;
-        for (int blk_no = 0; blk_no < data_fr->nblks; ++blk_no) {
-            if (blk_no != err_blk_no) {
-                bit ^= data_fr->data_blks[blk_no].data[i];
+        for (int fr_no = 0; fr_no < data_fr->nframes; ++fr_no) {
+            if (fr_no != err_fr_no) {
+                bit ^= data_fr->frames[fr_no].data.data[i];
             }
-            data_fr->data_blks[err_blk_no].data[i] = bit;
+            data_fr->frames[err_fr_no].data.data[i] = bit;
         }
     }
 }
@@ -98,7 +99,7 @@ static int data_frame_check_multiblock(data_frame_t *data_fr)
         fix_by_parity(data_fr);
     } else {
         if (!check_parity(data_fr)) {
-            LOG(ERR, "MB parity error %d", data_fr->nblks);
+            LOG(ERR, "MB parity error %d", data_fr->nframes);
             data_frame_reset(data_fr);
             return -1;
         }
@@ -107,9 +108,9 @@ static int data_frame_check_multiblock(data_frame_t *data_fr)
     return 1;
 }
 
-static int data_frame_push_data_block_(data_frame_t *data_fr, data_block_t *data_blk)
+static int data_frame_push_frame_(data_frame_t *data_fr, const frame_t *fr)
 {
-    const int r = data_frame_push_data_block(data_fr, data_blk);
+    const int r = data_frame_push_frame(data_fr, fr);
 
     switch (r) {
         case 0:
@@ -121,29 +122,29 @@ static int data_frame_push_data_block_(data_frame_t *data_fr, data_block_t *data
     }
 }
 
-int data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
+int data_frame_push_frame(data_frame_t *data_fr, const frame_t *fr)
 {
-    if (data_fr->nblks == ARRAY_LEN(data_fr->data_blks)) {
+    if (data_fr->nframes == ARRAY_LEN(data_fr->frames)) {
         data_frame_reset(data_fr);
     }
 
-    const bool crc_ok = data_block_check_crc(data_blk) && !data_blk->nerrs;
+    const bool crc_ok = !fr->errors;
     data_fr->nerrs += crc_ok ? 0 : 1;
-    data_fr->crc_ok[data_fr->nblks] = crc_ok;
+    data_fr->crc_ok[data_fr->nframes] = crc_ok;
 
     if (data_fr->nerrs > 1) {
         data_frame_reset(data_fr);
         return -1;
     }
 
-    const int fn = data_blk->data[1] | (data_blk->data[2] << 1);
-    data_fr->fn[data_fr->nblks] = crc_ok ? fn : -1;
+    const int fn = fr->data.data[0] | (fr->data.data[1] << 1);
+    data_fr->fn[data_fr->nframes] = crc_ok ? fn : -1;
 
-    memcpy(&data_fr->data_blks[data_fr->nblks], data_blk, sizeof(data_block_t));
-    ++data_fr->nblks;
+    memcpy(&data_fr->frames[data_fr->nframes], fr, sizeof(frame_t));
+    ++data_fr->nframes;
 
     // single frame
-    if (data_fr->nblks == 1) {
+    if (data_fr->nframes == 1) {
         if (!crc_ok) {
             return 0;
         }
@@ -158,11 +159,11 @@ int data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
         return 0;
     }
 
-    const int fn_prev = data_fr->fn[data_fr->nblks - 2];
-    const bool crc_ok_prev = data_fr->crc_ok[data_fr->nblks - 2];
+    const int fn_prev = data_fr->fn[data_fr->nframes - 2];
+    const bool crc_ok_prev = data_fr->crc_ok[data_fr->nframes - 2];
 
     // check for dualframe or multiframe
-    if (data_fr->nblks == 2) {
+    if (data_fr->nframes == 2) {
         if (!crc_ok) {
             if (fn_prev != FN_01) {
                 LOG(DBG, "MB err");
@@ -182,20 +183,20 @@ int data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
         if (fn != FN_10) {
             LOG(DBG, "MB err");
             data_frame_reset(data_fr);
-            return data_frame_push_data_block_(data_fr, data_blk);
+            return data_frame_push_frame_(data_fr, fr);
         }
         return 0;
     }
 
     // check multiframe, inner frames
-    if (data_fr->nblks == 3) {
+    if (data_fr->nframes == 3) {
         if (!crc_ok) {
             return 0;
         }
         if (fn != FN_10 && fn != FN_11) {
             LOG(DBG, "MB err");
             data_frame_reset(data_fr);
-            return data_frame_push_data_block_(data_fr, data_blk);
+            return data_frame_push_frame_(data_fr, fr);
         }
         return 0;
     }
@@ -238,7 +239,7 @@ int data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk)
 
     LOG(DBG, "MB err");
     data_frame_reset(data_fr);
-    return data_frame_push_data_block_(data_fr, data_blk);
+    return data_frame_push_frame_(data_fr, fr);
 }
 
 /**
@@ -270,15 +271,15 @@ static void pack_bits(uint8_t *bytes, const uint8_t *bits, int offs, int nbits)
 
 int data_frame_get_bytes(data_frame_t *data_fr, uint8_t *data)
 {
-    const int nblks = (data_fr->nblks <= 2) ?
-        data_fr->nblks : data_fr->nblks - 1;
+    const int nframes = (data_fr->nframes <= 2) ?
+        data_fr->nframes : data_fr->nframes - 1;
 
-    memset(data, 0, 8*nblks);
-    for (int blk_no = 0; blk_no < nblks; ++blk_no) {
-        pack_bits(data, data_fr->data_blks[blk_no].data + 3, 64*blk_no, 64);
+    memset(data, 0, 8*nframes);
+    for (int fr_no = 0; fr_no < nframes; ++fr_no) {
+        pack_bits(data, data_fr->frames[fr_no].data.data + 2, 64*fr_no, 64);
     }
 
     data_frame_reset(data_fr);
 
-    return nblks * 64;
+    return nframes * 64;
 }

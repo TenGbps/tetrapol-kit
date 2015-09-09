@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tetrapol/data_block.h>
+#include <tetrapol/frame.h>
 
 typedef struct data_frame_priv_t data_frame_t;
 
@@ -28,7 +28,7 @@ int data_frame_blocks(data_frame_t *data_fr);
     0 when more data blocks is required
     -1 when block reconstruction fails.
   */
-int data_frame_push_data_block(data_frame_t *data_fr, data_block_t *data_blk);
+int data_frame_push_frame(data_frame_t *data_fr, const frame_t *fr);
 
 /**
   Get data from data_frame, data are packe into bytes.

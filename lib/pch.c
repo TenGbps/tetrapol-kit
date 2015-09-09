@@ -3,6 +3,7 @@
 #include <tetrapol/pch.h>
 #include <tetrapol/addr.h>
 #include <tetrapol/misc.h>
+#include <tetrapol/data_frame.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -47,9 +48,9 @@ void pch_reset(pch_t *pch)
     data_frame_reset(pch->data_fr);
 }
 
-bool pch_push_data_block(pch_t *pch, data_block_t* data_blk, int frame_no)
+bool pch_push_frame(pch_t *pch, const frame_t *fr, int frame_no)
 {
-    if (data_frame_push_data_block(pch->data_fr, data_blk) <= 0) {
+    if (data_frame_push_frame(pch->data_fr, fr) <= 0) {
         if (frame_no % 2) {
             LOG(DBG, "PCH frame broken");
             // TODO: PCH block lost

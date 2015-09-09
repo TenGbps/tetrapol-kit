@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tetrapol/data_block.h>
+#include <tetrapol/frame.h>
 #include <tetrapol/tsdu.h>
 #include <tetrapol/timer.h>
 
@@ -10,6 +10,6 @@ typedef struct sdch_priv_t sdch_t;
 
 sdch_t *sdch_create(void);
 void sdch_destroy(sdch_t *sdch);
-bool sdch_dl_push_data_frame(sdch_t *sdch, data_block_t *data_blk);
+bool sdch_dl_push_data_frame(sdch_t *sdch, const frame_t *fr);
 tsdu_t *sdch_get_tsdu(sdch_t *sdch);
 void sdch_tick(const timeval_t *tv, void *sdch);

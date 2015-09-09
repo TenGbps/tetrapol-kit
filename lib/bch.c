@@ -51,9 +51,9 @@ void bch_destroy(bch_t *bch)
     free(bch);
 }
 
-bool bch_push_data_block(bch_t *bch, data_block_t* data_blk, int *frame_no)
+bool bch_push_frame(bch_t *bch, const frame_t *fr, int *frame_no)
 {
-    if (data_frame_push_data_block(bch->data_fr, data_blk) <= 0) {
+    if (data_frame_push_frame(bch->data_fr, fr) <= 0) {
         return false;
     }
 

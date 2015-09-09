@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define FRAME_NO_UNKNOWN -1
-
 typedef union {
     struct {
         unsigned int y : 1;

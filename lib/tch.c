@@ -43,19 +43,25 @@ void tch_destroy(tch_t *tch)
     free(tch);
 }
 
-int tch_push_data_block(tch_t *tch, data_block_t *data_blk)
+int tch_push_frame(tch_t *tch, const frame_t *fr)
 {
-    if (!data_block_check_crc(data_blk)) {
-        LOG(INFO, "Broken frame (bad CRC)");
+    if (fr->errors) {
+        LOG(INFO, "Broken frame");
         return -1;
     }
 
-    if (data_block_get_asb(data_blk).x) {
-        if (data_blk->fr_type == FRAME_TYPE_VOICE) {
-            LOG(INFO,"VOICE FRAME asb=%i", data_block_get_asb(data_blk).xy);
-            return 0;
-        }
-        if (sdch_dl_push_data_frame(tch->vch, data_blk)) {
+    if (fr->fr_type == FRAME_TYPE_VOICE) {
+        LOG(INFO,"VOICE FRAME asb=%i", (fr->voice.asb[0] << 1) | fr->voice.asb[1]);
+        return 0;
+    }
+
+    if (fr->fr_type != FRAME_TYPE_DATA) {
+        LOG(WTF, "not a data frame");
+        return -1;
+    }
+
+    if (fr->data.asb[0]) {
+        if (sdch_dl_push_data_frame(tch->vch, fr)) {
             tsdu_t *tsdu = sdch_get_tsdu(tch->vch);
             if (tsdu) {
                 LOG_IF(INFO) {
@@ -70,12 +76,12 @@ int tch_push_data_block(tch_t *tch, data_block_t *data_blk)
 
     // TODO: separate SCH and SCH_TI
 
-    if (data_blk->fr_type != FRAME_TYPE_DATA) {
+    if (fr->fr_type != FRAME_TYPE_DATA) {
         LOG(WTF, "data block expected");
         return -1;
     }
 
-    if (sdch_dl_push_data_frame(tch->sch, data_blk)) {
+    if (sdch_dl_push_data_frame(tch->sch, fr)) {
         tsdu_t *tsdu = sdch_get_tsdu(tch->sch);
         if (tsdu) {
             LOG_IF(INFO) {

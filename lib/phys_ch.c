@@ -490,26 +490,12 @@ static int process_frame(phys_ch_t *phys_ch, const uint8_t *fr_data)
     frame_decoder_reset(phys_ch->fd, phys_ch->band, scr, fr_type);
     frame_decoder_decode(phys_ch->fd, &fr, fr_data);
 
-    // TODO: replace data_block_t with frame_t
-    data_block_t data_blk;
-    if (fr.errors) {
-        memset(data_blk.data, 0, sizeof(frame_data_t));
-    } else {
-        if (fr.fr_type == FRAME_TYPE_DATA) {
-            memcpy(data_blk.data, fr.blob_, sizeof(frame_data_t));
-        } else {
-            memcpy(data_blk.data, fr.blob_, sizeof(frame_voice_t));
-        }
-    }
-    data_blk.fr_type = fr.fr_type;
-    data_blk.nerrs = fr.errors ? 1 : 0;
-
     if (phys_ch->radio_ch_type == TETRAPOL_CCH) {
         // TODO: report when frame_no is detected
-        return cch_push_data_block(phys_ch->cch, &data_blk, &phys_ch->frame_no);
+        return cch_push_frame(phys_ch->cch, &fr, &phys_ch->frame_no);
     }
 
-    if (!tch_push_data_block(phys_ch->tch, &data_blk)) {
+    if (!tch_push_frame(phys_ch->tch, &fr)) {
         return 0;
     }
 

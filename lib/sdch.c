@@ -57,9 +57,9 @@ void sdch_destroy(sdch_t *sdch)
     free(sdch);
 }
 
-bool sdch_dl_push_data_frame(sdch_t *sdch, data_block_t *data_blk)
+bool sdch_dl_push_data_frame(sdch_t *sdch, const frame_t *fr)
 {
-    if (data_frame_push_data_block(sdch->data_fr, data_blk) <= 0) {
+    if (data_frame_push_frame(sdch->data_fr, fr) <= 0) {
         return false;
     }
 

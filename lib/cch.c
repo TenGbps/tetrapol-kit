@@ -68,27 +68,12 @@ void cch_destroy(cch_t *cch)
     free(cch);
 }
 
-int cch_push_data_block(cch_t *cch, data_block_t *data_blk, int *frame_no)
+int cch_push_frame(cch_t *cch, const frame_t *fr, int *frame_no)
 {
-    LOG_IF(DBG) {
-        if (!data_blk->nerrs) {
-            int asbx = data_blk->data[67];
-            int asby = data_blk->data[68];
-            int fn0 = data_blk->data[1];
-            int fn1 = data_blk->data[2];
-            LOG_("OK frame_no=%03i fn=%i%i asb=%i%i data=",
-                    *frame_no, fn1, fn0, asbx, asby);
-        } else {
-            LOG_("ERR frame_no=%03i data=", *frame_no);
-        }
-        char buf[64*3];
-        LOGF("\t%s\n", sprint_hex(buf, data_blk->data + 3, 64));
-    }
-
     // For decoding BCH are used always all frames, not only 0-3, 100-103
     // Firs of all for detection BCH (frame 0/100 in superblock).
     // The second reason is just to check frame synchronization.
-    if (bch_push_data_block(cch->bch, data_blk, frame_no)) {
+    if (bch_push_frame(cch->bch, fr, frame_no)) {
         tsdu_d_system_info_t *tsdu = bch_get_tsdu(cch->bch);
         if (tsdu) {
             cch->cch_mux_type = tsdu->cell_config.mux_type;
@@ -117,7 +102,7 @@ int cch_push_data_block(cch_t *cch, data_block_t *data_blk, int *frame_no)
     }
 
     if (fn_mod == 98 || fn_mod == 99) {
-        if (pch_push_data_block(cch->pch, data_blk, *frame_no)) {
+        if (pch_push_frame(cch->pch, fr, *frame_no)) {
             LOG_IF(INFO) {
                 LOG_("\n");
                 pch_print(cch->pch);
@@ -127,7 +112,7 @@ int cch_push_data_block(cch_t *cch, data_block_t *data_blk, int *frame_no)
     }
     if (cch->cch_mux_type == CELL_CONFIG_MUX_TYPE_TYPE_2) {
         if (fn_mod == 48 || fn_mod == 49) {
-            if (pch_push_data_block(cch->pch, data_blk, *frame_no)) {
+            if (pch_push_frame(cch->pch, fr, *frame_no)) {
                 LOG_IF(INFO) {
                     LOG_("\n");
                     pch_print(cch->pch);
@@ -138,7 +123,7 @@ int cch_push_data_block(cch_t *cch, data_block_t *data_blk, int *frame_no)
     }
 
     if (*frame_no % 25 == 14) {
-        if (rch_push_data_block(cch->rch, data_blk)) {
+        if (rch_push_frame(cch->rch, fr)) {
             LOG_IF(INFO) {
                 LOG_("\n");
                 rch_print(cch->rch);
@@ -147,7 +132,7 @@ int cch_push_data_block(cch_t *cch, data_block_t *data_blk, int *frame_no)
         return 0;
     }
 
-    if (sdch_dl_push_data_frame(cch->sdch, data_blk)) {
+    if (sdch_dl_push_data_frame(cch->sdch, fr)) {
         tsdu_t *tsdu = sdch_get_tsdu(cch->sdch);
         if (tsdu) {
             LOG_IF(INFO) {

@@ -1,5 +1,5 @@
 #pragma once
-#include <tetrapol/data_block.h>
+#include <tetrapol/frame.h>
 #include <tetrapol/timer.h>
 
 typedef struct cch_priv_t cch_t;
@@ -11,11 +11,11 @@ void cch_destroy(cch_t *cch);
   Proces decoded frame for CCH.
 
   @param cch
-  @param data_blk
+  @param frame
   @param frame_no current frame number or FRAME_NO_UNKNOWN.
     Set to proper value when frame with known number is detected.
   */
-int cch_push_data_block(cch_t *cch, data_block_t *data_blk, int *frame_no);
+int cch_push_frame(cch_t *cch, const frame_t *fr, int *frame_no);
 
 /**
   Anounce framing error to CCH, allows detection of potentional framing

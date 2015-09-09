@@ -43,9 +43,9 @@ void rch_destroy(rch_t *rch)
     free(rch);
 }
 
-bool rch_push_data_block(rch_t *rch, data_block_t *data_blk)
+bool rch_push_frame(rch_t *rch, const frame_t *fr)
 {
-    if (data_frame_push_data_block(rch->data_fr, data_blk) <= 0) {
+    if (data_frame_push_frame(rch->data_fr, fr) <= 0) {
         LOG(DBG, "RCH: block fail");
         return false;
     }
