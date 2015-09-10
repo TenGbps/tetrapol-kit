@@ -452,6 +452,27 @@ int frame_fix_errs(uint8_t *fr_data, uint8_t *fr_errs, int len)
             i += 6;
             continue;
         }
+        // Fix some 2 bit errors with 4 bit syndromes.
+        if (!(fr_errs[i] |
+                (fr_errs[(i + 1) % len]) |
+                (fr_errs[(i + 2) % len]) |
+                (fr_errs[(i + 3) % len] ^ 1) |
+                //
+                (fr_errs[(i + 6) % len] ^ 1) |
+                (fr_errs[(i + 7) % len]) |
+                (fr_errs[(i + 8) % len]) |
+                (fr_errs[(i + 9) % len])
+             )) {
+            nerrs += 2 + (fr_errs[(i + 4) % len]) + (fr_errs[(i + 5) % len]);
+            fr_data[(i + 5) % len] ^= 1;
+            fr_data[(i + 6) % len] ^= 1;
+            fr_errs[(i + 3) % len] = 0;
+            fr_errs[(i + 4) % len] = 0;
+            fr_errs[(i + 5) % len] = 0;
+            fr_errs[(i + 6) % len] = 0;
+            i += 4;
+            continue;
+        }
         // Fix some 1 bit error with 3 bit syndromes.
         if (!(fr_errs[i] |
                 (fr_errs[(i + 1) % len]) |
