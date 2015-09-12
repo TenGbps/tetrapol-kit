@@ -25,7 +25,7 @@ fi
 
 while true; do
 
-    if ! ./demod/tetrapol_cli.py status; then
+    if ! ./demod/tetrapol_rx_cli.py status; then
         action="start"
         break
     fi
@@ -37,7 +37,7 @@ while true; do
         break
     fi
 
-    ./demod/tetrapol_cli.py stop
+    ./demod/tetrapol_rx_cli.py stop
     action="start"
     sleep 1
 done
@@ -65,15 +65,15 @@ while true; do
 	read -p "Command: " CMD ARG1
 	case "$CMD" in
 		"a")
-			./demod/tetrapol_cli.py autotune $ARG1
+			./demod/tetrapol_rx_cli.py autotune $ARG1
 		;;
 
 		"d")
-			./demod/tetrapol_cli.py output close $ARG1
+			./demod/tetrapol_rx_cli.py output close $ARG1
 		;;
 
 		"e")
-			./demod/tetrapol_cli.py output open $ARG1
+			./demod/tetrapol_rx_cli.py output open $ARG1
 		;;
 
 
@@ -83,7 +83,7 @@ while true; do
 
 		"l")
 			# list top 30 channels with strongest power
-			./demod/tetrapol_cli.py power | head -n ${ARG1:-30}
+			./demod/tetrapol_rx_cli.py power | head -n ${ARG1:-30}
 		;;
 
 		"x")
