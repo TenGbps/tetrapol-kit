@@ -1,0 +1,33 @@
+Informations about TETRAPOL encryption.
+
+Those informations are from various sources and its reliability can vary!
+
+
+== Related documents
+
+TETRAPOL Specification Part 16 Security, PAS 0001-16-1 (V1.0.3 RESTRICTED)
+TETRAPOL Specifications; Part 16: Security; Part 1: Security services PAS 0001-16-1 Version: 2.1.0 Date: 30 January 1998.
+TETRAPOL Specifications; Part 16: Security; Part 2: KSW – KMC interface PAS 0001-16-2 Version: 2.1.0 Date: 30 January 1998.
+TETRAPOL Specifications; Part 16: Security; Part 3: Mechanisms, messages and algorithms. PAS 0001-16-3 Version: 2.1.0 Date: 30 January 1998.
+
+
+== Cryptography description
+
+kes size: 2^48
+key size for rekeying: 10^10 (9 decimal digits)
+
+Multiple keys are used, separate key for:
+    * Direct Mode Key (DMK) - common for all stations
+    * Personalisation Key (PK) - encrypt data available to all stations
+    * Teminal Master Key (TMK) - authentication of station in network
+
+After login into network, more keys is loaded into station:
+    * Terminal Key of Key (TKK) - used for encryption/decryption of other keys
+    * Other keys used for comunication encryption and signing
+
+For Emergency Multi site Open Channel (EMOCH) is encryption disabled.
+
+
+== Bibliography:
+
+(1) http://www.kmitocty.cz/?p=239
