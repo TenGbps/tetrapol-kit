@@ -23,6 +23,8 @@ import threading
 import time
 
 class tetrapol_multi_rx(gr.top_block):
+    """Receive multiple TETRAPOL channels. This module is optimized for
+    downlink."""
 
     def __init__(self, freq=394e6, gain=0, sample_rate=2400000, args="",
             channel_bw=12500, listen="60100", ppm=0,
@@ -110,7 +112,7 @@ class tetrapol_multi_rx(gr.top_block):
             valve = grc_blks2.valve(item_size=gr.sizeof_gr_complex, open=True)
             gmsk_demod = digital.gmsk_demod(
                     samples_per_symbol=samples_per_symbol,
-                    gain_mu=0.050,
+                    gain_mu=0.005,
                     mu=0.5,
                     omega_relative_limit=0.005,
                     freq_error=0.0,
