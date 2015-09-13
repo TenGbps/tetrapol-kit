@@ -256,29 +256,27 @@ class tetrapol_multi_rx(gr.top_block):
 
 if __name__ == '__main__':
     parser = OptionParser(option_class=eng_option, usage="%prog: [options]")
+    parser.add_option("-a", "--args", dest="args", type="string", default="",
+            help="osmo-sdr arguments [default=%default]")
+    parser.add_option("-b", "--channel-bw", dest="channel_bw", type="intx",
+            default=12500, help="Channel band width [default=%default]")
     parser.add_option("-f", "--freq", dest="freq", type="eng_float",
-            default=eng_notation.num_to_str(392e6),
-            help="Set Frequency [default=%default]")
-    parser.add_option("-g", "--gain", dest="gain", type="eng_float",
-            default=eng_notation.num_to_str(0),
-            help="Set Gain [default=%default]")
+            help="Center frequency")
+    parser.add_option("-g", "--gain", dest="gain", type="eng_float", default=0,
+            help="RF Gain [default=%default]")
+    parser.add_option("-l", "--listen", dest="listen", default="localhost:60100",
+            help="RPC Server[host:]port [default=%default]")
+    parser.add_option("-o", "--output", dest="output", type="string",
+            default="channel%d.bits",
+            help="Set Output file name template [default=%default]")
+    parser.add_option("--output-offset", type=int,
+            default=None, help="Channel number of channel on center frequency")
+    parser.add_option("-p", "--ppm", dest="ppm", type="eng_float", default=0,
+            help="Set Frequency correction [default=%default]")
     parser.add_option("-s", "--sample-rate", dest="sample_rate", type="intx",
             default=2400000, help="Set Sample rate [default=%default]")
-    parser.add_option("-a", "--args", dest="args", type="string", default="",
-            help="Set osmo-sdr arguments [default=%default]")
-    parser.add_option("-b", "--channel-bw", dest="channel_bw", type="intx",
-            default=12500, help="Set Channel band width [default=%default]")
-    parser.add_option("-l", "--listen", dest="listen",
-            default="localhost:60100", help="Server RPC [host:]port [default=%default]")
-    parser.add_option("-p", "--ppm", dest="ppm", type="eng_float",
-            default=eng_notation.num_to_str(0),
-            help="Set Frequency correction [default=%default]")
-    parser.add_option("-o", "--output", dest="output", type="string",
-            default="channel%d.bits", help="Set Output [default=%default]")
-    parser.add_option("--output-offset", type=int,
-            default=None, help="channel number for channel on center frequency")
-    parser.add_option("-t", "--auto-tune", dest="auto_tune", type="intx",
-            default=-1, help="Set Allow automatic fine tunning [default=%default]")
+    parser.add_option("-t", "--auto-tune", dest="auto_tune", type="intx", default=-1,
+            help="Automatic fine tunning  on specified channel [default=%default]")
     (options, args) = parser.parse_args()
     tb = tetrapol_multi_rx(
         freq=options.freq,
