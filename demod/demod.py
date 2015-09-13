@@ -41,7 +41,7 @@ class top_block(gr.top_block):
         self.channels.append(int(ch))
 
     if options.frequency is None:
-	self.ifreq = chan0_freq + (max(self.channels) + min(self.channels)) / 2 * channel_bw - 100000
+        self.ifreq = chan0_freq + (max(self.channels) + min(self.channels)) / 2 * channel_bw - 100000
     else:
         self.ifreq = options.frequency
 
@@ -70,7 +70,7 @@ class top_block(gr.top_block):
 
     out_sample_rate=sample_rate/first_decim
     sys.stderr.write("output sample rate: %d\n" % (out_sample_rate))
-   
+
     sps=out_sample_rate/bitrate
     sys.stderr.write("samples per symbol: %d\n" % (sps))
 
@@ -94,7 +94,7 @@ class top_block(gr.top_block):
         else:
             cmd = options.output_pipe.replace('%%', str(self.channels[ch]))
             pipe = subprocess.Popen(cmd, stdin=subprocess.PIPE, shell=True)
-	    fd = pipe.stdin.fileno()
+            fd = pipe.stdin.fileno()
             output = blocks.file_descriptor_sink(gr.sizeof_char, fd)
 
         self.connect((self.src, 0), (tuner, 0))
