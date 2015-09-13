@@ -28,12 +28,14 @@ class tetrapol_multi_rx(gr.top_block):
 
     def __init__(self, freq=394e6, gain=0, sample_rate=2400000, args="",
             channel_bw=12500, listen="60100", ppm=0,
-            output="channel%d.bits", output_offset=None, auto_tune=-1):
+            output="channel%d.bits", output_offset=None, auto_tune=-1,
+            rx_channels=None):
         gr.top_block.__init__(self, "TETRAPOL multichannel reciever")
 
         ##################################################
         # Parameters and variables
         ##################################################
+        rx_channels = rx_channels or []
         self.freq = freq
         self.gain = gain
         self.sample_rate = sample_rate
@@ -109,7 +111,8 @@ class tetrapol_multi_rx(gr.top_block):
                         (self.channelizer, ch_out),
                         (null_sink, 0))
                 continue
-            valve = grc_blks2.valve(item_size=gr.sizeof_gr_complex, open=True)
+            valve = grc_blks2.valve(item_size=gr.sizeof_gr_complex,
+                    open=not ch_in in rx_channels)
             gmsk_demod = digital.gmsk_demod(
                     samples_per_symbol=samples_per_symbol,
                     gain_mu=0.005,
@@ -260,6 +263,8 @@ if __name__ == '__main__':
             help="osmo-sdr arguments [default=%default]")
     parser.add_option("-b", "--channel-bw", dest="channel_bw", type="intx",
             default=12500, help="Channel band width [default=%default]")
+    parser.add_option("-c", "--channel", dest="rx_channels", type=int,
+            action="append", help="Start receiving on specified channel(s).")
     parser.add_option("-f", "--freq", dest="freq", type="eng_float",
             help="Center frequency")
     parser.add_option("-g", "--gain", dest="gain", type="eng_float", default=0,
@@ -288,6 +293,7 @@ if __name__ == '__main__':
         ppm=options.ppm,
         output=options.output,
         output_offset=options.output_offset,
-        auto_tune=options.auto_tune)
+        auto_tune=options.auto_tune,
+        rx_channels=options.rx_channels)
     tb.start()
     tb.wait()
