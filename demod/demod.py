@@ -36,12 +36,15 @@ class top_block(gr.top_block):
 
     self.rfgain = options.gain
 
-    self.channels = []
-    for ch in options.channels.split(','):
-        self.channels.append(int(ch))
+    self.channels = [ int(ch) for ch in options.channels.split(',') if ch ]
+    self.ch_freqs = [ ch * channel_bw + chan0_freq for ch in options.channels ]
+    self.ch_freqs.extend(
+            [ int(f) for f in options.channels_by_freq.split(',') if f ])
+    while len(self.channels) < len(self.ch_freqs):
+        self.channels.append(-1)
 
     if options.frequency is None:
-        self.ifreq = chan0_freq + (max(self.channels) + min(self.channels)) / 2 * channel_bw - 100000
+        self.ifreq = (max(self.ch_freqs) + min(self.ch_freqs)) / 2
     else:
         self.ifreq = options.frequency
 
@@ -78,8 +81,8 @@ class top_block(gr.top_block):
     for ch in range(0,len(self.channels)):
         bw = (9200 + options.afc_ppm_threshold)/2
         taps = filter.firdes.low_pass(1.0, sample_rate, bw, bw*options.transition_width, filter.firdes.WIN_HANN)
-        offset = chan0_freq + channel_bw * self.channels[ch] - self.ifreq
-        sys.stderr.write("channel[%d]: %d frequency=%d, offset=%d Hz\n" % (ch, self.channels[ch], self.ifreq+offset, offset))
+        offset = self.ch_freqs[ch] - self.ifreq
+        sys.stderr.write("channel[%d]: %d frequency=%d, offset=%d Hz\n" % (ch, self.channels[ch], self.ch_freqs[ch], offset))
 
 
         tuner = filter.freq_xlating_fir_filter_ccc(first_decim, taps, offset, sample_rate)
@@ -87,11 +90,14 @@ class top_block(gr.top_block):
 
         demod = digital.gmsk_demod(samples_per_symbol=sps)
 
+        fname = self.channels[ch]
+        if fname == -1:
+            fname = self.ch_freqs[ch]
         if options.output_pipe is None:
-            file = options.output_file.replace('%%', str(self.channels[ch]))
+            file = options.output_file.replace('%%', str(fname))
             output = blocks.file_sink(gr.sizeof_char, file)
         else:
-            cmd = options.output_pipe.replace('%%', str(self.channels[ch]))
+            cmd = options.output_pipe.replace('%%', str(fname))
             pipe = subprocess.Popen(cmd, stdin=subprocess.PIPE, shell=True)
             fd = pipe.stdin.fileno()
             output = blocks.file_descriptor_sink(gr.sizeof_char, fd)
@@ -119,7 +125,10 @@ class top_block(gr.top_block):
                     continue
                 freq = self.tuners[ch].center_freq() + err * options.afc_gain
                 self.tuners[ch].set_center_freq(freq)
-                sys.stderr.write("Chan %d freq err: %5.0f\tfreq: %f\n" % (self.channels[ch], err, freq))
+                if self.channels[ch] == -1:
+                    sys.stderr.write("Freq %d freq err: %5.0f\tfreq: %f\n" % (self.ch_freqs[ch], err, freq))
+                else:
+                    sys.stderr.write("Chan %d freq err: %5.0f\tfreq: %f\n" % (self.channels[ch], err, freq))
             sys.stderr.write("\n")
     _variable_function_probe_0_thread = threading.Thread(target=_variable_function_probe_0_probe)
     _variable_function_probe_0_thread.daemon = True
@@ -134,7 +143,7 @@ def get_options():
     parser.add_option("-s", "--sample-rate", type="eng_float", default=1024000, help="receiver sample rate (default %default)")
     parser.add_option("-f", "--frequency", type="eng_float", default=None, help="receiver center frequency (default %default)")
     parser.add_option("-g", "--gain", type="eng_float", default=None, help="set receiver gain")
-    parser.add_option("-c", "--channels", type="string", default=None, help="channel numbers")
+    parser.add_option("-c", "--channels", type="string", default="", help="channel numbers")
     parser.add_option("-p", "--ppm", dest="ppm", type="eng_float", default=eng_notation.num_to_str(0), help="Frequency correction")
     parser.add_option("-t", "--transition-width", type="eng_float", default=0.2, help="low pass transition width (default %default)")
     parser.add_option("-G", "--afc-gain", type="eng_float", default=0.2, help="afc gain (default %default)")
@@ -142,6 +151,7 @@ def get_options():
     parser.add_option("-T", "--afc-ppm-threshold", type="eng_float", default=100, help="afc threshold (default %default)")
     parser.add_option("-o", "--output-file", type="string", default="channel%%.bits", help="specify the bit output file")
     parser.add_option("-O", "--output-pipe", type="string", default=None, help="specify shell pipe to send output")
+    parser.add_option("-l", "--channels-by-freq", type="string", default="", help="Receive on specified frequencies")
     (options, args) = parser.parse_args()
     if len(args) != 0:
         parser.print_help()
