@@ -52,12 +52,11 @@ class top_block(gr.top_block):
 
     if self.rfgain is None:
         self.src.set_gain_mode(True, 0)
-
         self.iagc = 1
         self.rfgain = 0
     else:
         self.iagc = 0
-        self.src.set_gain_mode(0)
+        self.src.set_gain_mode(False)
         self.src.set_gain(self.rfgain)
         self.src.set_if_gain(37)
 
