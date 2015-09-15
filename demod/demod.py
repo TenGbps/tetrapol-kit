@@ -100,13 +100,14 @@ class top_block(gr.top_block):
         self.connect((tuner, 0), (demod, 0))
         self.connect((demod, 0), (output, 0))
 
-        fm_demod = analog.fm_demod_cf(sample_rate/first_decim, 1, 5000, 3000, 4000)
-        integrate = blocks.integrate_ff(32000)
+        afc_decimation = 32000
+        afc_demod = analog.quadrature_demod_cf(sample_rate/first_decim/(2*math.pi*afc_decimation))
+        integrate = blocks.integrate_ff(afc_decimation)
         afc_probe = blocks.probe_signal_f()
         self.afc_probes.append(afc_probe)
 
-        self.connect((tuner, 0), (fm_demod,0))
-        self.connect((fm_demod, 0), (integrate,0))
+        self.connect((tuner, 0), (afc_demod,0))
+        self.connect((afc_demod, 0), (integrate,0))
         self.connect((integrate, 0), (afc_probe, 0))
 
     def _variable_function_probe_0_probe():
