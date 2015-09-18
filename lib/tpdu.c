@@ -29,15 +29,34 @@ typedef struct {
     hdlc_frame_t *hdlc_frs[SYS_PAR_N452];
 } segmented_du_t;
 
+enum {
+    TSAP_ID_UNKNOWN = -1,
+};
+
+enum {
+    TSAP_REF_UNKNOWN = -1,
+};
+
+typedef enum {
+    CONNECTION_STATE_NC = 0,    ///< not connected
+    CONNECTION_STATE_CR = 1,    ///< connection request
+    CONNECTION_STATE_CONNECTED = 2,
+    CONNECTION_STATE_BROKEN = 3,
+} connection_state_t;
+
 typedef struct {
+    connection_state_t state;
     uint8_t tsap_id;
-    uint8_t tsap_ref_dl;
-    uint8_t tsap_ref_ul;
+    uint8_t tsap_ref_swmi;
+    uint8_t tsap_ref_rt;
+    int seg_len;
+    uint8_t segbuf[2000];
 } connection_t;
 
 struct tpdu_priv_t {
-    connection_t *conns[16];  // listed by TSAP reference id (SwMI side)
-    connection_t *conns_fast[16];  // listed by TSAP id
+    // connections are listed by TSAP reference (SwMI side)
+    // 8 normal, 7 fast connections
+    connection_t conns[8+7];
 };
 
 struct tpdu_priv_ui_t {
@@ -45,11 +64,129 @@ struct tpdu_priv_ui_t {
     segmented_du_t *seg_du[128];
 };
 
+static void connection_reset(connection_t *conn)
+{
+    conn->state = CONNECTION_STATE_NC;
+    conn->seg_len = 0;
+}
+
+static void connection_fcr(connection_t *conn, int tsap_id, int tsap_ref)
+{
+    LOG(INFO, "FCR TSAP_ref: %d TSAP_id: %d", tsap_ref, tsap_id);
+
+    if (conn->state != CONNECTION_STATE_NC) {
+        LOG(INFO, "closing existing connection");
+        connection_reset(conn);
+    }
+
+    conn->state = CONNECTION_STATE_CONNECTED;
+    conn->tsap_id = tsap_id;
+    conn->tsap_ref_swmi = tsap_ref;
+    conn->tsap_ref_rt = tsap_ref;
+}
+
+static void connection_cr(connection_t *conn, int tsap_id, int tsap_ref)
+{
+    LOG(INFO, "CR TSAP_ref: %d TSAP_id: %d", tsap_ref, tsap_id);
+
+    if (conn->state != CONNECTION_STATE_NC) {
+        LOG(INFO, "closing existing connection");
+        connection_reset(conn);
+    }
+
+    conn->state = CONNECTION_STATE_CR;
+    conn->tsap_id = tsap_id;
+    conn->tsap_ref_swmi = tsap_ref;
+    conn->tsap_ref_rt = TSAP_REF_UNKNOWN;
+}
+
+static void connection_cc(connection_t *conn, int tsap_ref_swmi, int tsap_ref_rt)
+{
+    LOG(INFO, "CC TSAP_ref_SwMI=%d TSAP_ref_RT=%d", tsap_ref_swmi, tsap_ref_rt);
+
+    if (conn->state != CONNECTION_STATE_NC) {
+        LOG(INFO, "closing existing connection");
+        connection_reset(conn);
+    }
+
+    conn->state = CONNECTION_STATE_CONNECTED;
+    // when we receive CC we are missing CR from uplink
+    conn->tsap_id = TSAP_ID_UNKNOWN;
+    conn->tsap_ref_swmi = tsap_ref_swmi;
+    conn->tsap_ref_rt = tsap_ref_rt;
+}
+
+// used for both DT and DTE
+static int connection_dt(connection_t *conn, int tsap_ref_swmi, int tsap_ref_rt, int seg)
+{
+    LOG(INFO, "DT TSAP_ref_SwMI=%d TSAP_ref_RT=%d", tsap_ref_swmi, tsap_ref_rt);
+
+    if (conn->state == CONNECTION_STATE_NC) {
+        if (!seg) {
+            LOG(INFO, "Repairing broken connection");
+            conn->state = CONNECTION_STATE_CONNECTED;
+            conn->tsap_ref_rt = tsap_ref_rt;
+            conn->tsap_ref_swmi = tsap_ref_swmi;
+            conn->tsap_id = TSAP_ID_UNKNOWN;
+        } else {
+            LOG(INFO, "Link broken, connection does not exists");
+            conn->state = CONNECTION_STATE_BROKEN;
+        }
+        return -1;
+    }
+    if (conn->state == CONNECTION_STATE_BROKEN) {
+        if (!seg) {
+            LOG(INFO, "Repairing broken connection");
+            conn->state = CONNECTION_STATE_CONNECTED;
+            conn->tsap_ref_rt = tsap_ref_rt;
+            conn->tsap_ref_swmi = tsap_ref_swmi;
+            conn->tsap_id = TSAP_ID_UNKNOWN;
+        }
+        return -1;
+    }
+    if (conn->state == CONNECTION_STATE_CR) {
+        conn->state = CONNECTION_STATE_CONNECTED;
+        conn->tsap_ref_rt = tsap_ref_rt;
+    }
+    if (conn->tsap_ref_rt != tsap_ref_rt) {
+        LOG(INFO, "Link broken, invalid RT TSAP reference");
+        conn->state = CONNECTION_STATE_BROKEN;
+        return -1;
+    }
+
+    return 0;
+}
+
+// should be called fot FRD, DR, DC (in pre-processing phase)
+static int connection_dc_dr_fdr(connection_t *conn, int tsap_ref_swmi, int tsap_ref_rt)
+{
+    LOG(INFO, "FRD/DR/DC TSAP_ref_SwMI=%d TSAP_ref_RT=%d", tsap_ref_swmi, tsap_ref_rt);
+
+    if (conn->state == CONNECTION_STATE_NC) {
+        LOG(INFO, "Disconnect for not-opened connection");
+        return -1;
+    }
+    if (conn->state == CONNECTION_STATE_BROKEN) {
+        return -1;
+    }
+    if (conn->tsap_ref_rt != tsap_ref_rt && conn->state != CONNECTION_STATE_CR) {
+        LOG(INFO, "Link broken, invalid RT TSAP reference");
+        conn->state = CONNECTION_STATE_BROKEN;
+        return -2;
+    }
+
+    return 0;
+}
+
 tpdu_t *tpdu_create(void)
 {
     tpdu_t *tpdu = calloc(1, sizeof(tpdu_t));
     if (!tpdu) {
         return NULL;
+    }
+
+    for (int i = 0; i < ARRAY_LEN(tpdu->conns); ++i) {
+        connection_reset(&tpdu->conns[i]);
     }
 
     return tpdu;
