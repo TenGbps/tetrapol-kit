@@ -61,9 +61,9 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
 
     if (hdlc_fr->command.cmd == COMMAND_INFORMATION) {
         LOG_IF(INFO) {
-            LOG_("cmd=Information\n\t");
+            LOG_("cmd=Information ");
             addr_print(&hdlc_fr->addr);
-            LOGF("\n\tn_r=%d n_s=%d P=%d\n",
+            LOGF(" n_r=%d n_s=%d P=%d\n",
                     hdlc_fr->command.information.n_r,
                     hdlc_fr->command.information.n_s,
                     hdlc_fr->command.information.p_e);
@@ -85,19 +85,19 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
         LOG_IF(INFO) {
             switch(hdlc_fr->command.cmd) {
                 case COMMAND_SUPERVISION_RR:
-                    LOG_("cmd=RR\n\t");
+                    LOG_("cmd=RR ");
                     break;
 
                 case COMMAND_SUPERVISION_RNR:
-                    LOG_("cmd=RNR\n\t");
+                    LOG_("cmd=RNR ");
                     break;
 
                 case COMMAND_SUPERVISION_REJ:
-                    LOG_("cmd=REJ\n\t");
+                    LOG_("cmd=REJ ");
                     break;
             }
             addr_print(&hdlc_fr->addr);
-            LOGF("\n\tn_r=%d P=%d\n",
+            LOGF(" n_r=%d P=%d\n",
                     hdlc_fr->command.supervision.n_r,
                     hdlc_fr->command.supervision.p_e);
         }
@@ -126,7 +126,7 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
 
     if (hdlc_fr->command.cmd == COMMAND_DACH) {
         LOG_IF(INFO) {
-            LOG_("\n\tcmd ACK_DACH\n\taddr: ");
+            LOG_("cmd ACK_DACH ");
             addr_print(&hdlc_fr->addr);
             LOGF("\n");
         }
@@ -145,7 +145,7 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
 
     if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_SNRM) {
         LOG_IF(INFO) {
-            LOG_("\n\tcmd SNMR\n\taddr: ");
+            LOG_("cmd SNMR ");
             addr_print(&hdlc_fr->addr);
             LOGF("\n");
         }
