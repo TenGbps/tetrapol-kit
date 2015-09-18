@@ -95,3 +95,8 @@ void pch_print(pch_t *pch)
         LOGF("\taddr %d: %s\n", i, addr_print(buf, &pch->pch_data.addrs[i]));
     }
 }
+
+// TODO: Add tick method and report pagging of stations. When stations is in
+// list of pch_data.naddrs link is lost on downlink and all existing
+// connections should be closed.
+

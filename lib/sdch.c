@@ -15,6 +15,10 @@ struct sdch_priv_t {
     data_frame_t *data_fr;
     terminal_list_t *tlist;
     tsdu_t *tsdu;
+    bool rx_glitch;
+    // This is used for re-sending tick event with changed state
+    // do not allocate or release.
+    time_evt_t *te;
 };
 
 sdch_t *sdch_create(void)
@@ -23,6 +27,8 @@ sdch_t *sdch_create(void)
     if (!sdch) {
         return NULL;
     }
+
+    sdch->te = NULL;
 
     sdch->data_fr = data_frame_create();
     if (!sdch->data_fr) {
@@ -35,6 +41,7 @@ sdch_t *sdch_create(void)
     }
 
     sdch->tsdu = NULL;
+    sdch->rx_glitch = false;
 
     return sdch;
 
@@ -59,8 +66,20 @@ void sdch_destroy(sdch_t *sdch)
 
 bool sdch_dl_push_data_frame(sdch_t *sdch, const frame_t *fr)
 {
-    if (data_frame_push_frame(sdch->data_fr, fr) <= 0) {
+    int res = data_frame_push_frame(sdch->data_fr, fr);
+
+    if (res < 0) {
+        sdch->rx_glitch = true;
+    }
+
+    if (res <= 0) {
         return false;
+    }
+
+    if (res == 2) {
+        if (sdch->te) {
+            terminal_list_tick(sdch->tlist, sdch->te);
+        }
     }
 
     uint8_t data[SYS_PAR_N200_BYTES_MAX];
@@ -72,6 +91,7 @@ bool sdch_dl_push_data_frame(sdch_t *sdch, const frame_t *fr)
         // PAS 0001-3-3 7.4.1.9 stuffing frames are dropped, FCS does not match
         int idx = hdlc_frame_stuffing_idx(&hdlc_fr);
         if (idx == -1) {
+            sdch->rx_glitch = true;
             LOG(INFO, "HDLC: broken frame");
         } else {
             LOG(INFO, "HDLC: stuffing idx=%d", idx);
@@ -98,5 +118,8 @@ tsdu_t *sdch_get_tsdu(sdch_t *sdch)
 void sdch_tick(time_evt_t *te, void *sdch)
 {
     sdch_t *sdch_ = sdch;
+    sdch_->te = te;
+    te->rx_glitch |= sdch_->rx_glitch;
+    sdch_->rx_glitch = false;
     terminal_list_tick(sdch_->tlist, te);
 }

@@ -35,11 +35,12 @@ void timer_destroy(timer_t *timer)
     free(timer);
 }
 
-void timer_tick(timer_t *timer, int usec)
+void timer_tick(timer_t *timer, bool rx_glitch, int usec)
 {
     timer->te.tv.tv_usec += usec;
     timer->te.tv.tv_sec += timer->te.tv.tv_usec / 1000000;
     timer->te.tv.tv_usec %= 1000000;
+    timer->te.rx_glitch = rx_glitch;
 
     for (int i = 0; i < timer->ncallbacks; ++i) {
         timer->callbacks[i].func(&timer->te, timer->callbacks[i].ptr);

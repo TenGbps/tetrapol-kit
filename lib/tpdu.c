@@ -557,6 +557,15 @@ int tpdu_ui_push_hdlc_frame2(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_fr,
     return tpdu_ui_push_hdlc_frame_(tpdu, hdlc_fr, tsdu, false);
 }
 
+void tpdu_rx_glitch(tpdu_t *tpdu)
+{
+    for (int i = 0; i < ARRAY_LEN(tpdu->conns); ++i) {
+        if (tpdu->conns[i].state != CONNECTION_STATE_NC) {
+            tpdu->conns[i].state = CONNECTION_STATE_BROKEN;
+        }
+    }
+}
+
 void tpdu_du_tick(time_evt_t *te, void *tpdu_du)
 {
     tpdu_ui_t *tpdu = tpdu_du;

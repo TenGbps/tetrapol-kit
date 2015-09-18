@@ -305,7 +305,7 @@ int tetrapol_phys_ch_process(phys_ch_t *phys_ch)
         phys_ch->has_frame_sync = find_frame_sync(phys_ch);
         n -= phys_ch->data_end - phys_ch->data_end;
         if (!phys_ch->has_frame_sync) {
-            timer_tick(phys_ch->timer, n * 20000 / 160);
+            timer_tick(phys_ch->timer, true, n * 20000 / 160);
             return 0;
         }
         LOG(INFO, "Frame sync found");
@@ -319,7 +319,7 @@ int tetrapol_phys_ch_process(phys_ch_t *phys_ch)
     uint8_t fr_data[FRAME_DATA_LEN];
     while ((r = get_frame(phys_ch, fr_data)) > 0) {
         process_frame(phys_ch, fr_data);
-        timer_tick(phys_ch->timer, 20000);
+        timer_tick(phys_ch->timer, false, 20000);
         if (phys_ch->frame_no != FRAME_NO_UNKNOWN) {
             phys_ch->frame_no = (phys_ch->frame_no + 1) % 200;
         }

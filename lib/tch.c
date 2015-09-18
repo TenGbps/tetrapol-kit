@@ -7,6 +7,7 @@
 struct tch_priv_t {
     sdch_t *sch;
     sdch_t *vch;
+    bool rx_glitch;
     // sch_ti;
 };
 
@@ -16,6 +17,8 @@ tch_t *tch_create(void)
     if (!tch) {
         return NULL;
     }
+
+    tch->rx_glitch = false;
 
     tch->sch = sdch_create();
     if (!tch->sch) {
@@ -47,6 +50,7 @@ int tch_push_frame(tch_t *tch, const frame_t *fr)
 {
     if (fr->errors) {
         LOG(INFO, "Broken frame");
+        tch->rx_glitch = true;
         return -1;
     }
 
@@ -57,6 +61,7 @@ int tch_push_frame(tch_t *tch, const frame_t *fr)
 
     if (fr->fr_type != FRAME_TYPE_DATA) {
         LOG(WTF, "not a data frame");
+        tch->rx_glitch = true;
         return -1;
     }
 
@@ -78,6 +83,7 @@ int tch_push_frame(tch_t *tch, const frame_t *fr)
 
     if (fr->fr_type != FRAME_TYPE_DATA) {
         LOG(WTF, "data block expected");
+        tch->rx_glitch = true;
         return -1;
     }
 
@@ -98,5 +104,7 @@ int tch_push_frame(tch_t *tch, const frame_t *fr)
 void tch_tick(time_evt_t *te, void *tch_)
 {
     tch_t *tch = tch_;
+    te->rx_glitch |= tch->rx_glitch;
+    tch->rx_glitch = false;
     sdch_tick(te, tch->sch);
 }

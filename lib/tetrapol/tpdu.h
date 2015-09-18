@@ -14,6 +14,13 @@ typedef struct tpdu_priv_ui_t tpdu_ui_t;
 tpdu_t *tpdu_create(void);
 int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu);
 
+/**
+  Should be called when underlaying layers detect uncorrectable error.
+  It flushes all buffers and pospone decoding until data integrity can be
+  ensured.
+  */
+void tpdu_rx_glitch(tpdu_t *tpdu);
+
 void tpdu_destroy(tpdu_t *tpdu);
 void tpdu_du_tick(time_evt_t *te, void *tpdu_du);
 

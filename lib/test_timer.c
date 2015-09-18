@@ -43,7 +43,7 @@ static void test_t1(void **state)
 
     assert_true(timer_register(timer, callback1, (void *)1000));
     tv_exp1.tv_usec = 1;
-    timer_tick(timer, 1);
+    timer_tick(timer, false, 1);
     timer_cancel(timer, callback1, (void *)1000);
 
     assert_true(timer_register(timer, callback1, (void *)1000));
@@ -57,7 +57,7 @@ static void test_t1(void **state)
 
     tv_exp1.tv_usec = -1;
     tv_exp2.tv_usec = 3;
-    timer_tick(timer, 2);
+    timer_tick(timer, false, 2);
     assert_int_equal(ptr_exp2, 0x300);
 
     timer_destroy(timer);

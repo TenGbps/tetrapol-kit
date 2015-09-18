@@ -8,11 +8,14 @@
 #include <tetrapol/lsdu_vch.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 struct link_priv_t {
     tpdu_t *tpdu;
     tpdu_ui_t *tpdu_ui;
     uint8_t v_r;    ///< v(r) PAS 0001-3-3 7.5.4.2.2
+    uint8_t v_s;    ///< v(s) PAS 0001-3-3 7.5.4.2.2
+    bool rx_glitch;
 };
 
 link_t *link_create(void)
@@ -36,6 +39,8 @@ link_t *link_create(void)
     }
 
     link->v_r = 0;
+    link->v_s = 0;
+    link->rx_glitch = true;
 
     return link;
 }
@@ -70,9 +75,18 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
         }
 
         if (hdlc_fr->command.information.n_s != link->v_r) {
-            LOG(INFO, "link broken v_r=%d", link->v_r);
-            link->v_r = hdlc_fr->command.information.n_s;
+            if (link->rx_glitch) {
+                LOG(INFO, "link broken v_r=%d", link->v_r);
+                tpdu_rx_glitch(link->tpdu);
+                link->v_r = hdlc_fr->command.information.n_s;
+                link->v_s = hdlc_fr->command.information.n_r;
+            } else {
+                // frame resend detected, we already have this one -> drop it
+                LOG(INFO, "frame resend v_r=%d", link->v_r);
+                return 0;
+            }
         }
+        link->rx_glitch = false;
 
         link->v_r = (link->v_r + 1) % 8;
 
@@ -86,13 +100,16 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
             switch(hdlc_fr->command.cmd) {
                 case COMMAND_SUPERVISION_RR:
                     LOG_("cmd=RR ");
+                    link->v_s = hdlc_fr->command.supervision.n_r;
                     break;
 
                 case COMMAND_SUPERVISION_RNR:
+                    link->v_s = hdlc_fr->command.supervision.n_r;
                     LOG_("cmd=RNR ");
                     break;
 
                 case COMMAND_SUPERVISION_REJ:
+                    link->v_s = hdlc_fr->command.supervision.n_r;
                     LOG_("cmd=REJ ");
                     break;
             }
@@ -205,5 +222,6 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
 
 void link_tick(time_evt_t* te, link_t *link)
 {
+    link->rx_glitch |= te->rx_glitch;
     tpdu_du_tick(te, link->tpdu_ui);
 }
