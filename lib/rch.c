@@ -84,9 +84,8 @@ void rch_print(const rch_t *rch)
     for (int i = 0; i < rch->rch_data.naddrs; ++i) {
         const addr_t *addr = &rch->rch_data.addrs[i];
         if (!addr->z) {
-            LOGF("\tADDR ACK: ");
-            addr_print(addr);
-            LOGF("\n");
+            char buf[ADDR_PRINT_BUF_SIZE];
+            LOGF("\tADDR ACK: %s\n", addr_print(buf, addr));
         } else {
             LOGF("\tNACK: ");
             if (addr->y == 4) {

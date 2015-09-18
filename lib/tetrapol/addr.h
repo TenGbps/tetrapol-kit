@@ -56,4 +56,12 @@ inline void addr_parse(addr_t *addr, const uint8_t *buf, int skip)
     addr->x = get_bits(12, buf, 4 + skip);
 }
 
-void addr_print(const addr_t *addr);
+// size of buffer required for printing any address
+#define ADDR_PRINT_BUF_SIZE (15)
+
+/**
+  Nice print of address addr into buffer buf.
+  @return pointer to start of output buffer (buf)
+  */
+char* addr_print(char *buf, const addr_t *addr);
+

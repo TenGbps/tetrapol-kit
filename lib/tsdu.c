@@ -769,9 +769,8 @@ static void d_group_activation_print(tsdu_d_group_activation_t *tsdu)
     LOGF("\t\tKEY_REFERENCE: KEY_TYPE=%i KEY_INDEX=%i\n",
             tsdu->key_reference.key_type, tsdu->key_reference.key_index);
     if (tsdu->has_addr_tti) {
-        LOGF("\t\tADDR_TTI=");
-        addr_print(&tsdu->addr_tti);
-        LOGF("\n");
+        char buf[ADDR_PRINT_BUF_SIZE];
+        LOGF("\t\tADDR_TTI=%s\n", addr_print(buf, &tsdu->addr_tti));
     }
 }
 
@@ -1119,9 +1118,8 @@ static void d_neighbouring_cell_print(tsdu_d_neighbouring_cell_t *tsdu)
     if (tsdu->cell_bns) {
         LOGF("\t\tCELL_BNs\n");
         for (int i = 0; i < tsdu->cell_bns->len; ++i) {
-            LOGF("\t\t\tCELL_BN=");
-            addr_print(&tsdu->cell_bns->addrs[i]);
-            LOGF("\n");
+            char buf[ADDR_PRINT_BUF_SIZE];
+            LOGF("\t\t\tCELL_BN=%s\n", addr_print(buf, &tsdu->cell_bns->addrs[i]));
         }
     }
 }

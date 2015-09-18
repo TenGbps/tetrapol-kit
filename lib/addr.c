@@ -1,7 +1,9 @@
 #include <tetrapol/addr.h>
-#include <tetrapol/log.h>
+#include <stdio.h>
 
-void addr_print(const addr_t *addr)
+char* addr_print(char *buf, const addr_t *addr)
 {
-    LOGF("ADDR=%d.%d.0x%03x", addr->z, addr->y, addr->x);
+    sprintf(buf, "ADDR=%d.%d.0x%03x", addr->z, addr->y, addr->x);
+
+    return buf;
 }

@@ -92,8 +92,6 @@ void pch_print(pch_t *pch)
             sprint_hex(buf, pch->pch_data.act_bitmap,
                 ARRAY_LEN(pch->pch_data.act_bitmap)));
     for (int i = 0; i < pch->pch_data.naddrs; ++i) {
-        LOGF("\taddr %d: ", i);
-        addr_print(&pch->pch_data.addrs[i]);
-        LOGF("\n");
+        LOGF("\taddr %d: %s\n", i, addr_print(buf, &pch->pch_data.addrs[i]));
     }
 }

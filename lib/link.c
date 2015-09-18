@@ -61,9 +61,9 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
 
     if (hdlc_fr->command.cmd == COMMAND_INFORMATION) {
         LOG_IF(INFO) {
-            LOG_("cmd=Information ");
-            addr_print(&hdlc_fr->addr);
-            LOGF(" n_r=%d n_s=%d P=%d\n",
+            char buf[ADDR_PRINT_BUF_SIZE];
+            LOG(INFO, "cmd=Information %s n_r=%d n_s=%d P=%d",
+                    addr_print(buf, &hdlc_fr->addr),
                     hdlc_fr->command.information.n_r,
                     hdlc_fr->command.information.n_s,
                     hdlc_fr->command.information.p_e);
@@ -96,8 +96,9 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
                     LOG_("cmd=REJ ");
                     break;
             }
-            addr_print(&hdlc_fr->addr);
-            LOGF(" n_r=%d P=%d\n",
+            char buf[ADDR_PRINT_BUF_SIZE];
+            LOGF("%s n_r=%d P=%d\n",
+                    addr_print(buf, &hdlc_fr->addr),
                     hdlc_fr->command.supervision.n_r,
                     hdlc_fr->command.supervision.p_e);
         }
@@ -115,25 +116,23 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
     if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_UI) {
         LOG_IF(DBG) {
             char buf[hdlc_fr->nbits / 8 * 3];
-            LOG_("HDLC info=%s\n",
+            char addr_buf[ADDR_PRINT_BUF_SIZE];
+            LOG(DBG, "cmd=UI %s data=%s\n",
+                    addr_print(addr_buf, &hdlc_fr->addr),
                     sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
-            LOGF("\t");
-            addr_print(&hdlc_fr->addr);
-            LOGF("\n");
         }
         return tpdu_ui_push_hdlc_frame(link->tpdu_ui, hdlc_fr, tsdu);
     }
 
     if (hdlc_fr->command.cmd == COMMAND_DACH) {
         LOG_IF(INFO) {
-            LOG_("cmd ACK_DACH ");
-            addr_print(&hdlc_fr->addr);
-            LOGF("\n");
+            char buf[ADDR_PRINT_BUF_SIZE];
+            LOG(INFO, "cmd=ACK_DACH %s", addr_print(buf, &hdlc_fr->addr));
         }
         if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
             LOG_IF(WTF) {
                 char buf[hdlc_fr->nbits / 8 * 3];
-                LOG_("cmd: ACK_DACH, nonzero stuffing: %s\n",
+                LOG(WTF, "cmd=ACK_DACH, nonzero stuffing: %s",
                         sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
             }
         }
@@ -145,15 +144,14 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
 
     if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_SNRM) {
         LOG_IF(INFO) {
-            LOG_("cmd SNMR ");
-            addr_print(&hdlc_fr->addr);
-            LOGF("\n");
+            char buf[ADDR_PRINT_BUF_SIZE];
+            LOG(INFO, "cmd=SNMR %s", addr_print(buf, &hdlc_fr->addr));
         }
 
         if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
             LOG_IF(WTF) {
                 char buf[hdlc_fr->nbits / 8 * 3];
-                LOG_("cmd: SNMR, nonzero stuffing: %s\n",
+                LOG(WTF, "cmd=SNMR, nonzero stuffing: %s",
                         sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
             }
         }
@@ -166,11 +164,10 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
     if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_UI_VCH) {
         LOG_IF(DBG) {
             char buf[hdlc_fr->nbits / 8 * 3];
-            LOG_("HDLC info=%s\n",
+            char addr_buf[ADDR_PRINT_BUF_SIZE];
+            LOG(DBG, "cmd=UI_VCH %s data=%s",
+                    addr_print(addr_buf, &hdlc_fr->addr),
                     sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
-            LOGF("\t");
-            addr_print(&hdlc_fr->addr);
-            LOGF("\n");
         }
 
         lsdu_vch_t *lsdu;
@@ -186,11 +183,10 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
     if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_UI_CD) {
         LOG_IF(DBG) {
             char buf[hdlc_fr->nbits / 8 * 3];
-            LOG_("HDLC info=%s\n",
+            char addr_buf[ADDR_PRINT_BUF_SIZE];
+            LOG(DBG, "cmd=UI_CD %s data=%s",
+                    addr_print(addr_buf, &hdlc_fr->addr),
                     sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
-            LOGF("\t");
-            addr_print(&hdlc_fr->addr);
-            LOGF("\n");
         }
 
         lsdu_cd_t *lsdu;

@@ -73,9 +73,9 @@ bool bch_push_frame(bch_t *bch, const frame_t *fr, int *frame_no)
     if (!addr_is_tti_all_st(&hdlc_fr.addr, true)) {
         if (*frame_no == FRAME_NO_UNKNOWN) {
             LOG_IF(DBG) {
-                LOG_("invalid address for BCH");
-                addr_print(&hdlc_fr.addr);
-                LOGF("\n");
+                char buf[ADDR_PRINT_BUF_SIZE];
+                LOG(DBG, "invalid address for BCH %s",
+                        addr_print(buf, &hdlc_fr.addr));
             }
         }
         return false;
