@@ -263,17 +263,42 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
         }
     }
 
-    if (seg) {
-        LOG(ERR, "TPDU: TODO segmentation");
-        return -1;
-    }
-
-    const uint8_t len = d ? hdlc_fr->data[2] : 0;
-
     int ret_val = -1;
-    if (d) {
-        // TODO: prio, qos
-        ret_val = tsdu_d_decode(hdlc_fr->data + 3, len, 0, dest_ref, tsdu);
+
+    if (seg) {
+        const uint8_t len = hdlc_fr->nbits / 8 - 2;
+        if (len + conn->seg_len > SIZEOF(connection_t, segbuf)) {
+            LOG(WTF, "Too large TPDU, increase buffer size");
+            return -1;
+        }
+        memcpy(&conn->segbuf[conn->seg_len], hdlc_fr->data + 2, len);
+        conn->seg_len += len;
+        LOG(INFO, "Segmentation part len=%d seg_len=%d dest_ref=%d",
+                len, conn->seg_len, dest_ref);
+
+        ret_val = 0;
+    } else {
+        const uint8_t len = d ? hdlc_fr->data[2] : 0;
+
+        if (conn->seg_len) {
+            if (len + conn->seg_len > SIZEOF(connection_t, segbuf)) {
+                conn->seg_len = 0;
+                LOG(WTF, "Too large TPDU, increase buffer size");
+                return -1;
+            }
+            memcpy(&conn->segbuf[conn->seg_len], hdlc_fr->data + 3, len);
+            conn->seg_len += len;
+            LOG(INFO, "Segmentation complete len=%d seg_len=%d dest_ref=%d",
+                    len, conn->seg_len, dest_ref);
+            // TODO: prio, qos
+            ret_val = tsdu_d_decode(conn->segbuf, conn->seg_len, 0, dest_ref, tsdu);
+            conn->seg_len = 0;
+        } else {
+            if (d) {
+                // TODO: prio, qos
+                ret_val = tsdu_d_decode(hdlc_fr->data + 3, len, 0, dest_ref, tsdu);
+            }
+        }
     }
 
     if (code_prefix == TPDU_CODE_PREFIX_MASK) {
