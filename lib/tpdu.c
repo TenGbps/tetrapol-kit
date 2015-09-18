@@ -209,66 +209,53 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
         return -1;
     }
 
-    const uint8_t len = (d && !seg) ? hdlc_fr->data[2] : 0;
-
-    if (seg) {
-        LOG(ERR, "TPDU: TODO segmentation");
-        return -1;
-    }
+    // For downlink par_field always contains TSAP reference of sender (SwMI)
+    connection_t *conn = &tpdu->conns[par_field];
 
     const uint8_t code_prefix = code & TPDU_CODE_PREFIX_MASK;
 
     if (code_prefix != TPDU_CODE_PREFIX_MASK) {
-        const uint8_t qos = (~TPDU_CODE_PREFIX_MASK) & code;
+        // TODO: use QoS
+        // const uint8_t qos = (~TPDU_CODE_PREFIX_MASK) & code;
 
         switch(code_prefix) {
             case TPDU_CODE_CR:
-                LOG(ERR, "TODO CR seg: %d d: %d TSAP_ref: %d TSAP_id %d QoS: %d len: %d",
-                        seg, d, par_field, dest_ref, qos, len);
-                // check if connection exists, deallocate and WTF
-                // create new connection stuct
-                // set state to REQ
+                connection_cr(conn, dest_ref, par_field);
                 break;
 
             case TPDU_CODE_CC:
-                LOG(ERR, "TODO CC seg: %d d: %d TSAP_ref_send: %d TSAP_ref_recv: %d QoS: %d len: %d",
-                        seg, d, par_field, dest_ref, qos, len);
-                // check if connection exists
+                connection_cc(conn, par_field, dest_ref);
                 break;
 
             case TPDU_CODE_FCR:
-                LOG(ERR, "TODO FCR seg: %d d: %d TSAP_ref: %d TSAP_id: %d QoS: %d len: %d",
-                        seg, d, par_field, dest_ref, qos, len);
+                connection_fcr(conn, dest_ref, par_field);
                 break;
 
             default:
                 LOG(WTF, "unknown code %d", code);
         }
     } else {
+        int ret_val;
+
         switch (code) {
             case TPDU_CODE_DR:
-                LOG(ERR, "TODO DR d: %d TSAP_ref_send: %d TSAP_ref_recv: %d len: %d",
-                        d, par_field, dest_ref, len);
-                break;
-
             case TPDU_CODE_FDR:
-                LOG(ERR, "TODO FDR d: %d TSAP_ref_send: %d TSAP_ref_recv: %d len: %d",
-                        d, par_field, dest_ref, len);
-                break;
-
             case TPDU_CODE_DC:
-                LOG(ERR, "TODO DC TSAP_ref_send: %d TSAP_ref_recv: %d",
-                        par_field, dest_ref);
+                ret_val = connection_dc_dr_fdr(conn, par_field, dest_ref);
+                if (ret_val == -1) {
+                    connection_reset(conn);
+                    return 0;
+                }
+                if (ret_val == -2) {
+                    return 0;
+                }
                 break;
 
             case TPDU_CODE_DT:
-                LOG(ERR, "TODO DT seg: %d d: %d TSAP_ref_send: %d TSAP_ref_recv: %d, len: %d",
-                        seg, d, par_field, dest_ref, len);
-                break;
-
             case TPDU_CODE_DTE:
-                LOG(ERR, "TODO DTE TSAP_ref_send: %d TSAP_ref_recv: %d, len: %d",
-                        par_field, dest_ref, len);
+                if (connection_dt(conn, par_field, dest_ref, seg) == -1) {
+                    return 0;
+                }
                 break;
 
             default:
@@ -276,12 +263,37 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
         }
     }
 
-    if (d) {
-        // TODO: prio, qos
-        return tsdu_d_decode(hdlc_fr->data + 3, len, 0, dest_ref, tsdu);
+    if (seg) {
+        LOG(ERR, "TPDU: TODO segmentation");
+        return -1;
     }
 
-    return -1;
+    const uint8_t len = d ? hdlc_fr->data[2] : 0;
+
+    int ret_val = -1;
+    if (d) {
+        // TODO: prio, qos
+        ret_val = tsdu_d_decode(hdlc_fr->data + 3, len, 0, dest_ref, tsdu);
+    }
+
+    if (code_prefix == TPDU_CODE_PREFIX_MASK) {
+        switch (code) {
+            case TPDU_CODE_DR:
+            case TPDU_CODE_FDR:
+            case TPDU_CODE_DC:
+                connection_reset(conn);
+                break;
+
+            case TPDU_CODE_DT:
+            case TPDU_CODE_DTE:
+                break;
+
+            default:
+                LOG(WTF, "unknown code %d", code);
+        }
+    }
+
+    return ret_val;
 }
 
 int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu)
