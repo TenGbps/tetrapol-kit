@@ -295,7 +295,7 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
 
     // max_segments * (sizeof(hdlc_frame_t->data) - TPDU_DU_header)
     uint8_t data[SYS_PAR_N452 * (sizeof(((hdlc_frame_t*)NULL)->data) - 3)];
-    int nbits = 0;
+    int data_len = 0;
     // collect data from all segments
     if (tpdu->fr_type == FRAME_TYPE_DATA) {
         uint8_t *d = data;
@@ -308,22 +308,23 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
             }
             int n;
             if (i == (seg_du->nsegments - 1)) {
-                n = hdlc_fr->data[n_ext++] * 8;
+                n = hdlc_fr->data[n_ext++];
             } else {
-                n = hdlc_fr->nbits - 8 * n_ext;
+                n = (hdlc_fr->nbits / 8) - n_ext;
             }
-            nbits += n;
-            memcpy(d, &hdlc_fr->data[n_ext], n / 8);
-            d += n / 8;
+            data_len += n;
+            memcpy(d, &hdlc_fr->data[n_ext], n);
+            d += n;
         }
     } else {    // FRAME_TYPE_HR_DATA
+        LOG(WTF, "FRAME_TYPE_HR_DATA not implemented");
         // TODO
     }
 
     tpdu_ui_segments_destroy(seg_du);
     tpdu->seg_du[seg_ref] = NULL;
 
-    return tsdu_d_decode(data, nbits / 8, prio, id_tsap, tsdu);
+    return tsdu_d_decode(data, data_len, prio, id_tsap, tsdu);
 }
 
 int tpdu_ui_push_hdlc_frame(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_fr,
