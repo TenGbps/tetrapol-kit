@@ -309,6 +309,11 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
             int n;
             if (i == (seg_du->nsegments - 1)) {
                 n = hdlc_fr->data[n_ext++];
+                if (n > hdlc_fr->nbits / 8) {
+                    LOG(WTF, "hdlc_fr.len=%d < tsdu_payload_len=%d",
+                            hdlc_fr->nbits / 8, n);
+                    return -1;
+                }
             } else {
                 n = (hdlc_fr->nbits / 8) - n_ext;
             }
