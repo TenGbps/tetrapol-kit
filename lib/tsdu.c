@@ -620,6 +620,8 @@ static void cell_id_decode1(cell_id_t *cell_id, const uint8_t *data)
         cell_id->rws_id = get_bits(6, data, 2);
     } else {
         LOG(WTF, "unknown cell_id_type (%d)", type);
+        cell_id->bs_id = -1;
+        cell_id->rws_id = -1;
     }
 }
 
@@ -635,6 +637,8 @@ static void cell_id_decode2(cell_id_t *cell_id, const uint8_t *data)
         cell_id->rws_id = get_bits(6, data, 10);;
     } else {
         LOG(WTF, "unknown cell_id_type (%d)", type);
+        cell_id->bs_id = -1;
+        cell_id->rws_id = -1;
     }
 }
 
