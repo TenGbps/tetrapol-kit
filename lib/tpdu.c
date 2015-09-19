@@ -209,6 +209,11 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
         return -1;
     }
 
+    if (par_field == 0xf) {
+        LOG(WTF, "Disconnect indicated conn=%d reason=0x%02x",
+                dest_ref, hdlc_fr->data[2]);
+        return 0;
+    }
     // For downlink par_field always contains TSAP reference of sender (SwMI)
     connection_t *conn = &tpdu->conns[par_field];
 
