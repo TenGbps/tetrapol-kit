@@ -157,10 +157,10 @@ static int connection_dt(connection_t *conn, int tsap_ref_swmi, int tsap_ref_rt,
     return 0;
 }
 
-// should be called fot FRD, DR, DC (in pre-processing phase)
+// should be called fot FDR, DR, DC (in pre-processing phase)
 static int connection_dc_dr_fdr(connection_t *conn, int tsap_ref_swmi, int tsap_ref_rt)
 {
-    LOG(INFO, "FRD/DR/DC TSAP_ref_SwMI=%d TSAP_ref_RT=%d", tsap_ref_swmi, tsap_ref_rt);
+    LOG(INFO, "FDR/DR/DC TSAP_ref_SwMI=%d TSAP_ref_RT=%d", tsap_ref_swmi, tsap_ref_rt);
 
     if (conn->state == CONNECTION_STATE_NC) {
         LOG(INFO, "Disconnect for not-opened connection");
