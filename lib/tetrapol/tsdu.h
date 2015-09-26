@@ -607,6 +607,13 @@ typedef struct {
     uint8_t valid_rt[8];
 } tsdu_d_authentication_t;
 
+/// PAS 0001-3-2 4.5.6
+typedef struct {
+    tsdu_base_t base;
+    bool has_key_reference;
+    key_reference_t key_reference;
+} tsdu_d_authorisation_t;
+
 /// PAS 0001-3-2 4.4.12
 typedef struct {
     tsdu_base_t base;

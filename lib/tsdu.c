@@ -732,7 +732,7 @@ d_authentication_decode(const uint8_t *data, int len)
     return tsdu;
 }
 
-void d_authentication_print(const tsdu_d_authentication_t *tsdu)
+static void d_authentication_print(const tsdu_d_authentication_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tKEY_REFERENCE: KEY_TYPE=%i KEY_INDEX=%i\n",
@@ -740,6 +740,32 @@ void d_authentication_print(const tsdu_d_authentication_t *tsdu)
     char buf[3 * SIZEOF(tsdu_d_call_connect_t, valid_rt)];
     LOGF("\t\tVALID_RT=%s\n",
             sprint_hex(buf, tsdu->valid_rt, SIZEOF(tsdu_d_call_connect_t, valid_rt)));
+}
+
+static tsdu_d_authorisation_t *
+d_authorisation_decode(const uint8_t *data, int len)
+{
+    tsdu_d_authorisation_t *tsdu = tsdu_create(tsdu_d_authorisation_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+    CHECK_LEN(len, 8, tsdu);
+
+    tsdu->has_key_reference = (data[1] == IEI_KEY_REFERENCE);
+    if (tsdu->has_key_reference) {
+        tsdu->key_reference._data = data[2];
+    }
+
+    return tsdu;
+}
+
+static void d_authorisation_print(const tsdu_d_authorisation_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    if (tsdu->has_key_reference) {
+        LOGF("\t\tKEY_REFERENCE: KEY_TYPE=%i KEY_INDEX=%i\n",
+                tsdu->key_reference.key_type, tsdu->key_reference.key_index);
+    }
 }
 
 static tsdu_d_group_activation_t *
@@ -1738,6 +1764,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_authentication_decode(data, len);
             break;
 
+        case D_AUTHORISATION:
+            *tsdu = (tsdu_t *)d_authorisation_decode(data, len);
+            break;
+
         case D_CALL_CONNECT:
             *tsdu = (tsdu_t *)d_call_connect_decode(data, len);
             break;
@@ -1828,6 +1858,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_authentication_print((const tsdu_d_authentication_t *)tsdu);
             break;
 
+        case D_AUTHORISATION:
+            d_authorisation_print((const tsdu_d_authorisation_t *)tsdu);
+            break;
+
         case D_CALL_CONNECT:
             d_call_connect_print((const tsdu_d_call_connect_t *)tsdu);
             break;
@@ -1902,7 +1936,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_ABILITY_MNGT:
         case D_ACCESS_DISABLED:
         case D_ADDITIONAL_PARTICIPANTS:
-        case D_AUTHORISATION:
         case D_BACK_CCH:
         case D_BROADCAST:
         case D_BROADCAST_NOTIFICATION:
