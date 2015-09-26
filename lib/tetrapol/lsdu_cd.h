@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tetrapol/msg_coding.h>
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -24,7 +26,9 @@ typedef struct {
     uint8_t codop;
     uint8_t signature : 4;
     uint8_t modifier_number : 4;
-    uint8_t rt_address[9];
+    address_t rt_address;
+    uint8_t _stuffing_len;
+    uint8_t _stuffing[8];
 } lsdu_cd_tp_address_t;
 
 typedef lsdu_cd_tp_address_t lsdu_cd_tp_addres_inhib_t;

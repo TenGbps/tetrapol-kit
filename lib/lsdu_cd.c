@@ -1,5 +1,6 @@
 #define LOG_PREFIX "lsdu_cd"
 
+#include <tetrapol/bit_utils.h>
 #include <tetrapol/log.h>
 #include <tetrapol/lsdu_cd.h>
 #include <tetrapol/misc.h>
@@ -51,16 +52,22 @@ void lsdu_cd_destroy(lsdu_cd_t *lsdu)
     free(lsdu);
 }
 
-static int tp_address_check(const uint8_t *data, int len)
+static int tp_address_decode(const uint8_t *data, int len, lsdu_cd_tp_address_t *lsdu)
 {
-    if (len < sizeof(lsdu_cd_tp_address_t)) {
+    if (len != 11) {
         LOG(WTF, "invalid lenght %d", len);
         return -1;
     }
 
-    if (len > sizeof(lsdu_cd_tp_address_t)) {
-        LOG(WTF, "unused bytes (%d)", len);
+    lsdu->signature = get_bits(4, &data[1], 4);
+    lsdu->modifier_number = get_bits(4, &data[1], 0);
+
+    const uint8_t *d = &data[2];
+    if (address_decode(&lsdu->rt_address, &d)) {
+        LOG(WTF, "Only single address is supported");
     }
+    lsdu->_stuffing_len = len - (d - data);
+    memcpy(lsdu->_stuffing, d, lsdu->_stuffing_len);
 
     return 0;
 }
@@ -77,29 +84,31 @@ int lsdu_cd_decode(const uint8_t *data, int len, lsdu_cd_t **lsdu)
         return -1;
     }
 
-    memcpy(*lsdu, data, len);
-    (*lsdu)->unknown.len = len;
+    (*lsdu)->unknown.codop = data[0];
 
     switch ((*lsdu)->unknown.codop) {
         case TP_ADDRESS:
-            return tp_address_check(data, len);
+            return tp_address_decode(data, len, (lsdu_cd_tp_address_t *)*lsdu);
 
         default:
             LOG(INFO, "TODO LSDU_CD 0x%02x", (*lsdu)->unknown.codop);
             break;
     }
 
+    memcpy(*lsdu, data, len);
+    (*lsdu)->unknown.len = len;
+
     return 0;
 }
 
 static void tp_address_print(const lsdu_cd_tp_address_t *lsdu)
 {
-    char buf[3 * SIZEOF(lsdu_cd_tp_address_t, rt_address)];
     LOGF("\tMODIFIER_NUMBER=%d\n", lsdu->modifier_number);
     LOGF("\tSIGNATURE=%d\n", lsdu->signature);
-    LOGF("\tRT_ADDRESS=%s\n",
-            sprint_hex(buf, lsdu->rt_address,
-                SIZEOF(lsdu_cd_tp_address_t, rt_address)));
+    address_print(&lsdu->rt_address);
+
+    char buf[3*8];
+    LOGF("\tSTUFFING=%s\n", sprint_hex(buf, lsdu->_stuffing, lsdu->_stuffing_len));
 }
 
 static void lsdu_cd_unknown_print(const lsdu_cd_t *lsdu)
