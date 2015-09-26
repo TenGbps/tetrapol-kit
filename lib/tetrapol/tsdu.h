@@ -600,6 +600,13 @@ enum {
     // values 3..15 are reserved
 };
 
+/// PAS 0001-3-2 4.4.5
+typedef struct {
+    tsdu_base_t base;
+    key_reference_t key_reference;
+    uint8_t valid_rt[8];
+} tsdu_d_authentication_t;
+
 /// PAS 0001-3-2 4.4.12
 typedef struct {
     tsdu_base_t base;

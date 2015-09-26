@@ -717,6 +717,31 @@ static void address_print(const address_t *address)
     }
 }
 
+static tsdu_d_authentication_t *
+d_authentication_decode(const uint8_t *data, int len)
+{
+    tsdu_d_authentication_t *tsdu = tsdu_create(tsdu_d_authentication_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+    CHECK_LEN(len, 16, tsdu);
+
+    tsdu->key_reference._data = data[1];
+    memcpy(tsdu->valid_rt, &data[2], sizeof(tsdu->valid_rt));
+
+    return tsdu;
+}
+
+void d_authentication_print(const tsdu_d_authentication_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tKEY_REFERENCE: KEY_TYPE=%i KEY_INDEX=%i\n",
+            tsdu->key_reference.key_type, tsdu->key_reference.key_index);
+    char buf[3 * SIZEOF(tsdu_d_call_connect_t, valid_rt)];
+    LOGF("\t\tVALID_RT=%s\n",
+            sprint_hex(buf, tsdu->valid_rt, SIZEOF(tsdu_d_call_connect_t, valid_rt)));
+}
+
 static tsdu_d_group_activation_t *
 d_group_activation_decode(const uint8_t *data, int len)
 {
@@ -1709,6 +1734,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
 
     *tsdu = NULL;
     switch (codop) {
+        case D_AUTHENTICATION:
+            *tsdu = (tsdu_t *)d_authentication_decode(data, len);
+            break;
+
         case D_CALL_CONNECT:
             *tsdu = (tsdu_t *)d_call_connect_decode(data, len);
             break;
@@ -1795,6 +1824,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
 static void tsdu_d_print(const tsdu_t *tsdu)
 {
     switch (tsdu->codop) {
+        case D_AUTHENTICATION:
+            d_authentication_print((const tsdu_d_authentication_t *)tsdu);
+            break;
+
         case D_CALL_CONNECT:
             d_call_connect_print((const tsdu_d_call_connect_t *)tsdu);
             break;
@@ -1869,7 +1902,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_ABILITY_MNGT:
         case D_ACCESS_DISABLED:
         case D_ADDITIONAL_PARTICIPANTS:
-        case D_AUTHENTICATION:
         case D_AUTHORISATION:
         case D_BACK_CCH:
         case D_BROADCAST:
