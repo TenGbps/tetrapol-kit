@@ -686,6 +686,12 @@ typedef struct {
     uint8_t data[];
 } tsdu_d_explicit_short_data_t;
 
+/// PAS 0001-3-2 4.4.41
+typedef struct {
+    tsdu_base_t base;
+    address_t calling_adr;
+} tsdu_d_forced_registration_t;
+
 /// PAS 0001-3-2 4.4.43
 typedef struct {
     tsdu_base_t base;

@@ -768,6 +768,27 @@ static void d_authorisation_print(const tsdu_d_authorisation_t *tsdu)
     }
 }
 
+static tsdu_d_forced_registration_t *
+d_forced_registration_decode(const uint8_t *data, int len)
+{
+    tsdu_d_forced_registration_t *tsdu = tsdu_create(tsdu_d_forced_registration_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+    CHECK_LEN(len, 9, tsdu);
+
+    if (address_decode(&tsdu->calling_adr, &data[1])) {
+        LOG(ERR, "Onli single address is supported in calling_adr");
+    }
+    return tsdu;
+}
+
+static void d_forced_registration_print(const tsdu_d_forced_registration_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    address_print(&tsdu->calling_adr);
+}
+
 static tsdu_d_group_activation_t *
 d_group_activation_decode(const uint8_t *data, int len)
 {
@@ -1796,6 +1817,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_explicit_short_data_decode(data, len);
             break;
 
+        case D_FORCED_REGISTRATION:
+            *tsdu = (tsdu_t *)d_forced_registration_decode(data, len);
+            break;
+
         case D_GROUP_ACTIVATION:
             *tsdu = (tsdu_t *)d_group_activation_decode(data, len);
             break;
@@ -1890,6 +1915,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_explicit_short_data_print((const tsdu_d_explicit_short_data_t *)tsdu);
             break;
 
+        case D_FORCED_REGISTRATION:
+            d_forced_registration_print((const tsdu_d_forced_registration_t *)tsdu);
+            break;
+
         case D_GROUP_ACTIVATION:
             d_group_activation_print((tsdu_d_group_activation_t *)tsdu);
             break;
@@ -1965,7 +1994,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_EMERGENCY_NAK:
         case D_EMERGENCY_NOTIFICATION:
         case D_EXTENDED_STATUS:
-        case D_FORCED_REGISTRATION:
         case D_FUNCTIONAL_SHORT_DATA:
         case D_GROUP_END:
         case D_GROUP_OVERLOAD_ID:
