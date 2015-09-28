@@ -1220,7 +1220,9 @@ static tsdu_d_system_info_t *d_system_info_decode(const uint8_t *data, int len)
             tsdu->loc_area_id._data                     = get_bits( 8, data + 5, 0);
             tsdu->bn_id                                 = get_bits( 8, data + 6, 0);
             cell_id_decode1(&tsdu->cell_id, data + 7);
-            tsdu->cell_bn                               = get_bits(12, data + 7, 12);
+            tsdu->cell_bn[0]                            = get_bits( 4, data + 8, 4);
+            tsdu->cell_bn[1]                            = get_bits( 4, data + 9, 0);
+            tsdu->cell_bn[2]                            = get_bits( 4, data + 9, 4);
             tsdu->u_ch_scrambling                       = get_bits( 8, data + 10, 0);
             tsdu->cell_radio_param.tx_max               = get_bits( 3, data + 11, 0);
             tsdu->cell_radio_param.radio_link_timeout   = get_bits( 5, data + 11, 3);
@@ -1281,9 +1283,8 @@ static void d_system_info_print(tsdu_d_system_info_t *tsdu)
         LOGF("\t\t\tLOC_ID=%d\n", tsdu->loc_area_id.loc_id);
         LOGF("\t\t\tMODE=%d\n", tsdu->loc_area_id.mode);
         LOGF("\t\tBN_ID=%d\n", tsdu->bn_id);
-        LOGF("\t\tCELL_ID: BS_ID=%d RSW_ID=%d\n",
-                tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
-        LOGF("\t\tCELL_BN=%d\n", tsdu->cell_bn);
+        LOGF("\t\tCELL_ID=%d%d%d-%d-%d\n",
+                tsdu->cell_bn[0],tsdu->cell_bn[1],tsdu->cell_bn[2], tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
         LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
         LOGF("\t\tCELL_RADIO_PARAM\n");
         LOGF("\t\t\tTX_MAX=%d\n", tsdu->cell_radio_param.tx_max);
@@ -1303,9 +1304,8 @@ static void d_system_info_print(tsdu_d_system_info_t *tsdu)
                 tsdu->cell_access.min_reg_class);
         LOGF("\t\tSUPERFRAME_CPT=%d\n", tsdu->superframe_cpt);
     } else {
-        LOGF("\t\tCELL_ID BS_ID=%d RSW_ID=%d\n",
-                tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
-        LOGF("\t\tCELL_BN=%d\n", tsdu->cell_bn);
+        LOGF("\t\tCELL_ID=%d%d%d-%d-%d\n",
+                tsdu->cell_bn[0],tsdu->cell_bn[1],tsdu->cell_bn[2], tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
         LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
         LOGF("\t\tCELL_RADIO_PARAM\n");
         LOGF("\t\t\tTX_MAX=%d\n", tsdu->cell_radio_param.tx_max);

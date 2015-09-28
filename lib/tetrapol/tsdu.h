@@ -809,7 +809,7 @@ typedef struct {
     loc_area_id_t loc_area_id;
     uint8_t bn_id;
     cell_id_t cell_id;
-    uint16_t cell_bn;
+    uint8_t cell_bn[3];
     uint8_t u_ch_scrambling;
     cell_radio_param_t cell_radio_param;
     uint8_t system_time;
