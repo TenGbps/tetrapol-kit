@@ -1069,30 +1069,28 @@ static cell_id_list_t *iei_cell_id_list_decode(cell_id_list_t *cell_ids,
     return cell_ids;
 }
 
-addr_list_t *iei_adjacent_bn_list_decode(
-        addr_list_t *adj_cells, const uint8_t *data, int len)
+cell_bn_list_t *iei_cell_bn_list_decode(
+        cell_bn_list_t *cell_bns, const uint8_t *data, int len)
 {
-    int n = 0;
-    if (adj_cells) {
-        n = adj_cells->len;
-    }
+    int n = cell_bns ? cell_bns->len : 0;
     n +=  len * 2 / 3;
-    addr_list_t *p = realloc(adj_cells, sizeof(addr_list_t) + sizeof(addr_t[n]));
+    cell_bn_list_t *p = realloc(cell_bns,
+            sizeof(cell_bn_list_t) + sizeof(cell_bn_t[n]));
     if (!p) {
         LOG(ERR, "ERR OOM");
         return NULL;
     }
-    if (!adj_cells) {
+    if (!cell_bns) {
         p->len = 0;
     }
-    adj_cells = p;
+    cell_bns = p;
 
-    for (int skip = 0; adj_cells->len < n; ++adj_cells->len) {
-        addr_parse(&adj_cells->addrs[adj_cells->len], data, skip);
-        skip += 12;
+    for (int offs = 0; cell_bns->len < n; ++cell_bns->len) {
+        cell_bns->cell_bn[cell_bns->len]._data = get_bits(12, data, offs);
+        offs += 12;
     }
 
-    return adj_cells;
+    return cell_bns;
 }
 
 static tsdu_d_neighbouring_cell_t *d_neighbouring_cell_decode(const uint8_t *data, int len)
@@ -1147,7 +1145,7 @@ static tsdu_d_neighbouring_cell_t *d_neighbouring_cell_decode(const uint8_t *dat
             }
             tsdu->cell_ids = p;
         } else if (iei == IEI_ADJACENT_BN_LIST && ie_len) {
-            addr_list_t *p = iei_adjacent_bn_list_decode(
+            cell_bn_list_t *p = iei_cell_bn_list_decode(
                     tsdu->cell_bns, data, ie_len);
             if (!p) {
                 break;
@@ -1194,8 +1192,8 @@ static void d_neighbouring_cell_print(tsdu_d_neighbouring_cell_t *tsdu)
     if (tsdu->cell_bns) {
         LOGF("\t\tCELL_BNs\n");
         for (int i = 0; i < tsdu->cell_bns->len; ++i) {
-            char buf[ADDR_PRINT_BUF_SIZE];
-            LOGF("\t\t\tCELL_BN=%s\n", addr_print(buf, &tsdu->cell_bns->addrs[i]));
+            cell_bn_t *cell_bn = &tsdu->cell_bns->cell_bn[i];
+            LOGF("\t\t\tCELL_BN=%d%d%d\n", cell_bn->r1, cell_bn->r2, cell_bn->r3);
         }
     }
 }

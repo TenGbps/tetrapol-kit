@@ -306,6 +306,11 @@ typedef union {
     };
 } cell_bn_t;
 
+typedef struct {
+    uint8_t len;
+    cell_bn_t cell_bn[];
+} cell_bn_list_t;
+
 /// PAS 0001-3-2 5.3.20
 enum {
     CELL_CONFIG_DC_SINGLE           = 0,
@@ -766,9 +771,8 @@ typedef struct {
 /// PAS 0001-3-2 4.4.57
 typedef struct {
     tsdu_base_t base;
-    cell_id_list_t *cell_ids;    // iei=cell_id_list;
-    addr_list_t *cell_bns;       // iei=adjecent_bn_list;
-
+    cell_id_list_t *cell_ids;   // iei=cell_id_list;
+    cell_bn_list_t *cell_bns;   // iei=adjecent_bn_list;
     ccr_config_t ccr_config;
     uint8_t ccr_param;
 
