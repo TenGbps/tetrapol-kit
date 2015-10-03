@@ -22,7 +22,7 @@ bool check_fcs(const uint8_t *data, int nbits);
  * @param skip Bites skipped from beginning of data (counts from MSB, MSB = bit0)
  * @return Integer value.
  */
-inline uint32_t get_bits(int len, const uint8_t *data, int skip)
+static inline uint32_t get_bits(int len, const uint8_t *data, int skip)
 {
     uint64_t r = 0;
 
@@ -38,7 +38,7 @@ inline uint32_t get_bits(int len, const uint8_t *data, int skip)
     return r;
 }
 
-inline int cmpzero(const void *data, int len)
+static inline int cmpzero(const void *data, int len)
 {
     for (int i = 0; i < len; ++i) {
         if (((uint8_t *)data)[i]) {

@@ -16,7 +16,7 @@ typedef struct {
     addr_t addrs[];
 } addr_list_t;
 
-inline bool addr_is_cgi_all_st(const addr_t *addr, bool z)
+static inline bool addr_is_cgi_all_st(const addr_t *addr, bool z)
 {
     if (z) {
         return addr->z == 0 && addr->y == 0 && addr->x == 0xfff;
@@ -25,7 +25,7 @@ inline bool addr_is_cgi_all_st(const addr_t *addr, bool z)
     }
 };
 
-inline bool addr_is_tti_all_st(const addr_t *addr, bool z)
+static inline bool addr_is_tti_all_st(const addr_t *addr, bool z)
 {
     if (z) {
         return addr->z == 0 && addr->y == 7 && addr->x == 0xfff;
@@ -34,7 +34,7 @@ inline bool addr_is_tti_all_st(const addr_t *addr, bool z)
     }
 }
 
-inline bool addr_is_tti_no_st(const addr_t *addr, bool z)
+static inline bool addr_is_tti_no_st(const addr_t *addr, bool z)
 {
     if (z) {
         return addr->z == 0 && addr->y == 7 && addr->x == 0;
@@ -43,13 +43,13 @@ inline bool addr_is_tti_no_st(const addr_t *addr, bool z)
     }
 };
 
-inline bool addr_is_coi_all_st(const addr_t *addr)
+static inline bool addr_is_coi_all_st(const addr_t *addr)
 {
     return addr->y == 1 && addr->x == 0;
     // x=0 for all stations? it is not a bug in specification?
 };
 
-inline void addr_parse(addr_t *addr, const uint8_t *buf, int skip)
+static inline void addr_parse(addr_t *addr, const uint8_t *buf, int skip)
 {
     addr->z = get_bits(1,  buf, 0 + skip);
     addr->y = get_bits(3,  buf, 1 + skip);

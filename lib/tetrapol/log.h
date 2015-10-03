@@ -48,7 +48,7 @@ extern int log_global_lvl;
         LOG_(msg "\n", ##__VA_ARGS__); \
     }
 
-inline void log_set_lvl(int lvl)
+static inline void log_set_lvl(int lvl)
 {
     log_global_lvl = lvl;
 }
