@@ -7,24 +7,24 @@
 #include "timer.c"
 
 static struct timeval tv_exp1;
-void callback1(const timeval_t *tv, void *ptr)
+void callback1(time_evt_t *te, void *ptr)
 {
     assert_int_equal(ptr, 1000);
-    assert_int_equal(tv->tv_sec, tv_exp1.tv_sec);
-    assert_int_equal(tv->tv_usec, tv_exp1.tv_usec);
+    assert_int_equal(te->tv.tv_sec, tv_exp1.tv_sec);
+    assert_int_equal(te->tv.tv_usec, tv_exp1.tv_usec);
 }
 
 static int ptr_exp2;
-static timeval_t tv_exp2;
-void callback2(const timeval_t *tv, void *ptr)
+static struct timeval tv_exp2;
+void callback2(time_evt_t *te, void *ptr)
 {
     int r = ptr - NULL;
 
     assert_true(r == 0x100 || r == 0x200);
     ptr_exp2 |= r;
 
-    assert_int_equal(tv->tv_sec, tv_exp2.tv_sec);
-    assert_int_equal(tv->tv_usec, tv_exp2.tv_usec);
+    assert_int_equal(te->tv.tv_sec, tv_exp2.tv_sec);
+    assert_int_equal(te->tv.tv_usec, tv_exp2.tv_usec);
 }
 
 /// test few results known as good

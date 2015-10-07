@@ -54,7 +54,7 @@ int terminal_list_push_hdlc_frame(terminal_list_t* tlist,
 /**
   Call periodicaly to expire old sessions.
   @param tlist list with all terminals.
-  @param tv current timestamp.
+  @param te passing time event.
   */
-void terminal_list_tick(terminal_list_t* tlist, const timeval_t *tv);
+void terminal_list_tick(terminal_list_t* tlist, time_evt_t *te);
 

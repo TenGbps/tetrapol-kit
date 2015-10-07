@@ -22,7 +22,7 @@ enum {
 #define TPDU_CODE_PREFIX_MASK (0x18)
 
 typedef struct {
-    timeval_t tv;
+    struct timeval tv;
     uint8_t id_tsap;
     uint8_t prio;
     uint8_t nsegments;  ///< total amount of segments (HDLC frames) in DU
@@ -557,7 +557,7 @@ int tpdu_ui_push_hdlc_frame2(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_fr,
     return tpdu_ui_push_hdlc_frame_(tpdu, hdlc_fr, tsdu, false);
 }
 
-void tpdu_du_tick(const timeval_t *tv, void *tpdu_du)
+void tpdu_du_tick(time_evt_t *te, void *tpdu_du)
 {
     tpdu_ui_t *tpdu = tpdu_du;
 
@@ -568,12 +568,12 @@ void tpdu_du_tick(const timeval_t *tv, void *tpdu_du)
         }
 
         if (!tpdu->seg_du[i]->tv.tv_sec && !tpdu->seg_du[i]->tv.tv_usec) {
-            tpdu->seg_du[i]->tv.tv_sec = tv->tv_sec;
-            tpdu->seg_du[i]->tv.tv_usec = tv->tv_usec;
+            tpdu->seg_du[i]->tv.tv_sec = te->tv.tv_sec;
+            tpdu->seg_du[i]->tv.tv_usec = te->tv.tv_usec;
             continue;
         }
 
-        if (timeval_abs_delta(&tpdu->seg_du[i]->tv, tv) < SYS_PAR_T454) {
+        if (timeval_abs_delta(&tpdu->seg_du[i]->tv, &te->tv) < SYS_PAR_T454) {
             continue;
         }
 

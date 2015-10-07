@@ -146,15 +146,15 @@ static gboolean terminal_tick(gpointer key, gpointer value,
         gpointer data)
 {
     terminal_t *term = value;
-    const timeval_t *tv = data;
+    time_evt_t *te = data;
 
-    link_tick(tv, term->link);
+    link_tick(te, term->link);
 
     return false;
 }
 
-void terminal_list_tick(terminal_list_t* tlist, const timeval_t* tv)
+void terminal_list_tick(terminal_list_t* tlist, time_evt_t *te)
 {
-    g_tree_foreach(tlist->tree, terminal_tick, (timeval_t*)tv);
+    g_tree_foreach(tlist->tree, terminal_tick, te);
 }
 

@@ -23,4 +23,4 @@ int cch_push_frame(cch_t *cch, const frame_t *fr, int *frame_no);
   */
 void cch_fr_error(cch_t *cch);
 
-void cch_tick(const timeval_t *tv, void *cch);
+void cch_tick(time_evt_t *te, void *cch);

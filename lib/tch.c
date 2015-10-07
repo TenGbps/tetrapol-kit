@@ -95,8 +95,8 @@ int tch_push_frame(tch_t *tch, const frame_t *fr)
     return 0;
 }
 
-void tch_tick(const timeval_t *tv, void *tch_)
+void tch_tick(time_evt_t *te, void *tch_)
 {
     tch_t *tch = tch_;
-    sdch_tick(tv, tch->sch);
+    sdch_tick(te, tch->sch);
 }

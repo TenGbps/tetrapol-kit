@@ -13,8 +13,9 @@ typedef struct tpdu_priv_ui_t tpdu_ui_t;
 
 tpdu_t *tpdu_create(void);
 int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu);
+
 void tpdu_destroy(tpdu_t *tpdu);
-void tpdu_du_tick(const timeval_t *tv, void *tpdu_du);
+void tpdu_du_tick(time_evt_t *te, void *tpdu_du);
 
 tpdu_ui_t *tpdu_ui_create(frame_type_t fr_type);
 void tpdu_ui_destroy(tpdu_ui_t *tpdu);

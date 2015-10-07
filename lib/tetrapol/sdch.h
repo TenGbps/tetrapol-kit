@@ -12,4 +12,4 @@ sdch_t *sdch_create(void);
 void sdch_destroy(sdch_t *sdch);
 bool sdch_dl_push_data_frame(sdch_t *sdch, const frame_t *fr);
 tsdu_t *sdch_get_tsdu(sdch_t *sdch);
-void sdch_tick(const timeval_t *tv, void *sdch);
+void sdch_tick(time_evt_t *te, void *sdch);

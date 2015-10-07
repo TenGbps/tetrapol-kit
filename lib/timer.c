@@ -13,7 +13,7 @@ typedef struct {
 struct timer_priv_t {
     int ncallbacks;
     callback_t *callbacks;
-    timeval_t tv;
+    time_evt_t te;
 };
 
 timer_t *timer_create(void)
@@ -37,12 +37,12 @@ void timer_destroy(timer_t *timer)
 
 void timer_tick(timer_t *timer, int usec)
 {
-    timer->tv.tv_usec += usec;
-    timer->tv.tv_sec += timer->tv.tv_usec / 1000000;
-    timer->tv.tv_usec %= 1000000;
+    timer->te.tv.tv_usec += usec;
+    timer->te.tv.tv_sec += timer->te.tv.tv_usec / 1000000;
+    timer->te.tv.tv_usec %= 1000000;
 
     for (int i = 0; i < timer->ncallbacks; ++i) {
-        timer->callbacks[i].func(&timer->tv, timer->callbacks[i].ptr);
+        timer->callbacks[i].func(&timer->te, timer->callbacks[i].ptr);
     }
 }
 
@@ -84,7 +84,7 @@ void timer_cancel(timer_t *timer, timer_callback_t timer_func, void *ptr)
     LOG(WTF, "callback not found");
 }
 
-int timeval_abs_delta(const timeval_t *tv1, const timeval_t *tv2)
+int timeval_abs_delta(const struct timeval *tv1, const struct timeval *tv2)
 {
     int d = tv2->tv_usec - tv1->tv_usec;
     d += (tv2->tv_sec - tv1->tv_sec) * 1000000;

@@ -203,7 +203,7 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
     return -1;
 }
 
-void link_tick(const timeval_t* tv, link_t *link)
+void link_tick(time_evt_t* te, link_t *link)
 {
-    tpdu_du_tick(tv, link->tpdu_ui);
+    tpdu_du_tick(te, link->tpdu_ui);
 }

@@ -95,8 +95,8 @@ tsdu_t *sdch_get_tsdu(sdch_t *sdch)
     return tsdu;
 }
 
-void sdch_tick(const timeval_t *tv, void *sdch)
+void sdch_tick(time_evt_t *te, void *sdch)
 {
-    sdch_t *_sdch = sdch;
-    terminal_list_tick(_sdch->tlist, tv);
+    sdch_t *sdch_ = sdch;
+    terminal_list_tick(sdch_->tlist, te);
 }
