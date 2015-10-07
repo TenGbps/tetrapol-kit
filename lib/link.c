@@ -70,7 +70,7 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
         }
 
         if (hdlc_fr->command.information.n_s != link->v_r) {
-            LOG(INFO, "BROKEN LINK");
+            LOG(INFO, "link broken v_r=%d", link->v_r);
             link->v_r = hdlc_fr->command.information.n_s;
         }
 
