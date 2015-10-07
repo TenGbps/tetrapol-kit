@@ -12,7 +12,7 @@
 
 #define CHECK_LEN(len, min_len, tsdu) \
     if ((len) < (min_len)) { \
-        LOG(ERR, "%d data too short %d < %d", __LINE__, (len), (min_len)); \
+        LOG(ERR, "data too short %d < %d", (len), (min_len)); \
         tsdu_destroy((tsdu_base_t *)tsdu); \
         return NULL; \
     }
