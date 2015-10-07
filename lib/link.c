@@ -12,7 +12,7 @@
 struct link_priv_t {
     tpdu_t *tpdu;
     tpdu_ui_t *tpdu_ui;
-    uint8_t v_r;    ///< v(r) PAS 0001-3-3 7.5.4.22
+    uint8_t v_r;    ///< v(r) PAS 0001-3-3 7.5.4.2.2
 };
 
 link_t *link_create(void)
