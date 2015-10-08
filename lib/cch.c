@@ -70,8 +70,8 @@ void cch_destroy(cch_t *cch)
 
 int cch_push_frame(cch_t *cch, const frame_t *fr, int *frame_no)
 {
-    // For decoding BCH are used always all frames, not only 0-3, 100-103
-    // Firs of all for detection BCH (frame 0/100 in superblock).
+    // For BCH decoding are used all frames, not only frames 0-3, 100-103.
+    // Firs of all for BCH detection (frame 0/100 in superblock).
     // The second reason is just to check frame synchronization.
     if (bch_push_frame(cch->bch, fr, frame_no)) {
         tsdu_d_system_info_t *tsdu = bch_get_tsdu(cch->bch);
