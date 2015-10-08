@@ -832,7 +832,7 @@ d_group_activation_decode(const uint8_t *data, int len)
     return tsdu;
 }
 
-static void d_group_activation_print(tsdu_d_group_activation_t *tsdu)
+static void d_group_activation_print(const tsdu_d_group_activation_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tACTIVATION_MODE: HOOK=%d TYPE=%d\n",
@@ -968,7 +968,7 @@ static tsdu_d_group_list_t *d_group_list_decode(const uint8_t *data, int len)
     return tsdu;
 }
 
-static void d_group_list_print(tsdu_d_group_list_t *tsdu)
+static void d_group_list_print(const tsdu_d_group_list_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tREFERENCE_LIST REVISION=%d CSG=%d CSO=%d DC=%d\n",
@@ -1036,7 +1036,7 @@ static tsdu_d_group_composition_t *d_group_composition_decode(
     return tsdu;
 }
 
-static void d_group_composition_print(tsdu_d_group_composition_t *tsdu)
+static void d_group_composition_print(const tsdu_d_group_composition_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tGROUP_ID=%d\n", tsdu->group_id);
@@ -1163,7 +1163,7 @@ static tsdu_d_neighbouring_cell_t *d_neighbouring_cell_decode(const uint8_t *dat
     return tsdu;
 }
 
-static void d_neighbouring_cell_print(tsdu_d_neighbouring_cell_t *tsdu)
+static void d_neighbouring_cell_print(const tsdu_d_neighbouring_cell_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tCCR_CONFIG=%d\n", tsdu->ccr_config.number);
@@ -1253,7 +1253,7 @@ static tsdu_d_system_info_t *d_system_info_decode(const uint8_t *data, int len)
     return tsdu;
 }
 
-static void d_system_info_print(tsdu_d_system_info_t *tsdu)
+static void d_system_info_print(const tsdu_d_system_info_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tCELL_STATE\n");
@@ -1339,7 +1339,7 @@ static tsdu_d_registration_nak_t *d_registration_nak_decode(const uint8_t *data,
     return tsdu;
 }
 
-static void d_registration_nak_print(tsdu_d_registration_nak_t *tsdu)
+static void d_registration_nak_print(const tsdu_d_registration_nak_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tCAUSE=0x%02x (%s)\n", tsdu->cause, cause_str[tsdu->cause]);
@@ -1385,7 +1385,7 @@ static tsdu_d_registration_ack_t *d_registration_ack_decode(const uint8_t *data,
     return tsdu;
 }
 
-static void d_registration_ack_print(tsdu_d_registration_ack_t *tsdu)
+static void d_registration_ack_print(const tsdu_d_registration_ack_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tCOMPLETE_REG=%d\n", tsdu->complete_reg);
@@ -1422,7 +1422,7 @@ static tsdu_d_connect_dch_t *d_connect_dch_decode(const uint8_t *data, int len)
     return tsdu;
 }
 
-static void d_connect_dch_print(tsdu_d_connect_dch_t *tsdu)
+static void d_connect_dch_print(const tsdu_d_connect_dch_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tDCH_LOW_LAYER=%d\n", tsdu->dch_low_layer);
@@ -1445,7 +1445,7 @@ static tsdu_d_return_t *d_return_decode(const uint8_t *data, int len)
     return tsdu;
 }
 
-static void d_return_print(tsdu_d_return_t *tsdu)
+static void d_return_print(const tsdu_d_return_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tCAUSE=0x%02x (%s)\n", tsdu->cause, cause_str[tsdu->cause]);
@@ -1465,7 +1465,7 @@ static tsdu_d_group_idle_t *d_group_idle_decode(const uint8_t *data, int len)
     return tsdu;
 }
 
-static void d_group_idle_print(tsdu_d_group_idle_t *tsdu)
+static void d_group_idle_print(const tsdu_d_group_idle_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     LOGF("\t\tCAUSE=0x%02x (%s)\n", tsdu->cause, cause_str[tsdu->cause]);
@@ -1918,43 +1918,43 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             break;
 
         case D_GROUP_ACTIVATION:
-            d_group_activation_print((tsdu_d_group_activation_t *)tsdu);
+            d_group_activation_print((const tsdu_d_group_activation_t *)tsdu);
             break;
 
         case D_GROUP_COMPOSITION:
-            d_group_composition_print((tsdu_d_group_composition_t *)tsdu);
+            d_group_composition_print((const tsdu_d_group_composition_t *)tsdu);
             break;
 
         case D_GROUP_LIST:
-            d_group_list_print((tsdu_d_group_list_t *)tsdu);
+            d_group_list_print((const tsdu_d_group_list_t *)tsdu);
             break;
 
         case D_NEIGHBOURING_CELL:
-            d_neighbouring_cell_print((tsdu_d_neighbouring_cell_t *)tsdu);
+            d_neighbouring_cell_print((const tsdu_d_neighbouring_cell_t *)tsdu);
             break;
 
         case D_SYSTEM_INFO:
-            d_system_info_print((tsdu_d_system_info_t *)tsdu);
+            d_system_info_print((const tsdu_d_system_info_t *)tsdu);
             break;
 
         case D_REGISTRATION_ACK:
-            d_registration_ack_print((tsdu_d_registration_ack_t *)tsdu);
+            d_registration_ack_print((const tsdu_d_registration_ack_t *)tsdu);
             break;
 
         case D_REGISTRATION_NAK:
-            d_registration_nak_print((tsdu_d_registration_nak_t *)tsdu);
+            d_registration_nak_print((const tsdu_d_registration_nak_t *)tsdu);
             break;
 
         case D_CONNECT_DCH:
-            d_connect_dch_print((tsdu_d_connect_dch_t *)tsdu);
+            d_connect_dch_print((const tsdu_d_connect_dch_t *)tsdu);
             break;
 
         case D_RETURN:
-            d_return_print((tsdu_d_return_t *)tsdu);
+            d_return_print((const tsdu_d_return_t *)tsdu);
             break;
 
         case D_GROUP_IDLE:
-            d_group_idle_print((tsdu_d_group_idle_t *)tsdu);
+            d_group_idle_print((const tsdu_d_group_idle_t *)tsdu);
             break;
 
         default:
@@ -2015,7 +2015,7 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_TRANSFER_NAK:
             LOG(WTF, "print not implemented: downlink codop=0x%02x",
                     tsdu->codop);
-            d_unknown_print((tsdu_unknown_codop_t *)tsdu);
+            d_unknown_print((const tsdu_unknown_codop_t *)tsdu);
     }
 }
 
@@ -2028,7 +2028,7 @@ static void tsdu_u_print(const tsdu_t *tsdu)
     }
 }
 
-void tsdu_print(tsdu_t *tsdu)
+void tsdu_print(const tsdu_t *tsdu)
 {
     if (tsdu->downlink) {
         tsdu_d_print(tsdu);

@@ -853,5 +853,5 @@ void tsdu_destroy(tsdu_base_t *tsdu);
 int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap,
         tsdu_t **tsdu);
 
-void tsdu_print(tsdu_t *tsdu);
+void tsdu_print(const tsdu_t *tsdu);
 
