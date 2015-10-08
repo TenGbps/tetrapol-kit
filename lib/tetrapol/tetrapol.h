@@ -11,7 +11,7 @@ enum {
     TETRAPOL_BAND_UHF = 2,
 };
 
-/** Radio channel type. */
+/** Physical channel type. */
 enum {
     TETRAPOL_CCH = 1,
     TETRAPOL_TCH = 2,
