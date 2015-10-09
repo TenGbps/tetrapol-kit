@@ -771,6 +771,68 @@ static void d_dch_open_print(const tsdu_d_dch_open_t *tsdu)
     tsdu_base_print(&tsdu->base);
 }
 
+static tsdu_d_data_request_t *d_data_request_decode(const uint8_t *data, int len)
+{
+    CHECK_LEN(len, 16, NULL);
+
+    tsdu_d_data_request_t *tsdu = tsdu_create(tsdu_d_data_request_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    tsdu->key_reference_auth._data = data[1];
+    memcpy(tsdu->valid_rt, &data[2], sizeof(tsdu->valid_rt));
+    tsdu->key_reference_ciph._data = data[10];
+    tsdu->trans_mode =      get_bits(4, &data[11], 4);
+    tsdu->trans_param1 =    get_bits(16, &data[12], 0);
+    tsdu->trans_param2 =    get_bits(16, &data[14], 0);
+    tsdu->has_trans_param3 = (tsdu->trans_mode == TRANS_MODE_UDP_MSG);
+    if (tsdu->has_trans_param3) {
+        CHECK_LEN(len, 18, tsdu);
+        tsdu->trans_param3 = get_bits(16, &data[16], 0);
+    }
+    return tsdu;
+}
+
+static void d_data_request_print(const tsdu_d_data_request_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+
+    LOGF("\t\tKEY_REFERENCE_AUTH: KEY_TYPE=%i KEY_INDEX=%i\n",
+            tsdu->key_reference_auth.key_type, tsdu->key_reference_auth.key_index);
+    char buf[sizeof(tsdu->valid_rt)*3];
+    LOGF("\t\tVALID_RT=%s\n",
+            sprint_hex(buf, tsdu->valid_rt, sizeof(tsdu->valid_rt)));
+    LOGF("\t\tKEY_REFERENCE_CIPH: KEY_TYPE=%i KEY_INDEX=%i\n",
+            tsdu->key_reference_ciph.key_type, tsdu->key_reference_ciph.key_index);
+
+    switch (tsdu->trans_mode) {
+        case TRANS_MODE_PDR_HMSW:
+            LOGF("\t\tTRANS_MODE=PDR_HMSW\n");
+            break;
+
+        case TRANS_MODE_PDR_VMSW:
+            LOGF("\t\tTRANS_MODE=PDR_VMSW\n");
+            break;
+
+        case TRANS_MODE_UDP_MSG:
+            LOGF("\t\tTRANS_MODE=UDP_MSG\n");
+            break;
+
+        case TRANS_MODE_UDP_TCP_APP:
+            LOGF("\t\tTRANS_MODE=UDP_TCP_APP\n");
+            break;
+
+        default:
+            LOGF("\t\tTRANS_MODE=0x%0x\n", tsdu->trans_mode);
+    }
+    LOGF("\t\tTRANS_PARAM1=0x%04x\n", tsdu->trans_param1);
+    LOGF("\t\tTRANS_PARAM2=0x%04x\n", tsdu->trans_param2);
+    if (tsdu->has_trans_param3) {
+        LOGF("\t\tTRANS_PARAM3=0x%04x\n", tsdu->trans_param3);
+    }
+}
+
 static tsdu_d_connect_cch_t *d_connect_cch_decode(const uint8_t *data, int len)
 {
     if (len != 1) {
@@ -1914,6 +1976,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_data_msg_down_decode(data, len);
             break;
 
+        case D_DATA_REQUEST:
+            *tsdu = (tsdu_t *)d_data_request_decode(data, len);
+            break;
+
         case D_DATAGRAM:
             *tsdu = (tsdu_t *)d_datagram_decode(data, len);
             break;
@@ -2032,6 +2098,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_data_msg_down_print((const tsdu_d_data_msg_down_t *)tsdu);
             break;
 
+        case D_DATA_REQUEST:
+            d_data_request_print((const tsdu_d_data_request_t *)tsdu);
+            break;
+
         case D_DATAGRAM:
             d_datagram_print((const tsdu_d_datagram_t *)tsdu);
             break;
@@ -2116,7 +2186,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_CALL_WAITING:
         case D_CRISIS_NOTIFICATION:
         case D_DATA_DOWN_STATUS:
-        case D_DATA_REQUEST:
         case D_DATA_SERV:
         case D_DEVIATION_ON:
         case D_ECCH_DESCRIPTION:

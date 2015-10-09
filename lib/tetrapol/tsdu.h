@@ -590,8 +590,17 @@ typedef union {
     };
 } system_id_t;
 
-/// PAS 0001-3-2 5.3.75
+/// PAS 0001-3-2 5.3.71
+enum {
+    TRANS_MODE_PDR_HMSW = 1,
+    TRANS_MODE_PDR_VMSW = 2,
+    TRANS_MODE_UDP_MSG = 8,
+    TRANS_MODE_UDP_TCP_APP = 9,
+    // other values are reserved
+};
+typedef uint8_t trans_mode_t;
 
+/// PAS 0001-3-2 5.3.75
 enum {
     TYPE_NB_TYPE_END = 0,
     TYPE_NB_TYPE_TALK_GROUP = 1,
@@ -691,6 +700,19 @@ typedef struct {
     uint16_t data_len;
     uint8_t data[2048];
 } tsdu_d_data_msg_down_t;
+
+/// PAS 0001-3-2 4.4.26
+typedef struct {
+    tsdu_base_t base;
+    key_reference_t key_reference_auth;
+    uint8_t valid_rt[8];
+    key_reference_t key_reference_ciph;
+    trans_mode_t trans_mode;
+    uint16_t trans_param1;
+    uint16_t trans_param2;
+    bool has_trans_param3;
+    uint16_t trans_param3;
+} tsdu_d_data_request_t;
 
 /// PAS 0001-3-2 4.4.27
 typedef struct {
