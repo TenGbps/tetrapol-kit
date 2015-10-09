@@ -212,10 +212,22 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
     if (par_field == 0xf) {
         LOG(WTF, "Disconnect indicated conn=%d reason=0x%02x",
                 dest_ref, hdlc_fr->data[2]);
+        // TODO: send disconnect indication message
         return 0;
     }
     // For downlink par_field always contains TSAP reference of sender (SwMI)
     connection_t *conn = &tpdu->conns[par_field];
+
+    const uint8_t *payload = hdlc_fr->data + 2;
+    int payload_len = hdlc_fr->nbits / 8 - 2;
+    if (!seg) {
+        if (d) {
+            payload_len = payload[0];
+            ++payload;
+        } else {
+            payload_len = 0;
+        }
+    }
 
     const uint8_t code_prefix = code & TPDU_CODE_PREFIX_MASK;
 
@@ -226,11 +238,25 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
         switch(code_prefix) {
             case TPDU_CODE_CR:
                 connection_cr(conn, dest_ref, par_field);
+                // TODO: decode bs_ref, rt_ref, call_priority
+                payload += 2;
+                payload_len -= 2;
+                if (payload_len < 0) {
+                    LOG(WTF, "CR payload too short %d", payload_len);
+                    connection_broken(conn);
+                    return -1;
+                }
                 break;
 
             case TPDU_CODE_CC:
                 connection_cc(conn, par_field, dest_ref);
-                break;
+                if (payload_len != 1) {
+                    LOG(WTF, "Invalid CC lenght=%d", payload_len)
+                    return -1;
+                }
+                LOG(INFO, "TODO: D_ACK TSDU");
+                // TODO: decode bs_ref, rt_ref
+                return 0;
 
             case TPDU_CODE_FCR:
                 connection_fcr(conn, dest_ref, par_field);
@@ -271,37 +297,34 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
     int ret_val = -1;
 
     if (seg) {
-        const uint8_t len = hdlc_fr->nbits / 8 - 2;
-        if (len + conn->seg_len > SIZEOF(connection_t, segbuf)) {
+        if (conn->seg_len + payload_len > SIZEOF(connection_t, segbuf)) {
             LOG(WTF, "Too large TPDU, increase buffer size");
             return -1;
         }
-        memcpy(&conn->segbuf[conn->seg_len], hdlc_fr->data + 2, len);
-        conn->seg_len += len;
+        memcpy(&conn->segbuf[conn->seg_len], payload, payload_len);
+        conn->seg_len += payload_len;
         LOG(INFO, "Segmentation part len=%d seg_len=%d dest_ref=%d",
-                len, conn->seg_len, dest_ref);
+                payload_len, conn->seg_len, dest_ref);
 
         ret_val = 0;
     } else {
-        const uint8_t len = d ? hdlc_fr->data[2] : 0;
-
         if (conn->seg_len) {
-            if (len + conn->seg_len > SIZEOF(connection_t, segbuf)) {
+            if (conn->seg_len + payload_len > SIZEOF(connection_t, segbuf)) {
                 conn->seg_len = 0;
                 LOG(WTF, "Too large TPDU, increase buffer size");
                 return -1;
             }
-            memcpy(&conn->segbuf[conn->seg_len], hdlc_fr->data + 3, len);
-            conn->seg_len += len;
+            memcpy(&conn->segbuf[conn->seg_len], payload, payload_len);
+            conn->seg_len += payload_len;
             LOG(INFO, "Segmentation complete len=%d seg_len=%d dest_ref=%d",
-                    len, conn->seg_len, dest_ref);
+                    payload_len, conn->seg_len, dest_ref);
             // TODO: prio, qos
             ret_val = tsdu_d_decode(conn->segbuf, conn->seg_len, 0, dest_ref, tsdu);
             conn->seg_len = 0;
         } else {
             if (d) {
                 // TODO: prio, qos
-                ret_val = tsdu_d_decode(hdlc_fr->data + 3, len, 0, dest_ref, tsdu);
+                ret_val = tsdu_d_decode(payload, payload_len, 0, dest_ref, tsdu);
             }
         }
     }
