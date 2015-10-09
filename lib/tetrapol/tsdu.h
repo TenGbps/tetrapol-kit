@@ -711,6 +711,11 @@ typedef struct {
     int destination_port;
 } tsdu_d_datagram_notify_t;
 
+/// PAS 0001-3-2 4.4.29
+typedef struct {
+    tsdu_base_t base;
+} tsdu_d_dch_open_t;
+
 /// PAS 0001-3-2 4.4.33
 typedef struct {
     tsdu_base_t base;

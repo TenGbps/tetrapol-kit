@@ -756,6 +756,21 @@ static void d_cch_open_print(const tsdu_d_cch_open_t *tsdu)
     tsdu_base_print(&tsdu->base);
 }
 
+static tsdu_d_dch_open_t *d_dch_open_decode(const uint8_t *data, int len)
+{
+    if (len != 1) {
+        LOG(WTF, "Invalid len 1 != %d", len);
+        return NULL;
+    }
+
+    return tsdu_create(tsdu_d_dch_open_t, 0);
+}
+
+static void d_dch_open_print(const tsdu_d_dch_open_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+}
+
 static tsdu_d_connect_cch_t *d_connect_cch_decode(const uint8_t *data, int len)
 {
     if (len != 1) {
@@ -1907,6 +1922,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_datagram_notify_decode(data, len);
             break;
 
+        case D_DCH_OPEN:
+            *tsdu = (tsdu_t *)d_dch_open_decode(data, len);
+            break;
+
         case D_ECH_OVERLOAD_ID:
             *tsdu = (tsdu_t *)d_ech_overload_id_decode(data, len);
             break;
@@ -2017,6 +2036,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_datagram_print((const tsdu_d_datagram_t *)tsdu);
             break;
 
+        case D_DCH_OPEN:
+            d_dch_open_print((const tsdu_d_dch_open_t *)tsdu);
+            break;
+
         case D_DATAGRAM_NOTIFY:
             d_datagram_notify_print((const tsdu_d_datagram_notify_t *)tsdu);
             break;
@@ -2096,7 +2119,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_DATA_REQUEST:
         case D_DATA_SERV:
         case D_DEVIATION_ON:
-        case D_DCH_OPEN:
         case D_ECCH_DESCRIPTION:
         case D_ECH_ACTIVATION:
         case D_ECH_REJECT:
