@@ -656,6 +656,11 @@ typedef struct {
     tsdu_base_t base;
 } tsdu_d_cch_open_t;
 
+/// 0001-3-2 4.4.19
+typedef struct {
+    tsdu_base_t base;
+} tsdu_d_connect_cch_t;
+
 /// PAS 0001-3-2 4.4.20
 typedef struct {
     tsdu_base_t base;

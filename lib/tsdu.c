@@ -756,6 +756,21 @@ static void d_cch_open_print(const tsdu_d_cch_open_t *tsdu)
     tsdu_base_print(&tsdu->base);
 }
 
+static tsdu_d_connect_cch_t *d_connect_cch_decode(const uint8_t *data, int len)
+{
+    if (len != 1) {
+        LOG(WTF, "Invalid len 1 != %d", len);
+        return NULL;
+    }
+
+    return tsdu_create(tsdu_d_connect_cch_t, 0);
+}
+
+static void d_connect_cch_print(const tsdu_d_connect_cch_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+}
+
 static tsdu_d_data_msg_down_t *d_data_msg_down_decode(const uint8_t *data, int len)
 {
     if (len - 1 > SIZEOF(tsdu_d_data_msg_down_t, data)) {
@@ -1839,6 +1854,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_cch_open_decode(data, len);
             break;
 
+        case D_CONNECT_CCH:
+            *tsdu = (tsdu_t *)d_connect_cch_decode(data, len);
+            break;
+
         case D_DATA_END:
             *tsdu = (tsdu_t *)d_data_end_decode(data, len);
             break;
@@ -1945,6 +1964,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_cch_open_print((const tsdu_d_cch_open_t *)tsdu);
             break;
 
+        case D_CONNECT_CCH:
+            d_connect_cch_print((const tsdu_d_connect_cch_t *)tsdu);
+            break;
+
         case D_DATA_END:
             d_data_end_print((const tsdu_d_data_end_t *)tsdu);
             break;
@@ -2031,7 +2054,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_CALL_SETUP:
         case D_CALL_SWITCH:
         case D_CALL_WAITING:
-        case D_CONNECT_CCH:
         case D_CRISIS_NOTIFICATION:
         case D_DATA_AUTHENTICATION:
         case D_DATA_DOWN_STATUS:
