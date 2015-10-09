@@ -670,6 +670,14 @@ typedef struct {
     uint8_t d_ch_scrambling;
 } tsdu_d_connect_dch_t;
 
+/// PAS 0001-3-2 4.4.22
+typedef struct {
+    tsdu_base_t base;
+    key_reference_t key_reference_auth;
+    uint8_t valid_rt[8];
+    key_reference_t key_reference_ciph;
+} tsdu_d_data_authentication_t;
+
 /// PAS 0001-3-2 4.4.24
 typedef struct {
     tsdu_base_t base;
