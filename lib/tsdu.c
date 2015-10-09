@@ -756,6 +756,31 @@ static void d_cch_open_print(const tsdu_d_cch_open_t *tsdu)
     tsdu_base_print(&tsdu->base);
 }
 
+static tsdu_d_ability_mngt_t *d_ability_mngt_decode(const uint8_t *data, int len)
+{
+    if (len - 1 > SIZEOF(tsdu_d_ability_mngt_t, data)) {
+        LOG(WTF, "Message too long %d", len - 1);
+        return NULL;
+    }
+
+    tsdu_d_ability_mngt_t *tsdu = tsdu_create(tsdu_d_ability_mngt_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    tsdu->data_len = len - 1;
+    memcpy(tsdu->data, &data[1], len - 1);
+
+    return tsdu;
+}
+
+static void d_ability_mngt_print(const tsdu_d_ability_mngt_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    char buf[tsdu->data_len*3 + 1];
+    LOGF("\t\tdata=%s\n", sprint_hex(buf, tsdu->data, tsdu->data_len));
+}
+
 static tsdu_d_dch_open_t *d_dch_open_decode(const uint8_t *data, int len)
 {
     if (len != 1) {
@@ -1940,6 +1965,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
 
     *tsdu = NULL;
     switch (codop) {
+        case D_ABILITY_MNGT:
+            *tsdu = (tsdu_t *)d_ability_mngt_decode(data, len);
+            break;
+
         case D_AUTHENTICATION:
             *tsdu = (tsdu_t *)d_authentication_decode(data, len);
             break;
@@ -2062,6 +2091,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
 static void tsdu_d_print(const tsdu_t *tsdu)
 {
     switch (tsdu->codop) {
+        case D_ABILITY_MNGT:
+            d_ability_mngt_print((const tsdu_d_ability_mngt_t *)tsdu);
+            break;
+
         case D_AUTHENTICATION:
             d_authentication_print((const tsdu_d_authentication_t *)tsdu);
             break;
@@ -2169,7 +2202,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         default:
             LOG(WTF, "Undefined downlink codop=0x%02x", tsdu->codop);
 
-        case D_ABILITY_MNGT:
         case D_ACCESS_DISABLED:
         case D_ADDITIONAL_PARTICIPANTS:
         case D_BACK_CCH:

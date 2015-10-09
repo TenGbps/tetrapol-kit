@@ -624,6 +624,13 @@ enum {
     // values 3..15 are reserved
 };
 
+/// PAS 0001-3-2 4.4.1
+typedef struct {
+    tsdu_base_t base;
+    uint16_t data_len;
+    uint8_t data[2048];
+} tsdu_d_ability_mngt_t;
+
 /// PAS 0001-3-2 4.4.5
 typedef struct {
     tsdu_base_t base;
