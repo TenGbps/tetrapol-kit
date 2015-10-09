@@ -1526,8 +1526,8 @@ static void d_unknown_print(const tsdu_unknown_codop_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
     char buf[tsdu->len * 3 + 1];
-    LOGF("\t\tUNKNOWN CODOP len=%d data=%s\n", tsdu->len,
-            sprint_hex(buf, tsdu->data, tsdu->len));
+    LOGF("\t\tUNKNOWN CODOP data_len=%d data=%s\n", tsdu->len - 1,
+            sprint_hex(buf, &tsdu->data[1], tsdu->len - 1));
 }
 
 static tsdu_d_data_end_t *d_data_end_decode(const uint8_t *data, int len)
