@@ -671,6 +671,14 @@ typedef struct {
     uint8_t cause;
 } tsdu_d_data_end_t;
 
+/// PAS 0001-3-2 5.3.25
+/// PAS 0001-13-2 data, should be implemented in application layer
+typedef struct {
+    tsdu_base_t base;
+    uint16_t data_len;
+    uint8_t data[2048];
+} tsdu_d_data_msg_down_t;
+
 /// PAS 0001-3-2 4.4.27
 typedef struct {
     tsdu_base_t base;

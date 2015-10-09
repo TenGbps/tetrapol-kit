@@ -756,6 +756,32 @@ static void d_cch_open_print(const tsdu_d_cch_open_t *tsdu)
     tsdu_base_print(&tsdu->base);
 }
 
+static tsdu_d_data_msg_down_t *d_data_msg_down_decode(const uint8_t *data, int len)
+{
+    if (len - 1 > SIZEOF(tsdu_d_data_msg_down_t, data)) {
+        LOG(WTF, "Message too large %d > %d",
+                len - 1, (int)SIZEOF(tsdu_d_data_msg_down_t, data));
+        return NULL;
+    }
+
+    tsdu_d_data_msg_down_t *tsdu = tsdu_create(tsdu_d_data_msg_down_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    tsdu->data_len = len - 1;
+    memcpy(tsdu->data, &data[1], tsdu->data_len);
+
+    return tsdu;
+}
+
+static void d_data_msg_down_print(const tsdu_d_data_msg_down_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    char buf[tsdu->data_len * 3 + 1];
+    LOGF("\tdata=%s\n", sprint_hex(buf, tsdu->data, tsdu->data_len));
+}
+
 static tsdu_d_authorisation_t *
 d_authorisation_decode(const uint8_t *data, int len)
 {
@@ -1817,6 +1843,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_data_end_decode(data, len);
             break;
 
+        case D_DATA_MSG_DOWN:
+            *tsdu = (tsdu_t *)d_data_msg_down_decode(data, len);
+            break;
+
         case D_DATAGRAM:
             *tsdu = (tsdu_t *)d_datagram_decode(data, len);
             break;
@@ -1919,6 +1949,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_data_end_print((const tsdu_d_data_end_t *)tsdu);
             break;
 
+        case D_DATA_MSG_DOWN:
+            d_data_msg_down_print((const tsdu_d_data_msg_down_t *)tsdu);
+            break;
+
         case D_DATAGRAM:
             d_datagram_print((const tsdu_d_datagram_t *)tsdu);
             break;
@@ -2001,7 +2035,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_CRISIS_NOTIFICATION:
         case D_DATA_AUTHENTICATION:
         case D_DATA_DOWN_STATUS:
-        case D_DATA_MSG_DOWN:
         case D_DATA_REQUEST:
         case D_DATA_SERV:
         case D_DEVIATION_ON:
