@@ -742,6 +742,20 @@ static void d_authentication_print(const tsdu_d_authentication_t *tsdu)
             sprint_hex(buf, tsdu->valid_rt, SIZEOF(tsdu_d_call_connect_t, valid_rt)));
 }
 
+static tsdu_d_cch_open_t *d_cch_open_decode(const uint8_t *data, int len)
+{
+    if (len != 1) {
+        LOG(WTF, "Invalid len 1 != %d", len);
+        return NULL;
+    }
+    return tsdu_create(tsdu_d_cch_open_t, 0);
+}
+
+static void d_cch_open_print(const tsdu_d_cch_open_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+}
+
 static tsdu_d_authorisation_t *
 d_authorisation_decode(const uint8_t *data, int len)
 {
@@ -1795,6 +1809,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_call_start_decode(data, len);
             break;
 
+        case D_CCH_OPEN:
+            *tsdu = (tsdu_t *)d_cch_open_decode(data, len);
+            break;
+
         case D_DATA_END:
             *tsdu = (tsdu_t *)d_data_end_decode(data, len);
             break;
@@ -1893,6 +1911,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_call_start_print((const tsdu_d_call_start_t *)tsdu);
             break;
 
+        case D_CCH_OPEN:
+            d_cch_open_print((const tsdu_d_cch_open_t *)tsdu);
+            break;
+
         case D_DATA_END:
             d_data_end_print((const tsdu_d_data_end_t *)tsdu);
             break;
@@ -1975,7 +1997,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_CALL_SETUP:
         case D_CALL_SWITCH:
         case D_CALL_WAITING:
-        case D_CCH_OPEN:
         case D_CONNECT_CCH:
         case D_CRISIS_NOTIFICATION:
         case D_DATA_AUTHENTICATION:

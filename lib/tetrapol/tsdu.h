@@ -651,6 +651,11 @@ typedef struct {
     key_of_call_t key_of_call;
 } tsdu_d_call_start_t;
 
+/// 0001-3-2 4.4.17
+typedef struct {
+    tsdu_base_t base;
+} tsdu_d_cch_open_t;
+
 /// PAS 0001-3-2 4.4.20
 typedef struct {
     tsdu_base_t base;
