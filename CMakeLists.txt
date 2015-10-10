@@ -9,9 +9,9 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall")
 CHECK_C_COMPILER_FLAG ("-Og" COMPILER_HAC_OG)
 
 if (COMPILER_HAC_OG)
-    set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Og")
+    set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Og -g")
 else (COMPILER_HAC_OG)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O1")
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O1 -g")
 endif (COMPILER_HAC_OG)
 
 add_subdirectory (apps)
