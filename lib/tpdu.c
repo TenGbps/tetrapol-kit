@@ -178,6 +178,11 @@ static int connection_dc_dr_fdr(connection_t *conn, int tsap_ref_swmi, int tsap_
     return 0;
 }
 
+static void connection_broken(connection_t *conn)
+{
+    conn->state = CONNECTION_STATE_BROKEN;
+}
+
 tpdu_t *tpdu_create(void)
 {
     tpdu_t *tpdu = calloc(1, sizeof(tpdu_t));
@@ -222,6 +227,12 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
     int payload_len = hdlc_fr->nbits / 8 - 2;
     if (!seg) {
         if (d) {
+            if (payload[0] > payload_len - 1) {
+                LOG(WTF, "Invalid payload length %d > %d",
+                        payload[0], payload_len - 1);
+                connection_broken(conn);
+                return -1;
+            }
             payload_len = payload[0];
             ++payload;
         } else {
