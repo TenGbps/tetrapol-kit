@@ -642,9 +642,14 @@ static void cell_id_decode2(cell_id_t *cell_id, const uint8_t *data)
     }
 }
 
-/// return true if another address follows, false otherwise
-static bool address_decode(address_t *address, const uint8_t *data)
+/**
+  @param data_ptr Ponter to address structure, on return points to next address.
+  @return true if another address follows, false otherwise.
+  */
+static bool address_decode(address_t *address, const uint8_t **data_ptr)
 {
+    const uint8_t *data = *data_ptr;
+
     const bool li = get_bits(1, data, 0);
     address->cna = get_bits(3, data, 1);
 
@@ -654,6 +659,7 @@ static bool address_decode(address_t *address, const uint8_t *data)
             if (get_bits(4, data, 4) != 0) {
                 LOG(WTF, "CND == 0 but address = 0x%0x", get_bits(4, data, 4));
             }
+            ++data;
             break;
 
         case ADDRESS_CNA_RFSI:
@@ -661,6 +667,7 @@ static bool address_decode(address_t *address, const uint8_t *data)
             for (int i = 0; i < 9; ++i) {
                 address->rfsi.addr[i] = get_bits(4, data , 4 + 4*i);
             }
+            data += 5;
             break;
 
         case ADDRESS_CNA_PABX:
@@ -668,6 +675,7 @@ static bool address_decode(address_t *address, const uint8_t *data)
             for (int i = 0; i < address->len; ++i) {
                 address->pabx[i] = get_bits(4, data, 8 + 4*i);
             }
+            data += 1 + (address->len + 1) / 2;
             break;
 
         case ADDRESS_CNA_X400:
@@ -684,6 +692,8 @@ static bool address_decode(address_t *address, const uint8_t *data)
             LOG(WTF, "unknown address CNA");
             break;
     }
+
+    *data_ptr = data;
 
     return li;
 }
@@ -852,7 +862,8 @@ static tsdu_d_call_setup_t *d_call_setup_decode(const uint8_t *data, int len)
         return NULL;
     }
 
-    if (address_decode(&tsdu->calling_adr, &data[1])) {
+    const uint8_t *adr_data = &data[1];
+    if (address_decode(&tsdu->calling_adr, &adr_data)) {
         LOG(ERR, "Only single address is supported in calling_adr");
     }
     if (len >= 8) {
@@ -1087,7 +1098,8 @@ d_forced_registration_decode(const uint8_t *data, int len)
     }
     CHECK_LEN(len, 9, tsdu);
 
-    if (address_decode(&tsdu->calling_adr, &data[1])) {
+    const uint8_t *adr_data = &data[1];
+    if (address_decode(&tsdu->calling_adr, &adr_data)) {
         LOG(ERR, "Only single address is supported in calling_adr");
     }
     return tsdu;
@@ -1639,7 +1651,8 @@ static tsdu_d_registration_nak_t *d_registration_nak_decode(const uint8_t *data,
     CHECK_LEN(len, 10, tsdu);
 
     tsdu->cause                 = data[1];
-    if (address_decode(&tsdu->host_adr, data + 4)) {
+    const uint8_t *adr_data = &data[2];
+    if (address_decode(&tsdu->host_adr, &adr_data)) {
         LOG(ERR, "Only single address NAK is supported");
     }
     tsdu->bn_id                 = data[7];
@@ -1671,7 +1684,8 @@ static tsdu_d_registration_ack_t *d_registration_ack_decode(const uint8_t *data,
     tsdu->complete_reg          = data[1];
     tsdu->rt_min_activity       = data[2];
     tsdu->rt_status._data       = data[3];
-    if (address_decode(&tsdu->host_adr, data + 4)) {
+    const uint8_t *adr_data = &data[4];
+    if (address_decode(&tsdu->host_adr, &adr_data)) {
         LOG(ERR, "Only single address ACK is supported");
     }
     tsdu->rt_min_registration   = data[9];
