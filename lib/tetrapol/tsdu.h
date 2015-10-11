@@ -645,6 +645,11 @@ typedef struct {
     key_reference_t key_reference;
 } tsdu_d_authorisation_t;
 
+/// PAS 0001-3-2 4.4.11
+typedef struct {
+    tsdu_base_t base;
+} tsdu_d_call_alert_t;
+
 /// PAS 0001-3-2 4.4.12
 typedef struct {
     tsdu_base_t base;

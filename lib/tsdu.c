@@ -794,6 +794,16 @@ static void d_reject_print(const tsdu_d_reject_t *tsdu)
     LOGF("\tCAUSE=0x%2x\n", tsdu->cause);
 }
 
+static tsdu_d_call_alert_t *d_call_alert_decode(const uint8_t *data, int len)
+{
+    return tsdu_create(tsdu_d_call_alert_t, 0);
+}
+
+static void d_call_alert_print(const tsdu_d_call_alert_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+}
+
 static tsdu_d_hook_on_invitation_t *d_hook_on_invitation_decode(
         const uint8_t *data, int len)
 {
@@ -2078,6 +2088,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_authorisation_decode(data, len);
             break;
 
+        case D_CALL_ALERT:
+            *tsdu = (tsdu_t *)d_call_alert_decode(data, len);
+            break;
+
         case D_CALL_CONNECT:
             *tsdu = (tsdu_t *)d_call_connect_decode(data, len);
             break;
@@ -2224,6 +2238,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_authorisation_print((const tsdu_d_authorisation_t *)tsdu);
             break;
 
+        case D_CALL_ALERT:
+            d_call_alert_print((const tsdu_d_call_alert_t *)tsdu);
+            break;
+
         case D_CALL_CONNECT:
             d_call_connect_print((const tsdu_d_call_connect_t *)tsdu);
             break;
@@ -2350,7 +2368,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_BROADCAST_NOTIFICATION:
         case D_BROADCAST_WAITING:
         case D_CALL_ACTIVATION:
-        case D_CALL_ALERT:
         case D_CALL_COMPOSITION:
         case D_CALL_END:
         case D_CALL_OVERLOAD_ID:
