@@ -1714,6 +1714,30 @@ static void d_group_idle_print(const tsdu_d_group_idle_t *tsdu)
     LOGF("\t\tCAUSE=0x%02x (%s)\n", tsdu->cause, cause_str[tsdu->cause]);
 }
 
+static tsdu_d_location_activity_ack_t *d_location_activity_ack_decode(
+        const uint8_t *data, int len)
+{
+    CHECK_LEN(len, 2, NULL);
+
+    tsdu_d_location_activity_ack_t *tsdu =
+        tsdu_create(tsdu_d_location_activity_ack_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    tsdu->rt_status._data = data[1];
+
+    return tsdu;
+}
+
+static void d_location_activity_ack_print(const tsdu_d_location_activity_ack_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tRT_STATUS FIX=%i PRO=%i CHG=%i REN=%i TRA=%i\n",
+            tsdu->rt_status.fix, tsdu->rt_status.pro, tsdu->rt_status.chg,
+            tsdu->rt_status.ren, tsdu->rt_status.tra);
+}
+
 static tsdu_d_ech_overload_id_t *d_ech_overload_id_decode(const uint8_t *data, int len)
 {
     tsdu_d_ech_overload_id_t *tsdu = tsdu_create(tsdu_d_ech_overload_id_t, 0);
@@ -2102,6 +2126,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_group_list_decode(data, len);
             break;
 
+        case D_LOCATION_ACTIVITY_ACK:
+            *tsdu = (tsdu_t *)d_location_activity_ack_decode(data, len);
+            break;
+
         case D_NEIGHBOURING_CELL:
             *tsdu = (tsdu_t *)d_neighbouring_cell_decode(data, len);
             break;
@@ -2240,6 +2268,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_group_list_print((const tsdu_d_group_list_t *)tsdu);
             break;
 
+        case D_LOCATION_ACTIVITY_ACK:
+            d_location_activity_ack_print((const tsdu_d_location_activity_ack_t *)tsdu);
+            break;
+
         case D_NEIGHBOURING_CELL:
             d_neighbouring_cell_print((const tsdu_d_neighbouring_cell_t *)tsdu);
             break;
@@ -2316,7 +2348,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_HOOK_ON_INVITATION:
         case D_CHANNEL_INIT:
         case D_INFORMATION_DELIVERY:
-        case D_LOCATION_ACTIVITY_ACK:
         case D_OC_ACTIVATION:
         case D_OC_PAGING:
         case D_OC_REJECT:

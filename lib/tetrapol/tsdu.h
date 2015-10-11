@@ -828,6 +828,12 @@ typedef struct {
     index_list_t index_list;
 } tsdu_d_group_list_t;
 
+/// PAS 0001-3-2 4.4.56
+typedef struct {
+    tsdu_base_t base;
+    rt_status_t rt_status;
+} tsdu_d_location_activity_ack_t;
+
 /// PAS 0001-3-2 4.4.57
 typedef struct {
     tsdu_base_t base;
