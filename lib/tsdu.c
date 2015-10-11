@@ -794,6 +794,25 @@ static void d_reject_print(const tsdu_d_reject_t *tsdu)
     LOGF("\tCAUSE=0x%2x\n", tsdu->cause);
 }
 
+static tsdu_d_release_t *d_release_decode(const uint8_t *data, int len)
+{
+    CHECK_LEN(len, 2, NULL);
+
+    tsdu_d_release_t *tsdu = tsdu_create(tsdu_d_release_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+    tsdu->cause = data[1];
+
+    return tsdu;
+}
+
+static void d_release_print(const tsdu_d_release_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\tCAUSE=0x%2x\n", tsdu->cause);
+}
+
 static tsdu_d_ability_mngt_t *d_ability_mngt_decode(const uint8_t *data, int len)
 {
     if (len - 1 > SIZEOF(tsdu_d_ability_mngt_t, data)) {
@@ -2111,6 +2130,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_reject_decode(data, len);
             break;
 
+        case D_RELEASE:
+            *tsdu = (tsdu_t *)d_release_decode(data, len);
+            break;
+
         case D_RETURN:
             *tsdu = (tsdu_t *)d_return_decode(data, len);
             break;
@@ -2245,6 +2268,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_reject_print((const tsdu_d_reject_t *)tsdu);
             break;
 
+        case D_RELEASE:
+            d_release_print((const tsdu_d_release_t *)tsdu);
+            break;
+
         case D_RETURN:
             d_return_print((const tsdu_d_return_t *)tsdu);
             break;
@@ -2295,7 +2322,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_OC_REJECT:
         case D_PRIORITY_GRP_ACTIVATION:
         case D_PRIORITY_GRP_WAITING:
-        case D_RELEASE:
         case D_SERVICE_DISABLED:
         case D_TRAFFIC_DISABLED:
         case D_TRAFFIC_ENABLED:

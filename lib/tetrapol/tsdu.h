@@ -879,6 +879,12 @@ typedef struct {
     uint8_t cause;
 } tsdu_d_reject_t;
 
+/// PAS 0001-3-2 4.4.67
+typedef struct {
+    tsdu_base_t base;
+    uint8_t cause;
+} tsdu_d_release_t;
+
 /// PAS 0001-3-2 4.4.68
 typedef struct {
     tsdu_base_t base;
