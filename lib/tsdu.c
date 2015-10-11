@@ -794,6 +794,26 @@ static void d_reject_print(const tsdu_d_reject_t *tsdu)
     LOGF("\tCAUSE=0x%2x\n", tsdu->cause);
 }
 
+static tsdu_d_hook_on_invitation_t *d_hook_on_invitation_decode(
+        const uint8_t *data, int len)
+{
+    CHECK_LEN(len, 2, NULL);
+
+    tsdu_d_hook_on_invitation_t *tsdu = tsdu_create(tsdu_d_hook_on_invitation_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+    tsdu->cause = data[1];
+
+    return tsdu;
+}
+
+static void d_hook_on_invitation_print(const tsdu_d_hook_on_invitation_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\tCAUSE=0x%2x\n", tsdu->cause);
+}
+
 static tsdu_d_release_t *d_release_decode(const uint8_t *data, int len)
 {
     CHECK_LEN(len, 2, NULL);
@@ -2126,6 +2146,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_group_list_decode(data, len);
             break;
 
+        case D_HOOK_ON_INVITATION:
+            *tsdu = (tsdu_t *)d_hook_on_invitation_decode(data, len);
+            break;
+
         case D_LOCATION_ACTIVITY_ACK:
             *tsdu = (tsdu_t *)d_location_activity_ack_decode(data, len);
             break;
@@ -2268,6 +2292,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_group_list_print((const tsdu_d_group_list_t *)tsdu);
             break;
 
+        case D_HOOK_ON_INVITATION:
+            d_hook_on_invitation_print((const tsdu_d_hook_on_invitation_t *)tsdu);
+            break;
+
         case D_LOCATION_ACTIVITY_ACK:
             d_location_activity_ack_print((const tsdu_d_location_activity_ack_t *)tsdu);
             break;
@@ -2345,7 +2373,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_GROUP_OVERLOAD_ID:
         case D_GROUP_PAGING:
         case D_GROUP_REJECT:
-        case D_HOOK_ON_INVITATION:
         case D_CHANNEL_INIT:
         case D_INFORMATION_DELIVERY:
         case D_OC_ACTIVATION:

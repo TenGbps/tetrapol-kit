@@ -828,6 +828,12 @@ typedef struct {
     index_list_t index_list;
 } tsdu_d_group_list_t;
 
+/// PAS 0001-3-2 4.4.51
+typedef struct {
+    tsdu_base_t base;
+    uint8_t cause;
+} tsdu_d_hook_on_invitation_t;
+
 /// PAS 0001-3-2 4.4.56
 typedef struct {
     tsdu_base_t base;
