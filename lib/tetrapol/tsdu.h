@@ -867,6 +867,12 @@ typedef struct {
     cell_id_t cell_id;
 } tsdu_d_registration_nak_t;
 
+/// PAS 0001-3-2 4.4.66
+typedef struct {
+    tsdu_base_t base;
+    uint8_t cause;
+} tsdu_d_reject_t;
+
 /// PAS 0001-3-2 4.4.68
 typedef struct {
     tsdu_base_t base;
