@@ -843,6 +843,12 @@ typedef struct {
     } adj_cells[16];
 } tsdu_d_neighbouring_cell_t;
 
+/// PAS 0001-3-2 4.4.63
+typedef struct {
+    tsdu_base_t base;
+    uint8_t cause;
+} tsdu_d_refusal_t;
+
 /// PAS 0001-3-2 4.4.64
 typedef struct {
     tsdu_base_t base;

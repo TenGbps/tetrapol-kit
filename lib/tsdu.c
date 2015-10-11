@@ -756,6 +756,25 @@ static void d_cch_open_print(const tsdu_d_cch_open_t *tsdu)
     tsdu_base_print(&tsdu->base);
 }
 
+static tsdu_d_refusal_t *d_refusal_decode(const uint8_t *data, int len)
+{
+    CHECK_LEN(len, 2, NULL);
+
+    tsdu_d_refusal_t *tsdu = tsdu_create(tsdu_d_refusal_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+    tsdu->cause = data[1];
+
+    return tsdu;
+}
+
+static void d_refusal_print(const tsdu_d_refusal_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\tCAUSE=0x%2x\n", tsdu->cause);
+}
+
 static tsdu_d_reject_t *d_reject_decode(const uint8_t *data, int len)
 {
     CHECK_LEN(len, 2, NULL);
@@ -2084,6 +2103,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_connect_dch_decode(data, len);
             break;
 
+        case D_REFUSAL:
+            *tsdu = (tsdu_t *)d_refusal_decode(data, len);
+            break;
+
         case D_REJECT:
             *tsdu = (tsdu_t *)d_reject_decode(data, len);
             break;
@@ -2214,6 +2237,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_connect_dch_print((const tsdu_d_connect_dch_t *)tsdu);
             break;
 
+        case D_REFUSAL:
+            d_refusal_print((const tsdu_d_refusal_t *)tsdu);
+            break;
+
         case D_REJECT:
             d_reject_print((const tsdu_d_reject_t *)tsdu);
             break;
@@ -2268,7 +2295,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_OC_REJECT:
         case D_PRIORITY_GRP_ACTIVATION:
         case D_PRIORITY_GRP_WAITING:
-        case D_REFUSAL:
         case D_RELEASE:
         case D_SERVICE_DISABLED:
         case D_TRAFFIC_DISABLED:
