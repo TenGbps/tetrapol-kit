@@ -169,12 +169,15 @@ typedef struct {
 } activation_mode_t;
 
 /// PAS 0001-3-2 5.3.3
-typedef struct {
-    unsigned int origin : 3;
-    unsigned int _reserver : 2;
-    unsigned int id : 1;
-    unsigned int mod : 1;
-    unsigned int sil : 1;
+typedef union {
+    struct {
+        unsigned int origin : 3;
+        unsigned int _reserver : 2;
+        unsigned int id : 1;
+        unsigned int mod : 1;
+        unsigned int sil : 1;
+    };
+    uint8_t _data;
 } add_setup_param_t;
 
 /// PAS 0001-3-2 5.3.4
@@ -662,6 +665,14 @@ typedef struct {
     bool has_key_of_call;
     key_of_call_t key_of_call;
 } tsdu_d_call_connect_t;
+
+/// PAS 0001-3-2 4.4.13
+typedef struct {
+    tsdu_base_t base;
+    address_t calling_adr;
+    bool has_add_setup_param;
+    add_setup_param_t add_setup_param;
+} tsdu_d_call_setup_t;
 
 /// PAS 0001-3-2 4.4.14
 typedef struct {

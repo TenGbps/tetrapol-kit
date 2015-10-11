@@ -843,6 +843,43 @@ static void d_release_print(const tsdu_d_release_t *tsdu)
     LOGF("\tCAUSE=0x%2x\n", tsdu->cause);
 }
 
+static tsdu_d_call_setup_t *d_call_setup_decode(const uint8_t *data, int len)
+{
+    CHECK_LEN(len, 6, NULL);
+
+    tsdu_d_call_setup_t *tsdu = tsdu_create(tsdu_d_call_setup_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    if (address_decode(&tsdu->calling_adr, &data[1])) {
+        LOG(ERR, "Only single address is supported in calling_adr");
+    }
+    if (len >= 8) {
+        tsdu->has_add_setup_param = (data[6] == IEI_ADD_SETUP_PARAM);
+        if (!tsdu->has_add_setup_param) {
+            LOG(WTF, "Unexpected IEI 0x%02x", data[6]);
+            return tsdu;
+        }
+        tsdu->add_setup_param._data = data[7];
+    }
+
+    return tsdu;
+}
+
+static void d_call_setup_print(const tsdu_d_call_setup_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    address_print(&tsdu->calling_adr);
+    if (tsdu->has_add_setup_param) {
+        LOGF("\t\tORIGIN=%d ID=%d MOD=%d SIL=%d\n",
+                tsdu->add_setup_param.origin,
+                tsdu->add_setup_param.id,
+                tsdu->add_setup_param.mod,
+                tsdu->add_setup_param.sil);
+    }
+}
+
 static tsdu_d_ability_mngt_t *d_ability_mngt_decode(const uint8_t *data, int len)
 {
     if (len - 1 > SIZEOF(tsdu_d_ability_mngt_t, data)) {
@@ -1051,7 +1088,7 @@ d_forced_registration_decode(const uint8_t *data, int len)
     CHECK_LEN(len, 9, tsdu);
 
     if (address_decode(&tsdu->calling_adr, &data[1])) {
-        LOG(ERR, "Onli single address is supported in calling_adr");
+        LOG(ERR, "Only single address is supported in calling_adr");
     }
     return tsdu;
 }
@@ -2100,6 +2137,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_call_start_decode(data, len);
             break;
 
+        case D_CALL_SETUP:
+            *tsdu = (tsdu_t *)d_call_setup_decode(data, len);
+            break;
+
         case D_CCH_OPEN:
             *tsdu = (tsdu_t *)d_cch_open_decode(data, len);
             break;
@@ -2246,6 +2287,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_call_connect_print((const tsdu_d_call_connect_t *)tsdu);
             break;
 
+        case D_CALL_SETUP:
+            d_call_setup_print((const tsdu_d_call_setup_t *)tsdu);
+            break;
+
         case D_CALL_START:
             d_call_start_print((const tsdu_d_call_start_t *)tsdu);
             break;
@@ -2371,7 +2416,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_CALL_COMPOSITION:
         case D_CALL_END:
         case D_CALL_OVERLOAD_ID:
-        case D_CALL_SETUP:
         case D_CALL_SWITCH:
         case D_CALL_WAITING:
         case D_CRISIS_NOTIFICATION:
