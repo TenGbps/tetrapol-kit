@@ -634,6 +634,13 @@ typedef struct {
     uint8_t data[2048];
 } tsdu_d_ability_mngt_t;
 
+/// PAS 0001-3-2 4.4.4
+typedef struct {
+    tsdu_base_t base;
+    address_list_t *calling_adr;
+    uint8_t coverage_id;
+} tsdu_d_additional_participants_t;
+
 /// PAS 0001-3-2 4.4.5
 typedef struct {
     tsdu_base_t base;

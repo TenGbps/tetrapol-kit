@@ -853,6 +853,71 @@ static void d_release_print(const tsdu_d_release_t *tsdu)
     LOGF("\tCAUSE=0x%2x\n", tsdu->cause);
 }
 
+int address_list_decode(address_list_t **ptr_addrs, const uint8_t *data)
+{
+    // TODO: check len
+    address_list_t *addrs = *ptr_addrs;
+    do {
+        const int n = addrs ? (addrs->nadrs + 1) : 1;
+        const int l = sizeof(address_list_t) + n * sizeof(address_t);
+        address_list_t *p = realloc(addrs, l);
+        if (!p) {
+            *ptr_addrs = addrs;
+            return -1;
+        }
+        addrs = p;
+        addrs->nadrs = n;
+    } while (address_decode(&addrs->called_adr[addrs->nadrs-1], &data));
+
+    *ptr_addrs = addrs;
+
+    return 0;
+}
+
+static tsdu_d_additional_participants_t *d_additional_participants_decode(
+        const uint8_t *data, int len)
+{
+    CHECK_LEN(len, 7, NULL);
+
+    tsdu_d_additional_participants_t *tsdu = tsdu_create(
+            tsdu_d_additional_participants_t, 1);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    tsdu->coverage_id = data[1];
+    if (address_list_decode(&tsdu->calling_adr, &data[2]) == -1) {
+        tsdu_destroy(&tsdu->base);
+        return NULL;
+    }
+
+    if (len >= 8) {
+        if (address_list_decode(&tsdu->calling_adr, &data[7]) == -1) {
+            tsdu_destroy(&tsdu->base);
+            return NULL;
+        }
+    }
+
+    if (len >= 13) {
+        if (address_list_decode(&tsdu->calling_adr, &data[12]) == -1) {
+            tsdu_destroy(&tsdu->base);
+            return NULL;
+        }
+    }
+
+    return tsdu;
+}
+
+static void d_additional_participants_print(
+        const tsdu_d_additional_participants_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\tCOVERAGE_ID=%d\n", tsdu->coverage_id);
+    for (int i = 0; i < tsdu->calling_adr->nadrs; ++i) {
+        address_print(&tsdu->calling_adr->called_adr[i]);
+    }
+}
+
 static tsdu_d_call_setup_t *d_call_setup_decode(const uint8_t *data, int len)
 {
     CHECK_LEN(len, 6, NULL);
@@ -2131,6 +2196,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_ability_mngt_decode(data, len);
             break;
 
+        case D_ADDITIONAL_PARTICIPANTS:
+            *tsdu = (tsdu_t *)d_additional_participants_decode(data, len);
+            break;
+
         case D_AUTHENTICATION:
             *tsdu = (tsdu_t *)d_authentication_decode(data, len);
             break;
@@ -2285,6 +2354,11 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_ability_mngt_print((const tsdu_d_ability_mngt_t *)tsdu);
             break;
 
+        case D_ADDITIONAL_PARTICIPANTS:
+            d_additional_participants_print(
+                    (const tsdu_d_additional_participants_t *)tsdu);
+            break;
+
         case D_AUTHENTICATION:
             d_authentication_print((const tsdu_d_authentication_t *)tsdu);
             break;
@@ -2421,7 +2495,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             LOG(WTF, "Undefined downlink codop=0x%02x", tsdu->codop);
 
         case D_ACCESS_DISABLED:
-        case D_ADDITIONAL_PARTICIPANTS:
         case D_BACK_CCH:
         case D_BROADCAST:
         case D_BROADCAST_NOTIFICATION:
