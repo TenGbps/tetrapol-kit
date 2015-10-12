@@ -29,6 +29,7 @@ add_library (tetrapol
     sdch.c
     tch.c
     terminal.c
+    tetrapol.c
     timer.c
     tpdu.c
     tsdu.c
@@ -48,6 +49,7 @@ add_library (tetrapol
     tetrapol/rch.h
     tetrapol/sdch.h
     tetrapol/system_config.h
+    tetrapol/tetrapol.h
     tetrapol/terminal.h
     tetrapol/tch.h
     tetrapol/timer.h

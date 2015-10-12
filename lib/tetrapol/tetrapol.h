@@ -18,6 +18,17 @@ enum {
     TETRAPOL_RADIO_TCH = 2,
 };
 
+typedef struct {
+    uint8_t band;
+    uint8_t radio_ch_type;
+} tetrapol_cfg_t;
+
+typedef struct tetrapol_priv_t tetrapol_t;
+
+tetrapol_t *tetrapol_create(const tetrapol_cfg_t *cfg);
+void tetrapol_destroy(tetrapol_t *tetrapol);
+const tetrapol_cfg_t *tetrapol_get_cfg(tetrapol_t *tetrapol);
+
 #ifdef __cplusplus
 }
 #endif
