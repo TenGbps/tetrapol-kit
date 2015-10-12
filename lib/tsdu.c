@@ -1369,6 +1369,7 @@ static tsdu_d_registration_ack_t *d_registration_ack_decode(const uint8_t *data,
     tsdu->rt_data_info._data    = data[11];
     tsdu->group_id              = get_bits(12, data + 12, 0);
 
+    tsdu->has_coverage_id = false;
     if (len >= 16) {
         switch(data[14]) {
             case IEI_COVERAGE_ID:
