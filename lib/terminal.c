@@ -142,6 +142,21 @@ int terminal_list_push_hdlc_frame(terminal_list_t* tlist,
     return terminal_push_hdlc_frame(term, hdlc_fr, tsdu);
 }
 
+static gboolean terminal_rx_glitch(gpointer key, gpointer value,
+        gpointer data)
+{
+    terminal_t *term = value;
+
+    link_rx_glitch(term->link);
+
+    return false;
+}
+
+void terminal_list_rx_glitch(terminal_list_t* tlist)
+{
+    g_tree_foreach(tlist->tree, terminal_rx_glitch, NULL);
+}
+
 static gboolean terminal_tick(gpointer key, gpointer value,
         gpointer data)
 {

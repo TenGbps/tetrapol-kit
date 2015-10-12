@@ -220,6 +220,11 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
     return -1;
 }
 
+void link_rx_glitch(link_t *link)
+{
+    link->rx_glitch = true;
+}
+
 void link_tick(time_evt_t* te, link_t *link)
 {
     link->rx_glitch |= te->rx_glitch;

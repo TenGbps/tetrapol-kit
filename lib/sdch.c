@@ -77,9 +77,7 @@ bool sdch_dl_push_data_frame(sdch_t *sdch, const frame_t *fr)
     }
 
     if (res == 2) {
-        if (sdch->te) {
-            terminal_list_tick(sdch->tlist, sdch->te);
-        }
+        terminal_list_rx_glitch(sdch->tlist);
     }
 
     uint8_t data[SYS_PAR_N200_BYTES_MAX];

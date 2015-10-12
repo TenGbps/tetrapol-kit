@@ -52,6 +52,11 @@ int terminal_list_push_hdlc_frame(terminal_list_t* tlist,
         const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu);
 
 /**
+  Report RX glitch to all terminals.
+  */
+void terminal_list_rx_glitch(terminal_list_t* tlist);
+
+/**
   Call periodicaly to expire old sessions.
   @param tlist list with all terminals.
   @param te passing time event.
