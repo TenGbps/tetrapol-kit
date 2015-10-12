@@ -931,6 +931,8 @@ static tsdu_d_call_setup_t *d_call_setup_decode(const uint8_t *data, int len)
     if (address_decode(&tsdu->calling_adr, &adr_data)) {
         LOG(ERR, "Only single address is supported in calling_adr");
     }
+
+    tsdu->has_add_setup_param = false;
     if (len >= 8) {
         tsdu->has_add_setup_param = (data[6] == IEI_ADD_SETUP_PARAM);
         if (!tsdu->has_add_setup_param) {
