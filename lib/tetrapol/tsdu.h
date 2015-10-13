@@ -851,6 +851,16 @@ typedef struct {
     index_list_t index_list;
 } tsdu_d_group_list_t;
 
+/// PAS 0001-3-2 4.4.50
+typedef struct {
+    tsdu_base_t base;
+    activation_mode_t activation_mode;
+    uint16_t group_id;
+    uint8_t coverage_id;
+    uint8_t _zero;
+    uint8_t cause;
+} tsdu_d_group_reject_t;
+
 /// PAS 0001-3-2 4.4.51
 typedef struct {
     tsdu_base_t base;

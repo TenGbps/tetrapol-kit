@@ -752,6 +752,37 @@ static void d_authentication_print(const tsdu_d_authentication_t *tsdu)
             sprint_hex(buf, tsdu->valid_rt, SIZEOF(tsdu_d_call_connect_t, valid_rt)));
 }
 
+static tsdu_d_group_reject_t *d_group_reject_decode(const uint8_t *data, int len)
+{
+    CHECK_LEN(len, 6, NULL);
+
+    tsdu_d_group_reject_t *tsdu = tsdu_create(tsdu_d_group_reject_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    activation_mode_decode(&tsdu->activation_mode, data[1]);
+    tsdu->group_id  = get_bits(12, data + 1, 4);
+    tsdu->coverage_id = data[3];
+    tsdu->_zero = data[4];
+    if (tsdu->_zero) {
+        LOG(WTF, "Nonzero zero=0x%02x", tsdu->_zero);
+    }
+    tsdu->cause = data[5];
+
+    return tsdu;
+}
+
+static void d_group_reject_print(const tsdu_d_group_reject_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tACTIVATION_MODE: HOOK=%d TYPE=%d\n",
+            tsdu->activation_mode.hook, tsdu->activation_mode.type);
+    LOGF("\t\tGROUP_ID=%d\n", tsdu->group_id);
+    LOGF("\t\tCOVERAGE_ID=%d\n", tsdu->coverage_id);
+    LOGF("\t\tCAUSE=%d\n", tsdu->cause);
+}
+
 static tsdu_d_cch_open_t *d_cch_open_decode(const uint8_t *data, int len)
 {
     if (len != 1) {
@@ -2286,6 +2317,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_group_list_decode(data, len);
             break;
 
+        case D_GROUP_REJECT:
+            *tsdu = (tsdu_t *)d_group_reject_decode(data, len);
+            break;
+
         case D_HOOK_ON_INVITATION:
             *tsdu = (tsdu_t *)d_hook_on_invitation_decode(data, len);
             break;
@@ -2445,6 +2480,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_group_list_print((const tsdu_d_group_list_t *)tsdu);
             break;
 
+        case D_GROUP_REJECT:
+            d_group_reject_print((const tsdu_d_group_reject_t *)tsdu);
+            break;
+
         case D_HOOK_ON_INVITATION:
             d_hook_on_invitation_print((const tsdu_d_hook_on_invitation_t *)tsdu);
             break;
@@ -2522,7 +2561,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_GROUP_END:
         case D_GROUP_OVERLOAD_ID:
         case D_GROUP_PAGING:
-        case D_GROUP_REJECT:
         case D_CHANNEL_INIT:
         case D_INFORMATION_DELIVERY:
         case D_OC_ACTIVATION:
