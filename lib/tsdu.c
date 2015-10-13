@@ -752,6 +752,51 @@ static void d_authentication_print(const tsdu_d_authentication_t *tsdu)
             sprint_hex(buf, tsdu->valid_rt, SIZEOF(tsdu_d_call_connect_t, valid_rt)));
 }
 
+static tsdu_d_crisis_notification_t *d_crisis_notification_decode(
+        const uint8_t *data, int len)
+{
+    CHECK_LEN(len, 10, NULL);
+
+    tsdu_d_crisis_notification_t *tsdu = tsdu_create(
+            tsdu_d_crisis_notification_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    const uint8_t *data_ = &data[1];
+    if (address_decode(&tsdu->calling_adr, &data_)) {
+        LOG(WTF, "Only single addres in list is supported.");
+    }
+    tsdu->organisation = data[6];
+    tsdu->coverage_id = data[7];
+    if (data[8]) {
+        LOG(WTF, "Crisis - nonzero undocumented field=0x%02x", data[8]);
+    }
+    tsdu->og_nb = get_bits(4, &data[9], 0);
+    if (tsdu->og_nb > 5) {
+        LOG(WTF, "Too large OG_NB %d", tsdu->og_nb);
+        tsdu_destroy(&tsdu->base);
+        return NULL;
+    }
+    CHECK_LEN(len, 10 + (12 * tsdu->og_nb) / 12, tsdu);
+    for (int i = 0; i < tsdu->og_nb; ++i) {
+        tsdu->group_ids[i] = get_bits(12, &data[9], 4 + 12*i);
+    }
+
+    return tsdu;
+}
+
+static void d_crisis_notification_print(const tsdu_d_crisis_notification_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    address_print(&tsdu->calling_adr);
+    LOGF("\t\tORGANISATION=%d\n", tsdu->organisation);
+    LOGF("\t\tCOVERAGE_ID=%d\n", tsdu->coverage_id);
+    for (int i = 0; i < tsdu->og_nb; ++i) {
+        LOGF("\t\t\tGROUP_ID=%d\n", tsdu->group_ids[i]);
+    }
+}
+
 static tsdu_d_group_reject_t *d_group_reject_decode(const uint8_t *data, int len)
 {
     CHECK_LEN(len, 6, NULL);
@@ -2265,6 +2310,10 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
             *tsdu = (tsdu_t *)d_connect_cch_decode(data, len);
             break;
 
+        case D_CRISIS_NOTIFICATION:
+            *tsdu = (tsdu_t *)d_crisis_notification_decode(data, len);
+            break;
+
         case D_DATA_AUTHENTICATION:
             *tsdu = (tsdu_t *)d_data_authentication_decode(data, len);
             break;
@@ -2428,6 +2477,10 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             d_connect_cch_print((const tsdu_d_connect_cch_t *)tsdu);
             break;
 
+        case D_CRISIS_NOTIFICATION:
+            d_crisis_notification_print((const tsdu_d_crisis_notification_t *)tsdu);
+            break;
+
         case D_DATA_AUTHENTICATION:
             d_data_authentication_print((const tsdu_d_data_authentication_t *)tsdu);
             break;
@@ -2546,7 +2599,6 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_CALL_OVERLOAD_ID:
         case D_CALL_SWITCH:
         case D_CALL_WAITING:
-        case D_CRISIS_NOTIFICATION:
         case D_DATA_DOWN_STATUS:
         case D_DATA_SERV:
         case D_DEVIATION_ON:

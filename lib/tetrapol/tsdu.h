@@ -709,6 +709,16 @@ typedef struct {
     uint8_t d_ch_scrambling;
 } tsdu_d_connect_dch_t;
 
+/// PAS 0001-3-2 4.4.21
+typedef struct {
+    tsdu_base_t base;
+    address_t calling_adr;
+    uint8_t organisation;
+    uint8_t coverage_id;
+    uint8_t og_nb;
+    uint16_t group_ids[5];
+} tsdu_d_crisis_notification_t;
+
 /// PAS 0001-3-2 4.4.22
 typedef struct {
     tsdu_base_t base;
