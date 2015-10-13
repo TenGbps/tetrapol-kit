@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <tetrapol/tetrapol.h>
+
 #define PHYS_CH_SCR_DETECT -1
 
 typedef struct phys_ch_priv_t phys_ch_t;
@@ -14,7 +16,7 @@ typedef struct phys_ch_priv_t phys_ch_t;
 
   @return net phys_ch_t instance of NULL.
   */
-phys_ch_t *tetrapol_phys_ch_create(int band, int phys_ch_type);
+phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol);
 void tetrapol_phys_ch_destroy(phys_ch_t *phys_ch);
 int tetrapol_phys_ch_process(phys_ch_t *phys_ch);
 

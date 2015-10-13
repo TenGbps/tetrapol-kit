@@ -24,7 +24,7 @@
 
 struct phys_ch_priv_t {
     int band;           ///< VHF or UHF
-    int phys_ch_type;   ///< control or traffic
+    int radio_ch_type;   ///< control or traffic
     int sync_errs;      ///< cumulative no. of errors in frame synchronisation
     bool has_frame_sync;
     int frame_no;
@@ -44,40 +44,31 @@ struct phys_ch_priv_t {
 
 static int process_frame(phys_ch_t *phys_ch, const uint8_t *fr_data);
 
-phys_ch_t *tetrapol_phys_ch_create(int band, int phys_ch_type)
+phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol)
 {
-    if (band != TETRAPOL_BAND_VHF && band != TETRAPOL_BAND_UHF) {
-        LOG(ERR, "tetrapol_phys_ch_create() invalid parametter 'band'");
-        return NULL;
-    }
-
-    if (phys_ch_type != TETRAPOL_RADIO_CCH &&
-            phys_ch_type != TETRAPOL_RADIO_TCH) {
-        LOG(ERR, "tetrapol_phys_ch_create() invalid param 'phys_ch_type'");
-        return NULL;
-    }
+    const tetrapol_cfg_t *cfg = tetrapol_get_cfg(tetrapol);
 
     phys_ch_t *phys_ch = calloc(1, sizeof(phys_ch_t));
     if (phys_ch == NULL) {
         return NULL;
     }
 
-    phys_ch->band = band;
-    phys_ch->phys_ch_type = phys_ch_type;
+    phys_ch->band = cfg->band;
+    phys_ch->radio_ch_type = cfg->radio_ch_type;
     phys_ch->data_begin = phys_ch->data_end = phys_ch->data + DATA_OFFS;
     phys_ch->frame_no = FRAME_NO_UNKNOWN;
     phys_ch->scr = PHYS_CH_SCR_DETECT;
     phys_ch->scr_confidence = 50;
     phys_ch->timer = timer_create();
 
-    phys_ch->fd = frame_decoder_create(band, 0, FRAME_TYPE_AUTO);
+    phys_ch->fd = frame_decoder_create(cfg->band, 0, FRAME_TYPE_AUTO);
     if (!phys_ch->fd) {
         timer_destroy(phys_ch->timer);
         free(phys_ch);
         return NULL;
     }
 
-    if (phys_ch_type == TETRAPOL_RADIO_CCH) {
+    if (cfg->radio_ch_type == TETRAPOL_RADIO_CCH) {
         phys_ch->cch = cch_create();
         if (phys_ch->cch) {
             timer_register(phys_ch->timer, cch_tick, phys_ch->cch);
@@ -85,7 +76,7 @@ phys_ch_t *tetrapol_phys_ch_create(int band, int phys_ch_type)
         }
     }
 
-    if (phys_ch_type == TETRAPOL_RADIO_TCH) {
+    if (cfg->radio_ch_type == TETRAPOL_RADIO_TCH) {
         phys_ch->tch = tch_create();
         if (phys_ch->tch) {
             timer_register(phys_ch->timer, tch_tick, phys_ch->tch);
@@ -102,10 +93,10 @@ phys_ch_t *tetrapol_phys_ch_create(int band, int phys_ch_type)
 
 void tetrapol_phys_ch_destroy(phys_ch_t *phys_ch)
 {
-    if (phys_ch->phys_ch_type == TETRAPOL_RADIO_CCH) {
+    if (phys_ch->radio_ch_type == TETRAPOL_RADIO_CCH) {
         cch_destroy(phys_ch->cch);
     }
-    if (phys_ch->phys_ch_type == TETRAPOL_RADIO_TCH) {
+    if (phys_ch->radio_ch_type == TETRAPOL_RADIO_TCH) {
         tch_destroy(phys_ch->tch);
     }
     frame_decoder_destroy(phys_ch->fd);
@@ -388,14 +379,14 @@ static int process_frame(phys_ch_t *phys_ch, const uint8_t *fr_data)
     const int scr = (phys_ch->scr == PHYS_CH_SCR_DETECT) ?
         phys_ch->scr_guess : phys_ch->scr;
 
-    const int fr_type = (phys_ch->phys_ch_type == TETRAPOL_RADIO_CCH) ?
+    const int fr_type = (phys_ch->radio_ch_type == TETRAPOL_RADIO_CCH) ?
         FRAME_TYPE_DATA : FRAME_TYPE_AUTO;
 
     frame_t fr;
     frame_decoder_reset(phys_ch->fd, phys_ch->band, scr, fr_type);
     frame_decoder_decode(phys_ch->fd, &fr, fr_data);
 
-    if (phys_ch->phys_ch_type == TETRAPOL_RADIO_CCH) {
+    if (phys_ch->radio_ch_type == TETRAPOL_RADIO_CCH) {
         // TODO: report when frame_no is detected
         return cch_push_frame(phys_ch->cch, &fr, &phys_ch->frame_no);
     }

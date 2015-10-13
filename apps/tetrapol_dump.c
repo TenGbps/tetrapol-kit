@@ -83,9 +83,10 @@ static void print_help(const char *prg_name)
 
 int main(int argc, char* argv[])
 {
-    // TODO: move to config
-    int band = TETRAPOL_BAND_UHF;
-    int radio_ch_type = TETRAPOL_RADIO_CCH;
+    tetrapol_cfg_t cfg = {
+        .band = TETRAPOL_BAND_UHF,
+        .radio_ch_type = TETRAPOL_RADIO_CCH,
+    };
 
     const char *in = NULL;
 
@@ -94,9 +95,9 @@ int main(int argc, char* argv[])
         switch (opt) {
             case 'b':
                 if (!strcmp(optarg, "VHF")) {
-                    band = TETRAPOL_BAND_VHF;
+                    cfg.band = TETRAPOL_BAND_VHF;
                 } else if (!strcmp(optarg, "UHF")) {
-                    band = TETRAPOL_BAND_UHF;
+                    cfg.band = TETRAPOL_BAND_UHF;
                 } else {
                     print_help(argv[0]);
                     exit(EXIT_FAILURE);
@@ -109,9 +110,9 @@ int main(int argc, char* argv[])
 
             case 't':
                 if (!strcmp("CCH", optarg)) {
-                    radio_ch_type = TETRAPOL_RADIO_CCH;
+                    cfg.radio_ch_type = TETRAPOL_RADIO_CCH;
                 } else if (!strcmp("TCH", optarg)) {
-                    radio_ch_type = TETRAPOL_RADIO_TCH;
+                    cfg.radio_ch_type = TETRAPOL_RADIO_TCH;
                 } else {
                     print_help(argv[0]);
                     exit(EXIT_FAILURE);
@@ -139,7 +140,12 @@ int main(int argc, char* argv[])
         }
     }
 
-    phys_ch_t *phys_ch = tetrapol_phys_ch_create(band, radio_ch_type);
+    tetrapol_t *tetrapol = tetrapol_create(&cfg);
+    if (tetrapol == NULL) {
+        fprintf(stderr, "Failed to initialize TETRAPOL instance.");
+        return -1;
+    }
+    phys_ch_t *phys_ch = tetrapol_phys_ch_create(tetrapol);
     if (phys_ch == NULL) {
         fprintf(stderr, "Failed to initialize TETRAPOL instance.");
         return -1;
@@ -150,6 +156,7 @@ int main(int argc, char* argv[])
     if (infd != STDIN_FILENO) {
         close(infd);
     }
+    tetrapol_destroy(tetrapol);
 
     fprintf(stderr, "Exiting.\n");
 
