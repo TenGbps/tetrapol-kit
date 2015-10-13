@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
 {
     // TODO: move to config
     int band = TETRAPOL_BAND_UHF;
-    int radio_ch_type = TETRAPOL_CCH;
+    int radio_ch_type = TETRAPOL_RADIO_CCH;
 
     const char *in = NULL;
 
@@ -109,9 +109,9 @@ int main(int argc, char* argv[])
 
             case 't':
                 if (!strcmp("CCH", optarg)) {
-                    radio_ch_type = TETRAPOL_CCH;
+                    radio_ch_type = TETRAPOL_RADIO_CCH;
                 } else if (!strcmp("TCH", optarg)) {
-                    radio_ch_type = TETRAPOL_TCH;
+                    radio_ch_type = TETRAPOL_RADIO_TCH;
                 } else {
                     print_help(argv[0]);
                     exit(EXIT_FAILURE);

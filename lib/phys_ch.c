@@ -51,8 +51,8 @@ phys_ch_t *tetrapol_phys_ch_create(int band, int phys_ch_type)
         return NULL;
     }
 
-    if (phys_ch_type != TETRAPOL_CCH &&
-            phys_ch_type != TETRAPOL_TCH) {
+    if (phys_ch_type != TETRAPOL_RADIO_CCH &&
+            phys_ch_type != TETRAPOL_RADIO_TCH) {
         LOG(ERR, "tetrapol_phys_ch_create() invalid param 'phys_ch_type'");
         return NULL;
     }
@@ -77,7 +77,7 @@ phys_ch_t *tetrapol_phys_ch_create(int band, int phys_ch_type)
         return NULL;
     }
 
-    if (phys_ch_type == TETRAPOL_CCH) {
+    if (phys_ch_type == TETRAPOL_RADIO_CCH) {
         phys_ch->cch = cch_create();
         if (phys_ch->cch) {
             timer_register(phys_ch->timer, cch_tick, phys_ch->cch);
@@ -85,7 +85,7 @@ phys_ch_t *tetrapol_phys_ch_create(int band, int phys_ch_type)
         }
     }
 
-    if (phys_ch_type == TETRAPOL_TCH) {
+    if (phys_ch_type == TETRAPOL_RADIO_TCH) {
         phys_ch->tch = tch_create();
         if (phys_ch->tch) {
             timer_register(phys_ch->timer, tch_tick, phys_ch->tch);
@@ -102,10 +102,10 @@ phys_ch_t *tetrapol_phys_ch_create(int band, int phys_ch_type)
 
 void tetrapol_phys_ch_destroy(phys_ch_t *phys_ch)
 {
-    if (phys_ch->phys_ch_type == TETRAPOL_CCH) {
+    if (phys_ch->phys_ch_type == TETRAPOL_RADIO_CCH) {
         cch_destroy(phys_ch->cch);
     }
-    if (phys_ch->phys_ch_type == TETRAPOL_TCH) {
+    if (phys_ch->phys_ch_type == TETRAPOL_RADIO_TCH) {
         tch_destroy(phys_ch->tch);
     }
     frame_decoder_destroy(phys_ch->fd);
@@ -388,14 +388,14 @@ static int process_frame(phys_ch_t *phys_ch, const uint8_t *fr_data)
     const int scr = (phys_ch->scr == PHYS_CH_SCR_DETECT) ?
         phys_ch->scr_guess : phys_ch->scr;
 
-    const int fr_type = (phys_ch->phys_ch_type == TETRAPOL_CCH) ?
+    const int fr_type = (phys_ch->phys_ch_type == TETRAPOL_RADIO_CCH) ?
         FRAME_TYPE_DATA : FRAME_TYPE_AUTO;
 
     frame_t fr;
     frame_decoder_reset(phys_ch->fd, phys_ch->band, scr, fr_type);
     frame_decoder_decode(phys_ch->fd, &fr, fr_data);
 
-    if (phys_ch->phys_ch_type == TETRAPOL_CCH) {
+    if (phys_ch->phys_ch_type == TETRAPOL_RADIO_CCH) {
         // TODO: report when frame_no is detected
         return cch_push_frame(phys_ch->cch, &fr, &phys_ch->frame_no);
     }
