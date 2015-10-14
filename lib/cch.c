@@ -23,7 +23,7 @@ cch_t *cch_create(tpol_t *tpol)
         return NULL;
     }
 
-    cch->bch = bch_create();
+    cch->bch = bch_create(tpol);
     if (!cch->bch) {
         goto err_bch;
     }

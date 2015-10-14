@@ -18,7 +18,7 @@ struct bch_priv_t {
     tsdu_d_system_info_t *tsdu;
 };
 
-bch_t *bch_create(void)
+bch_t *bch_create(tpol_t *tpol)
 {
     bch_t *bch = malloc(sizeof(bch_t));
     if (!bch) {
