@@ -447,7 +447,7 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
     uint8_t seg_ref             = get_bits(7, hdlc_fr->data + 1, 1);
     if (!ext) {
         LOG(WTF, "unsupported short ext");
-        return false;
+        return -1;
     }
 
     ext                         = get_bits(1, hdlc_fr->data + 2, 0);
@@ -455,7 +455,7 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
     const uint8_t packet_num    = get_bits(6, hdlc_fr->data + 2, 2);
     if (ext) {
         LOG(WTF, "unsupported long ext");
-        return false;
+        return -1;
     }
 
     if (res) {
@@ -467,7 +467,7 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
     if (seg_du == NULL) {
         seg_du = calloc(1, sizeof(segmented_du_t));
         if (!seg_du) {
-            return false;
+            return -1;
         }
         tpdu->seg_du[seg_ref] = seg_du;
         seg_du->id_tsap = id_tsap;
@@ -476,13 +476,13 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
 
     if (seg_du->hdlc_frs[packet_num]) {
         // segment already recieved
-        return false;
+        return 0;
     }
 
     seg_du->hdlc_frs[packet_num] = malloc(sizeof(hdlc_frame_t));
     if (!seg_du->hdlc_frs[packet_num]) {
         LOG(ERR, "ERR OOM");
-        return false;
+        return -1;
     }
     memcpy(seg_du->hdlc_frs[packet_num], hdlc_fr, sizeof(hdlc_frame_t));
 
@@ -496,13 +496,13 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
 
     // last segment is still missing
     if (!seg_du->nsegments) {
-        return false;
+        return 0;
     }
 
     // check if we have all segments
     for (int i = 0; i < seg_du->nsegments; ++i) {
         if (!seg_du->hdlc_frs[i]) {
-            return false;
+            return 0;
         }
     }
 
