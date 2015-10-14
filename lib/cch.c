@@ -35,7 +35,7 @@ cch_t *cch_create(tpol_t *tpol)
     if (!cch->rch) {
         goto err_rch;
     }
-    cch->sdch = sdch_create();
+    cch->sdch = sdch_create(tpol);
     if (!cch->sdch) {
         goto err_sdch;
     }

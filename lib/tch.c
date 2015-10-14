@@ -20,13 +20,13 @@ tch_t *tch_create(tpol_t *tpol)
 
     tch->rx_glitch = false;
 
-    tch->sch = sdch_create();
+    tch->sch = sdch_create(tpol);
     if (!tch->sch) {
         free(tch);
         return NULL;
     }
 
-    tch->vch = sdch_create();
+    tch->vch = sdch_create(tpol);
     if (!tch->vch) {
         sdch_destroy(tch->sch);
         free(tch);

@@ -21,7 +21,7 @@ struct sdch_priv_t {
     time_evt_t *te;
 };
 
-sdch_t *sdch_create(void)
+sdch_t *sdch_create(tpol_t *tpol)
 {
     sdch_t *sdch = malloc(sizeof(sdch_t));
     if (!sdch) {
