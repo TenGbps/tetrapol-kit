@@ -29,14 +29,6 @@ typedef struct {
     hdlc_frame_t *hdlc_frs[SYS_PAR_N452];
 } segmented_du_t;
 
-enum {
-    TSAP_ID_UNKNOWN = -1,
-};
-
-enum {
-    TSAP_REF_UNKNOWN = -1,
-};
-
 typedef enum {
     CONNECTION_STATE_NC = 0,    ///< not connected
     CONNECTION_STATE_CR = 1,    ///< connection request
@@ -46,9 +38,9 @@ typedef enum {
 
 typedef struct {
     connection_state_t state;
-    uint8_t tsap_id;
-    uint8_t tsap_ref_swmi;
-    uint8_t tsap_ref_rt;
+    int8_t tsap_id;
+    int8_t tsap_ref_swmi;
+    int8_t tsap_ref_rt;
     int seg_len;
     uint8_t segbuf[2000];
 } connection_t;
@@ -57,11 +49,13 @@ struct tpdu_priv_t {
     // connections are listed by TSAP reference (SwMI side)
     // 8 normal, 7 fast connections
     connection_t conns[8+7];
+    tpol_t *tpol;
 };
 
 struct tpdu_priv_ui_t {
     frame_type_t fr_type;
     segmented_du_t *seg_du[128];
+    tpol_t *tpol;
 };
 
 static void connection_reset(connection_t *conn)
@@ -193,6 +187,7 @@ tpdu_t *tpdu_create(tpol_t *tpol)
     for (int i = 0; i < ARRAY_LEN(tpdu->conns); ++i) {
         connection_reset(&tpdu->conns[i]);
     }
+    tpdu->tpol = tpol;
 
     return tpdu;
 }
@@ -200,6 +195,10 @@ tpdu_t *tpdu_create(tpol_t *tpol)
 static int tpdu_push_information_frame(tpdu_t *tpdu,
         const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu)
 {
+    tpol_tsdu_t tpol_tsdu;
+    tpol_tsdu.log_ch = LOG_CH_SDCH;
+    tpol_tsdu.prio = 0;
+
     *tsdu = NULL;
 
     const bool ext              = get_bits(1, hdlc_fr->data, 0);
@@ -222,6 +221,9 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
     }
     // For downlink par_field always contains TSAP reference of sender (SwMI)
     connection_t *conn = &tpdu->conns[par_field];
+    tpol_tsdu.tsap_id = conn->tsap_id;
+    tpol_tsdu.tsap_ref_swmi = par_field;
+    tpol_tsdu.tsap_ref_rt = conn->tsap_ref_rt;
 
     const uint8_t *payload = hdlc_fr->data + 2;
     int payload_len = hdlc_fr->nbits / 8 - 2;
@@ -330,11 +332,20 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
             LOG(INFO, "Segmentation complete len=%d seg_len=%d dest_ref=%d",
                     payload_len, conn->seg_len, dest_ref);
             // TODO: prio, qos
+
+            tpol_tsdu.data_len = conn->seg_len;
+            tpol_tsdu.data = conn->segbuf;
+            tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
+
             ret_val = tsdu_d_decode(conn->segbuf, conn->seg_len, 0, dest_ref, tsdu);
             conn->seg_len = 0;
         } else {
             if (d) {
                 // TODO: prio, qos
+                tpol_tsdu.data_len = payload_len;
+                tpol_tsdu.data = payload;
+                tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
+
                 ret_val = tsdu_d_decode(payload, payload_len, 0, dest_ref, tsdu);
             }
         }
@@ -390,6 +401,7 @@ tpdu_ui_t *tpdu_ui_create(tpol_t *tpol, frame_type_t fr_type)
         return NULL;
     }
     tpdu->fr_type = fr_type;
+    tpdu->tpol = tpol;
 
     return tpdu;
 }
@@ -420,6 +432,13 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
     const uint8_t prio          = get_bits(2, hdlc_fr->data, 2);
     const uint8_t id_tsap       = get_bits(4, hdlc_fr->data, 4);
 
+    tpol_tsdu_t tpol_tsdu;
+    tpol_tsdu.log_ch = allow_seg ? LOG_CH_SDCH : LOG_CH_BCH ;
+    tpol_tsdu.prio = prio;
+    tpol_tsdu.tsap_id = id_tsap;
+    tpol_tsdu.tsap_ref_swmi = TSAP_REF_UNKNOWN;
+    tpol_tsdu.tsap_ref_rt = TSAP_REF_UNKNOWN;
+
     LOG(DBG, "DU EXT=%d SEG=%d PRIO=%d ID_TSAP=%d", ext, seg, prio, id_tsap);
     if (ext == 0 && seg == 0) {
         // PAS 0001-3-3 9.5.1.2
@@ -427,9 +446,19 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
                 (tpdu->fr_type == FRAME_TYPE_HR_DATA &&
                  hdlc_fr->nbits > (6*8))) {
             const int len = get_bits(8, hdlc_fr->data + 1, 0);
+
+            tpol_tsdu.data_len = len;
+            tpol_tsdu.data = hdlc_fr->data + 2;
+            tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
+
             return tsdu_d_decode(hdlc_fr->data + 2, len, prio, id_tsap, tsdu);
         }
         const int len = hdlc_fr->nbits / 8 - 1;
+
+        tpol_tsdu.data_len = len;
+        tpol_tsdu.data = hdlc_fr->data + 1;
+        tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
+
         return tsdu_d_decode(hdlc_fr->data + 1, len, prio, id_tsap, tsdu);
     }
 
@@ -541,6 +570,10 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
 
     tpdu_ui_segments_destroy(seg_du);
     tpdu->seg_du[seg_ref] = NULL;
+
+    tpol_tsdu.data_len = data_len;
+    tpol_tsdu.data = data;
+    tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
 
     return tsdu_d_decode(data, data_len, prio, id_tsap, tsdu);
 }

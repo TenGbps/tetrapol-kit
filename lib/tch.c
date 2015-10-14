@@ -66,16 +66,7 @@ int tch_push_frame(tch_t *tch, const frame_t *fr)
     }
 
     if (fr->data.asb[0]) {
-        if (sdch_dl_push_data_frame(tch->vch, fr)) {
-            tsdu_t *tsdu = sdch_get_tsdu(tch->vch);
-            if (tsdu) {
-                LOG_IF(INFO) {
-                    LOG_("\n");
-                    tsdu_print(tsdu);
-                }
-                tsdu_destroy(tsdu);
-            }
-        }
+        sdch_dl_push_data_frame(tch->vch, fr);
         return 0;
     }
 
@@ -87,16 +78,7 @@ int tch_push_frame(tch_t *tch, const frame_t *fr)
         return -1;
     }
 
-    if (sdch_dl_push_data_frame(tch->sch, fr)) {
-        tsdu_t *tsdu = sdch_get_tsdu(tch->sch);
-        if (tsdu) {
-            LOG_IF(INFO) {
-                LOG_("\n");
-                tsdu_print(tsdu);
-            }
-            tsdu_destroy(tsdu);
-        }
-    }
+    sdch_dl_push_data_frame(tch->sch, fr);
 
     return 0;
 }

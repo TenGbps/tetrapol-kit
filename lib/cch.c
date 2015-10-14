@@ -86,10 +86,6 @@ int cch_push_frame(cch_t *cch, const frame_t *fr)
                 LOG(ERR, "Unknown channel multiplexing type");
                 return -1;
             }
-            LOG_IF(INFO) {
-                LOG_("\n");
-                tsdu_print(&tsdu->base);
-            }
             tsdu_destroy(&tsdu->base);
             return 0;
         }
@@ -137,14 +133,6 @@ int cch_push_frame(cch_t *cch, const frame_t *fr)
     }
 
     if (sdch_dl_push_data_frame(cch->sdch, fr)) {
-        tsdu_t *tsdu = sdch_get_tsdu(cch->sdch);
-        if (tsdu) {
-            LOG_IF(INFO) {
-                LOG_("\n");
-                tsdu_print(tsdu);
-            }
-            tsdu_destroy(tsdu);
-        }
         return 0;
     }
 
