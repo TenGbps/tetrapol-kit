@@ -79,7 +79,7 @@ phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol)
     }
 
     if (cfg->radio_ch_type == TETRAPOL_RADIO_TCH) {
-        phys_ch->tch = tch_create();
+        phys_ch->tch = tch_create(phys_ch->tpol);
         if (phys_ch->tch) {
             timer_register(phys_ch->timer, tch_tick, phys_ch->tch);
             return phys_ch;

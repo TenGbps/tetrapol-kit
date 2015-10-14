@@ -11,7 +11,7 @@ struct tch_priv_t {
     // sch_ti;
 };
 
-tch_t *tch_create(void)
+tch_t *tch_create(tpol_t *tpol)
 {
     tch_t *tch = malloc(sizeof(tch_t));
     if (!tch) {
