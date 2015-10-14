@@ -56,14 +56,8 @@ void link_destroy(link_t *link)
     free(link);
 }
 
-int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu)
+int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr)
 {
-    if (!tsdu) {
-        LOG(ERR, "link_push_hdlc_frame() tsdu == NULL");
-        return -1;
-    }
-    *tsdu = NULL;
-
     if (hdlc_fr->command.cmd == COMMAND_INFORMATION) {
         LOG_IF(INFO) {
             char buf[ADDR_PRINT_BUF_SIZE];
@@ -90,7 +84,7 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
 
         link->v_r = (link->v_r + 1) % 8;
 
-        return tpdu_push_hdlc_frame(link->tpdu, hdlc_fr, tsdu);
+        return tpdu_push_hdlc_frame(link->tpdu, hdlc_fr);
     }
 
     if (hdlc_fr->command.cmd == COMMAND_SUPERVISION_RR ||
@@ -138,7 +132,7 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
                     addr_print(addr_buf, &hdlc_fr->addr),
                     sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
         }
-        return tpdu_ui_push_hdlc_frame(link->tpdu_ui, hdlc_fr, tsdu);
+        return tpdu_ui_push_hdlc_frame(link->tpdu_ui, hdlc_fr, NULL);
     }
 
     if (hdlc_fr->command.cmd == COMMAND_DACH) {

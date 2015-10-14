@@ -4,18 +4,15 @@
 #include <tetrapol/hdlc_frame.h>
 #include <tetrapol/timer.h>
 #include <tetrapol/tetrapol_int.h>
-#include <tetrapol/tsdu.h>
 
 typedef struct terminal_priv_t terminal_t;
 
 /**
-  Push HDLC frame into terminal. If TSDU is compleded pointer to tsdu is set
-  to new TSDU structure, otherwise is set to NULL.
+  Push HDLC frame into terminal.
 
   @return 0 on sucess, -1 otherwise.
   */
-int terminal_push_hdlc_frame(terminal_t* term, const hdlc_frame_t *hdlc_fr,
-        tsdu_t **tsdu);
+int terminal_push_hdlc_frame(terminal_t* term, const hdlc_frame_t *hdlc_fr);
 
 typedef struct terminal_list_priv_t terminal_list_t;
 
@@ -44,13 +41,12 @@ terminal_t* terminal_list_insert(terminal_list_t* tlist, const addr_t *addr);
 void terminal_list_erase(terminal_list_t* tlist, const addr_t *addr);
 
 /**
-  Push HDLC frame into terminal. If TSDU is compleded pointer to tsdu is set
-  to new TSDU structure, otherwise is set to NULL.
+  Push HDLC frame into terminal.
 
   @return 0 on sucess, -1 otherwise.
   */
 int terminal_list_push_hdlc_frame(terminal_list_t* tlist,
-        const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu);
+        const hdlc_frame_t *hdlc_fr);
 
 /**
   Report RX glitch to all terminals.

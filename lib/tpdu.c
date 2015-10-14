@@ -192,14 +192,11 @@ tpdu_t *tpdu_create(tpol_t *tpol)
     return tpdu;
 }
 
-static int tpdu_push_information_frame(tpdu_t *tpdu,
-        const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu)
+int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr)
 {
     tpol_tsdu_t tpol_tsdu;
     tpol_tsdu.log_ch = LOG_CH_SDCH;
     tpol_tsdu.prio = 0;
-
-    *tsdu = NULL;
 
     const bool ext              = get_bits(1, hdlc_fr->data, 0);
     const bool seg              = get_bits(1, hdlc_fr->data, 1);
@@ -333,20 +330,23 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
                     payload_len, conn->seg_len, dest_ref);
             // TODO: prio, qos
 
+            memcpy(&tpol_tsdu.addr, &hdlc_fr->addr, sizeof(tpol_tsdu.addr));
             tpol_tsdu.data_len = conn->seg_len;
             tpol_tsdu.data = conn->segbuf;
             tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
 
-            ret_val = tsdu_d_decode(conn->segbuf, conn->seg_len, 0, dest_ref, tsdu);
+            ret_val = 0;
             conn->seg_len = 0;
         } else {
             if (d) {
                 // TODO: prio, qos
+
+                memcpy(&tpol_tsdu.addr, &hdlc_fr->addr, sizeof(tpol_tsdu.addr));
                 tpol_tsdu.data_len = payload_len;
                 tpol_tsdu.data = payload;
                 tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
 
-                ret_val = tsdu_d_decode(payload, payload_len, 0, dest_ref, tsdu);
+                ret_val = 0;
             }
         }
     }
@@ -369,11 +369,6 @@ static int tpdu_push_information_frame(tpdu_t *tpdu,
     }
 
     return ret_val;
-}
-
-int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu)
-{
-    return tpdu_push_information_frame(tpdu, hdlc_fr, tsdu);
 }
 
 void tpdu_destroy(tpdu_t *tpdu)
@@ -420,7 +415,9 @@ void tpdu_ui_destroy(tpdu_ui_t *tpdu)
 static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
         const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu, bool allow_seg)
 {
-    *tsdu = NULL;
+    if (tsdu) {
+        *tsdu = NULL;
+    }
 
     if (hdlc_fr->nbits < 8) {
         LOG(WTF, "too short HDLC (%d)", hdlc_fr->nbits);
@@ -447,19 +444,27 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
                  hdlc_fr->nbits > (6*8))) {
             const int len = get_bits(8, hdlc_fr->data + 1, 0);
 
+            memcpy(&tpol_tsdu.addr, &hdlc_fr->addr, sizeof(tpol_tsdu.addr));
             tpol_tsdu.data_len = len;
             tpol_tsdu.data = hdlc_fr->data + 2;
             tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
 
-            return tsdu_d_decode(hdlc_fr->data + 2, len, prio, id_tsap, tsdu);
+            if (tsdu) {
+                return tsdu_d_decode(hdlc_fr->data + 2, len, prio, id_tsap, tsdu);
+            }
+            return 0;
         }
         const int len = hdlc_fr->nbits / 8 - 1;
 
+        memcpy(&tpol_tsdu.addr, &hdlc_fr->addr, sizeof(tpol_tsdu.addr));
         tpol_tsdu.data_len = len;
         tpol_tsdu.data = hdlc_fr->data + 1;
         tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
 
-        return tsdu_d_decode(hdlc_fr->data + 1, len, prio, id_tsap, tsdu);
+        if (tsdu) {
+            return tsdu_d_decode(hdlc_fr->data + 1, len, prio, id_tsap, tsdu);
+        }
+        return 0;
     }
 
     if (ext != 1) {
@@ -571,11 +576,15 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
     tpdu_ui_segments_destroy(seg_du);
     tpdu->seg_du[seg_ref] = NULL;
 
+    memcpy(&tpol_tsdu.addr, &hdlc_fr->addr, sizeof(tpol_tsdu.addr));
     tpol_tsdu.data_len = data_len;
     tpol_tsdu.data = data;
     tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
 
-    return tsdu_d_decode(data, data_len, prio, id_tsap, tsdu);
+    if (tsdu) {
+        return tsdu_d_decode(data, data_len, prio, id_tsap, tsdu);
+    }
+    return 0;
 }
 
 int tpdu_ui_push_hdlc_frame(tpdu_ui_t *tpdu, const hdlc_frame_t *hdlc_fr,

@@ -48,10 +48,9 @@ static inline void terminal_destroy_(gpointer term)
     terminal_destroy(term);
 }
 
-int terminal_push_hdlc_frame(terminal_t* term, const hdlc_frame_t *hdlc_fr,
-        tsdu_t **tsdu)
+int terminal_push_hdlc_frame(terminal_t* term, const hdlc_frame_t *hdlc_fr)
 {
-    return link_push_hdlc_frame(term->link, hdlc_fr, tsdu);
+    return link_push_hdlc_frame(term->link, hdlc_fr);
 }
 
 static inline void addr_free(gpointer data)
@@ -127,12 +126,8 @@ void terminal_list_erase(terminal_list_t* tlist, const addr_t *addr)
 }
 
 int terminal_list_push_hdlc_frame(terminal_list_t* tlist,
-        const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu)
+        const hdlc_frame_t *hdlc_fr)
 {
-    if (!tsdu) {
-        return -1;
-    }
-
     terminal_t *term = terminal_list_lookup(tlist, &hdlc_fr->addr);
     if (!term) {
         term = terminal_list_insert(tlist, &hdlc_fr->addr);
@@ -142,7 +137,7 @@ int terminal_list_push_hdlc_frame(terminal_list_t* tlist,
         }
     }
 
-    return terminal_push_hdlc_frame(term, hdlc_fr, tsdu);
+    return terminal_push_hdlc_frame(term, hdlc_fr);
 }
 
 static gboolean terminal_rx_glitch(gpointer key, gpointer value,

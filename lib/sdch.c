@@ -4,7 +4,6 @@
 #include <tetrapol/data_frame.h>
 #include <tetrapol/hdlc_frame.h>
 #include <tetrapol/misc.h>
-#include <tetrapol/tsdu.h>
 #include <tetrapol/terminal.h>
 #include <tetrapol/system_config.h>
 
@@ -14,7 +13,6 @@
 struct sdch_priv_t {
     data_frame_t *data_fr;
     terminal_list_t *tlist;
-    tsdu_t *tsdu;
     bool rx_glitch;
     // This is used for re-sending tick event with changed state
     // do not allocate or release.
@@ -40,7 +38,6 @@ sdch_t *sdch_create(tpol_t *tpol)
         goto err_tlist;
     }
 
-    sdch->tsdu = NULL;
     sdch->rx_glitch = false;
 
     return sdch;
@@ -59,7 +56,6 @@ void sdch_destroy(sdch_t *sdch)
     if (sdch) {
         data_frame_destroy(sdch->data_fr);
         terminal_list_destroy(sdch->tlist);
-        tsdu_destroy(sdch->tsdu);
     }
     free(sdch);
 }
@@ -97,20 +93,7 @@ bool sdch_dl_push_data_frame(sdch_t *sdch, const frame_t *fr)
         return false;
     }
 
-    tsdu_destroy(sdch->tsdu);
-    if (terminal_list_push_hdlc_frame(sdch->tlist, &hdlc_fr, &sdch->tsdu) == -1) {
-        return false;
-    }
-
-    return sdch->tsdu != NULL;
-}
-
-tsdu_t *sdch_get_tsdu(sdch_t *sdch)
-{
-    tsdu_t *tsdu = sdch->tsdu;
-    sdch->tsdu = NULL;
-
-    return tsdu;
+    return terminal_list_push_hdlc_frame(sdch->tlist, &hdlc_fr) != -1;
 }
 
 void sdch_tick(time_evt_t *te, void *sdch)

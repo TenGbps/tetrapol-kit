@@ -2,6 +2,7 @@
 
 // Internal library functions of tetrapol.c
 
+#include <tetrapol/addr.h>
 #include <tetrapol/tetrapol.h>
 
 enum {
@@ -36,6 +37,7 @@ typedef struct {
 
 typedef struct {
     int log_ch;
+    addr_t addr;
     int prio;
     int tsap_id;
     int tsap_ref_swmi;

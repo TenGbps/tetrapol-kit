@@ -13,7 +13,7 @@ typedef struct tpdu_priv_t tpdu_t;
 typedef struct tpdu_priv_ui_t tpdu_ui_t;
 
 tpdu_t *tpdu_create(tpol_t *tpol);
-int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu);
+int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr);
 
 /**
   Should be called when underlaying layers detect uncorrectable error.
