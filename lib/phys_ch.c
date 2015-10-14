@@ -40,6 +40,7 @@ struct phys_ch_priv_t {
     timer_t *timer;
     cch_t *cch;
     tch_t *tch;
+    tpol_t *tpol;
 };
 
 static int process_frame(phys_ch_t *phys_ch, const uint8_t *fr_data);
@@ -53,6 +54,7 @@ phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol)
         return NULL;
     }
 
+    phys_ch->tpol = tetrapol_get_tpol(tetrapol);
     phys_ch->band = cfg->band;
     phys_ch->radio_ch_type = cfg->radio_ch_type;
     phys_ch->data_begin = phys_ch->data_end = phys_ch->data + DATA_OFFS;
@@ -69,7 +71,7 @@ phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol)
     }
 
     if (cfg->radio_ch_type == TETRAPOL_RADIO_CCH) {
-        phys_ch->cch = cch_create();
+        phys_ch->cch = cch_create(phys_ch->tpol);
         if (phys_ch->cch) {
             timer_register(phys_ch->timer, cch_tick, phys_ch->cch);
             return phys_ch;

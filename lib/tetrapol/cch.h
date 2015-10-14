@@ -1,10 +1,11 @@
 #pragma once
 #include <tetrapol/frame.h>
+#include <tetrapol/tetrapol_int.h>
 #include <tetrapol/timer.h>
 
 typedef struct cch_priv_t cch_t;
 
-cch_t *cch_create(void);
+cch_t *cch_create(tpol_t *tpol);
 void cch_destroy(cch_t *cch);
 
 /**

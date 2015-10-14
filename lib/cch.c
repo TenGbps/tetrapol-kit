@@ -16,7 +16,7 @@ struct cch_priv_t {
     sdch_t *sdch;
 };
 
-cch_t *cch_create(void)
+cch_t *cch_create(tpol_t *tpol)
 {
     cch_t *cch = malloc(sizeof(cch_t));
     if (!cch) {
