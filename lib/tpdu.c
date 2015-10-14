@@ -370,7 +370,7 @@ void tpdu_destroy(tpdu_t *tpdu)
     free(tpdu);
 }
 
-void tpdu_ui_segments_destroy(segmented_du_t *du)
+static void tpdu_ui_segments_destroy(segmented_du_t *du)
 {
     for (int i = 0; i < SYS_PAR_N452; ++i) {
         free(du->hdlc_frs[i]);
