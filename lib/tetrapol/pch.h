@@ -2,10 +2,11 @@
 
 #include <stdbool.h>
 #include <tetrapol/frame.h>
+#include <tetrapol/tetrapol_int.h>
 
 typedef struct pch_priv_t pch_t;
 
-pch_t *pch_create(void);
+pch_t *pch_create(tpol_t *tpol);
 void pch_destroy(pch_t *pch);
 
 /** Should be called when some frames are missing. */

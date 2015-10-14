@@ -27,7 +27,7 @@ cch_t *cch_create(tpol_t *tpol)
     if (!cch->bch) {
         goto err_bch;
     }
-    cch->pch = pch_create();
+    cch->pch = pch_create(tpol);
     if (!cch->pch) {
         goto err_pch;
     }
