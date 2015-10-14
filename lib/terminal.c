@@ -24,7 +24,7 @@ static terminal_t* terminal_create(tpol_t *tpol)
         return NULL;
     }
 
-    term->link = link_create();
+    term->link = link_create(tpol);
     if (!term->link) {
         free(term);
         return NULL;

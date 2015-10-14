@@ -18,7 +18,7 @@ struct link_priv_t {
     bool rx_glitch;
 };
 
-link_t *link_create(void)
+link_t *link_create(tpol_t *tpol)
 {
     link_t *link = malloc(sizeof(link_t));
     if (!link) {
