@@ -25,13 +25,13 @@ link_t *link_create(tpol_t *tpol)
         return NULL;
     }
 
-    link->tpdu_ui = tpdu_ui_create(FRAME_TYPE_DATA);
+    link->tpdu_ui = tpdu_ui_create(tpol, FRAME_TYPE_DATA);
     if (!link->tpdu_ui) {
         free(link);
         return NULL;
     }
 
-    link->tpdu = tpdu_create();
+    link->tpdu = tpdu_create(tpol);
     if (!link->tpdu) {
         tpdu_ui_destroy(link->tpdu_ui);
         free(link);

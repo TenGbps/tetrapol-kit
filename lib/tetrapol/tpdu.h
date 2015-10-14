@@ -2,6 +2,7 @@
 
 #include <tetrapol/hdlc_frame.h>
 #include <tetrapol/data_frame.h>
+#include <tetrapol/tetrapol_int.h>
 #include <tetrapol/tsdu.h>
 #include <tetrapol/timer.h>
 
@@ -11,7 +12,7 @@
 typedef struct tpdu_priv_t tpdu_t;
 typedef struct tpdu_priv_ui_t tpdu_ui_t;
 
-tpdu_t *tpdu_create(void);
+tpdu_t *tpdu_create(tpol_t *tpol);
 int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr, tsdu_t **tsdu);
 
 /**
@@ -24,7 +25,7 @@ void tpdu_rx_glitch(tpdu_t *tpdu);
 void tpdu_destroy(tpdu_t *tpdu);
 void tpdu_du_tick(time_evt_t *te, void *tpdu_du);
 
-tpdu_ui_t *tpdu_ui_create(frame_type_t fr_type);
+tpdu_ui_t *tpdu_ui_create(tpol_t *tpol, frame_type_t fr_type);
 void tpdu_ui_destroy(tpdu_ui_t *tpdu);
 
 /**

@@ -183,7 +183,7 @@ static void connection_broken(connection_t *conn)
     conn->state = CONNECTION_STATE_BROKEN;
 }
 
-tpdu_t *tpdu_create(void)
+tpdu_t *tpdu_create(tpol_t *tpol)
 {
     tpdu_t *tpdu = calloc(1, sizeof(tpdu_t));
     if (!tpdu) {
@@ -378,7 +378,7 @@ static void tpdu_ui_segments_destroy(segmented_du_t *du)
     free(du);
 }
 
-tpdu_ui_t *tpdu_ui_create(frame_type_t fr_type)
+tpdu_ui_t *tpdu_ui_create(tpol_t *tpol, frame_type_t fr_type)
 {
     if (fr_type != FRAME_TYPE_DATA && fr_type != FRAME_TYPE_HR_DATA) {
         LOG(ERR, "usnupported frame type %d", fr_type);
