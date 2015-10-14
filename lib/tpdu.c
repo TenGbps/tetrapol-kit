@@ -513,25 +513,25 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
     if (tpdu->fr_type == FRAME_TYPE_DATA) {
         uint8_t *d = data;
         for (int i = 0; i < seg_du->nsegments; ++i) {
-            hdlc_fr = seg_du->hdlc_frs[i];
+            hdlc_frame_t *hfr = seg_du->hdlc_frs[i];
             int n_ext = 1;
             // skip ext headers
-            while (get_bits(1, hdlc_fr->data + n_ext - 1, 0)) {
+            while (get_bits(1, hfr->data + n_ext - 1, 0)) {
                 ++n_ext;
             }
             int n;
             if (i == (seg_du->nsegments - 1)) {
-                n = hdlc_fr->data[n_ext++];
-                if (n > hdlc_fr->nbits / 8) {
+                n = hfr->data[n_ext++];
+                if (n > hfr->nbits / 8) {
                     LOG(WTF, "hdlc_fr.len=%d < tsdu_payload_len=%d",
-                            hdlc_fr->nbits / 8, n);
+                            hfr->nbits / 8, n);
                     return -1;
                 }
             } else {
-                n = (hdlc_fr->nbits / 8) - n_ext;
+                n = (hfr->nbits / 8) - n_ext;
             }
             data_len += n;
-            memcpy(d, &hdlc_fr->data[n_ext], n);
+            memcpy(d, &hfr->data[n_ext], n);
             d += n;
         }
     } else {    // FRAME_TYPE_HR_DATA
