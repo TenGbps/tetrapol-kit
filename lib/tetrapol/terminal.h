@@ -3,6 +3,7 @@
 #include <tetrapol/addr.h>
 #include <tetrapol/hdlc_frame.h>
 #include <tetrapol/timer.h>
+#include <tetrapol/tetrapol_int.h>
 #include <tetrapol/tsdu.h>
 
 typedef struct terminal_priv_t terminal_t;
@@ -18,7 +19,7 @@ int terminal_push_hdlc_frame(terminal_t* term, const hdlc_frame_t *hdlc_fr,
 
 typedef struct terminal_list_priv_t terminal_list_t;
 
-terminal_list_t *terminal_list_create(void);
+terminal_list_t *terminal_list_create(tpol_t *tpol);
 void terminal_list_destroy(terminal_list_t *tlist);
 
 /**

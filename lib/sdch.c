@@ -35,7 +35,7 @@ sdch_t *sdch_create(tpol_t *tpol)
         goto err_data_fr;
     }
 
-    sdch->tlist = terminal_list_create();
+    sdch->tlist = terminal_list_create(tpol);
     if (!sdch->tlist) {
         goto err_tlist;
     }
