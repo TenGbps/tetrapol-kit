@@ -19,7 +19,7 @@ struct rch_priv_t {
     rch_data_t rch_data;
 };
 
-rch_t *rch_create(void)
+rch_t *rch_create(tpol_t *tpol)
 {
     rch_t *rch = malloc(sizeof(rch_t));
     if (!rch) {
