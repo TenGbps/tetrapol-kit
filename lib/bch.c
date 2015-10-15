@@ -16,6 +16,7 @@ struct bch_priv_t {
     data_frame_t *data_fr;
     tpdu_ui_t *tpdu;
     tsdu_d_system_info_t *tsdu;
+    tpol_t *tpol;
 };
 
 bch_t *bch_create(tpol_t *tpol)
@@ -39,6 +40,7 @@ bch_t *bch_create(tpol_t *tpol)
     }
 
     bch->tsdu = NULL;
+    bch->tpol = tpol;
 
     return bch;
 }
@@ -51,7 +53,7 @@ void bch_destroy(bch_t *bch)
     free(bch);
 }
 
-bool bch_push_frame(bch_t *bch, const frame_t *fr, int *frame_no)
+bool bch_push_frame(bch_t *bch, const frame_t *fr)
 {
     if (data_frame_push_frame(bch->data_fr, fr) <= 0) {
         return false;
@@ -71,7 +73,7 @@ bool bch_push_frame(bch_t *bch, const frame_t *fr, int *frame_no)
     }
 
     if (!addr_is_tti_all_st(&hdlc_fr.addr, true)) {
-        if (*frame_no == FRAME_NO_UNKNOWN) {
+        if (bch->tpol->frame_no == FRAME_NO_UNKNOWN) {
             LOG_IF(DBG) {
                 char buf[ADDR_PRINT_BUF_SIZE];
                 LOG(DBG, "invalid address for BCH %s",
@@ -101,11 +103,12 @@ bool bch_push_frame(bch_t *bch, const frame_t *fr, int *frame_no)
     bch->tsdu = (tsdu_d_system_info_t *)tsdu;
 
     const int bch_frame_no = 100 * bch->tsdu->cell_state.bch + nblocks - 1;
-    if (*frame_no != FRAME_NO_UNKNOWN && *frame_no != bch_frame_no) {
+    if (bch->tpol->frame_no != FRAME_NO_UNKNOWN &&
+            bch->tpol->frame_no != bch_frame_no) {
         LOG(ERR, "Frame skew detected %d to %d\n",
-                *frame_no, bch_frame_no);
+                bch->tpol->frame_no, bch_frame_no);
     }
-    *frame_no = bch_frame_no;
+    bch->tpol->frame_no = bch_frame_no;
 
     return true;
 }

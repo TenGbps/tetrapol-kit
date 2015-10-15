@@ -11,5 +11,5 @@ void pch_destroy(pch_t *pch);
 
 /** Should be called when some frames are missing. */
 void pch_reset(pch_t *pch);
-bool pch_push_frame(pch_t *pch, const frame_t* fr, int frame_no);
+bool pch_push_frame(pch_t *pch, const frame_t* fr);
 void pch_print(pch_t *pch);

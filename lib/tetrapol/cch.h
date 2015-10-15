@@ -13,10 +13,8 @@ void cch_destroy(cch_t *cch);
 
   @param cch
   @param frame
-  @param frame_no current frame number or FRAME_NO_UNKNOWN.
-    Set to proper value when frame with known number is detected.
   */
-int cch_push_frame(cch_t *cch, const frame_t *fr, int *frame_no);
+int cch_push_frame(cch_t *cch, const frame_t *fr);
 
 /**
   Anounce framing error to CCH, allows detection of potentional framing

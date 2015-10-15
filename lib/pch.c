@@ -17,6 +17,7 @@ typedef struct {
 struct pch_priv_t {
     data_frame_t *data_fr;
     pch_data_t pch_data;
+    tpol_t *tpol;
 };
 
 pch_t *pch_create(tpol_t *tpol)
@@ -31,6 +32,8 @@ pch_t *pch_create(tpol_t *tpol)
         free(pch);
         return NULL;
     }
+
+    pch->tpol = tpol;
 
     return pch;
 }
@@ -48,10 +51,10 @@ void pch_reset(pch_t *pch)
     data_frame_reset(pch->data_fr);
 }
 
-bool pch_push_frame(pch_t *pch, const frame_t *fr, int frame_no)
+bool pch_push_frame(pch_t *pch, const frame_t *fr)
 {
     if (data_frame_push_frame(pch->data_fr, fr) <= 0) {
-        if (frame_no % 2) {
+        if (pch->tpol->frame_no % 2) {
             LOG(DBG, "PCH frame broken");
             // TODO: PCH block lost
         }

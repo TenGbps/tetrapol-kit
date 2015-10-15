@@ -15,6 +15,7 @@ struct cch_priv_t {
     pch_t *pch;
     rch_t *rch;
     sdch_t *sdch;
+    tpol_t *tpol;
 };
 
 cch_t *cch_create(tpol_t *tpol)
@@ -40,6 +41,8 @@ cch_t *cch_create(tpol_t *tpol)
     if (!cch->sdch) {
         goto err_sdch;
     }
+
+    cch->tpol = tpol;
 
     return cch;
 
@@ -69,12 +72,12 @@ void cch_destroy(cch_t *cch)
     free(cch);
 }
 
-int cch_push_frame(cch_t *cch, const frame_t *fr, int *frame_no)
+int cch_push_frame(cch_t *cch, const frame_t *fr)
 {
     // For BCH decoding are used all frames, not only frames 0-3, 100-103.
     // Firs of all for BCH detection (frame 0/100 in superblock).
     // The second reason is just to check frame synchronization.
-    if (bch_push_frame(cch->bch, fr, frame_no)) {
+    if (bch_push_frame(cch->bch, fr)) {
         tsdu_d_system_info_t *tsdu = bch_get_tsdu(cch->bch);
         if (tsdu) {
             cch->cch_mux_type = tsdu->cell_config.mux_type;
@@ -92,18 +95,18 @@ int cch_push_frame(cch_t *cch, const frame_t *fr, int *frame_no)
         }
     }
 
-    if (*frame_no == FRAME_NO_UNKNOWN) {
+    if (cch->tpol->frame_no == FRAME_NO_UNKNOWN) {
         return 0;
     }
 
-    const int fn_mod = *frame_no % 100;
+    const int fn_mod = cch->tpol->frame_no % 100;
     // BCH is processed above
     if (fn_mod >= 0 && fn_mod <= 3) {
         return 0;
     }
 
     if (fn_mod == 98 || fn_mod == 99) {
-        if (pch_push_frame(cch->pch, fr, *frame_no)) {
+        if (pch_push_frame(cch->pch, fr)) {
             LOG_IF(INFO) {
                 LOG_("\n");
                 pch_print(cch->pch);
@@ -113,7 +116,7 @@ int cch_push_frame(cch_t *cch, const frame_t *fr, int *frame_no)
     }
     if (cch->cch_mux_type == CELL_CONFIG_MUX_TYPE_TYPE_2) {
         if (fn_mod == 48 || fn_mod == 49) {
-            if (pch_push_frame(cch->pch, fr, *frame_no)) {
+            if (pch_push_frame(cch->pch, fr)) {
                 LOG_IF(INFO) {
                     LOG_("\n");
                     pch_print(cch->pch);
@@ -123,7 +126,7 @@ int cch_push_frame(cch_t *cch, const frame_t *fr, int *frame_no)
         }
     }
 
-    if (*frame_no % 25 == 14) {
+    if (cch->tpol->frame_no % 25 == 14) {
         if (rch_push_frame(cch->rch, fr)) {
             LOG_IF(INFO) {
                 LOG_("\n");

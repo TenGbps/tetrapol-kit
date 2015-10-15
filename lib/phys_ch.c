@@ -393,7 +393,7 @@ static int process_frame(phys_ch_t *phys_ch, const uint8_t *fr_data)
 
     if (phys_ch->radio_ch_type == TETRAPOL_RADIO_CCH) {
         // TODO: report when frame_no is detected
-        return cch_push_frame(phys_ch->cch, &fr, &phys_ch->tpol->frame_no);
+        return cch_push_frame(phys_ch->cch, &fr);
     }
 
     if (!tch_push_frame(phys_ch->tch, &fr)) {
