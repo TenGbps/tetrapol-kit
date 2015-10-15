@@ -3,10 +3,6 @@
 #include <stdint.h>
 
 enum {
-    FRAME_NO_UNKNOWN = -1,
-};
-
-enum {
     FRAME_HDR_LEN = 8,
     FRAME_DATA_LEN = 152,
     FRAME_LEN = FRAME_HDR_LEN + FRAME_DATA_LEN,

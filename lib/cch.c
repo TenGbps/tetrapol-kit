@@ -1,4 +1,5 @@
 #define LOG_PREFIX "cch"
+
 #include <tetrapol/cch.h>
 #include <tetrapol/log.h>
 #include <tetrapol/misc.h>

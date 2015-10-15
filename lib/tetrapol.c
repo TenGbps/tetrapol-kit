@@ -31,6 +31,7 @@ tetrapol_t *tetrapol_create(const tetrapol_cfg_t *cfg)
 
     memcpy(&tetrapol->tpol.cfg, cfg, sizeof(tetrapol_cfg_t));
     tetrapol->tpol.rx_offs = 0;
+    tetrapol->tpol.frame_no = FRAME_NO_UNKNOWN;
 
     return tetrapol;
 }

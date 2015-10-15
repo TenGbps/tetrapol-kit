@@ -27,7 +27,6 @@ struct phys_ch_priv_t {
     int radio_ch_type;   ///< control or traffic
     int sync_errs;      ///< cumulative no. of errors in frame synchronisation
     bool has_frame_sync;
-    int frame_no;
     int scr;            ///< SCR, scrambling constant
     int scr_guess;      ///< SCR with best score when guessing SCR
     int scr_confidence; ///< required confidence for SCR detection
@@ -59,7 +58,7 @@ phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol)
     phys_ch->radio_ch_type = cfg->radio_ch_type;
     phys_ch->data_begin = phys_ch->data_end = phys_ch->data + DATA_OFFS;
     phys_ch->tpol->rx_offs = DATA_OFFS;
-    phys_ch->frame_no = FRAME_NO_UNKNOWN;
+    phys_ch->tpol->frame_no = FRAME_NO_UNKNOWN;
     phys_ch->scr = PHYS_CH_SCR_DETECT;
     phys_ch->scr_confidence = 50;
     phys_ch->timer = timer_create();
@@ -306,7 +305,7 @@ int tetrapol_phys_ch_process(phys_ch_t *phys_ch)
             return 0;
         }
         LOG(INFO, "Frame sync found");
-        phys_ch->frame_no = FRAME_NO_UNKNOWN;
+        phys_ch->tpol->frame_no = FRAME_NO_UNKNOWN;
         if (phys_ch->cch) {
             cch_fr_error(phys_ch->cch);
         }
@@ -317,8 +316,8 @@ int tetrapol_phys_ch_process(phys_ch_t *phys_ch)
     while ((r = get_frame(phys_ch, fr_data)) > 0) {
         process_frame(phys_ch, fr_data);
         timer_tick(phys_ch->timer, false, 20000);
-        if (phys_ch->frame_no != FRAME_NO_UNKNOWN) {
-            phys_ch->frame_no = (phys_ch->frame_no + 1) % 200;
+        if (phys_ch->tpol->frame_no != FRAME_NO_UNKNOWN) {
+            phys_ch->tpol->frame_no = (phys_ch->tpol->frame_no + 1) % 200;
         }
     }
 
@@ -394,7 +393,7 @@ static int process_frame(phys_ch_t *phys_ch, const uint8_t *fr_data)
 
     if (phys_ch->radio_ch_type == TETRAPOL_RADIO_CCH) {
         // TODO: report when frame_no is detected
-        return cch_push_frame(phys_ch->cch, &fr, &phys_ch->frame_no);
+        return cch_push_frame(phys_ch->cch, &fr, &phys_ch->tpol->frame_no);
     }
 
     if (!tch_push_frame(phys_ch->tch, &fr)) {
