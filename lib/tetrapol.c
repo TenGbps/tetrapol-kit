@@ -30,6 +30,7 @@ tetrapol_t *tetrapol_create(const tetrapol_cfg_t *cfg)
     }
 
     memcpy(&tetrapol->tpol.cfg, cfg, sizeof(tetrapol_cfg_t));
+    tetrapol->tpol.rx_offs = 0;
 
     return tetrapol;
 }

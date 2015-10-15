@@ -1,6 +1,6 @@
 #define LOG_PREFIX "phys_ch"
 
-#include <tetrapol/tetrapol.h>
+#include <tetrapol/tetrapol_int.h>
 #include <tetrapol/log.h>
 #include <tetrapol/system_config.h>
 #include <tetrapol/tsdu.h>
@@ -58,6 +58,7 @@ phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol)
     phys_ch->band = cfg->band;
     phys_ch->radio_ch_type = cfg->radio_ch_type;
     phys_ch->data_begin = phys_ch->data_end = phys_ch->data + DATA_OFFS;
+    phys_ch->tpol->rx_offs = DATA_OFFS;
     phys_ch->frame_no = FRAME_NO_UNKNOWN;
     phys_ch->scr = PHYS_CH_SCR_DETECT;
     phys_ch->scr_confidence = 50;
@@ -186,6 +187,7 @@ static int find_frame_sync(phys_ch_t *phys_ch)
         }
 
         ++phys_ch->data_begin;
+        ++phys_ch->tpol->rx_offs;
     }
 
     if (sync_err <= MAX_FRAME_SYNC_ERR) {
@@ -200,6 +202,7 @@ static void copy_frame_data(phys_ch_t *phys_ch, uint8_t *fr_data)
 {
     memcpy(fr_data, phys_ch->data_begin + FRAME_HDR_LEN, FRAME_DATA_LEN);
     phys_ch->data_begin += FRAME_LEN;
+    phys_ch->tpol->rx_offs += FRAME_LEN;
 
     differential_dec(fr_data, FRAME_DATA_LEN, 0);
 }
@@ -282,8 +285,9 @@ static int get_frame(phys_ch_t *phys_ch, uint8_t *fr_data)
         return -1;
     }
 
-
-    phys_ch->data_begin = (sync_errs1 < sync_errs2) ? sync_pos1 : sync_pos2;
+    uint8_t *sync_pos = (sync_errs1 < sync_errs2) ? sync_pos1 : sync_pos2;
+    phys_ch->tpol->rx_offs += sync_pos - phys_ch->data_begin;
+    phys_ch->data_begin = sync_pos;
 
     copy_frame_data(phys_ch, fr_data);
     LOG(INFO, "get_frame() sync fail sync_errs=%d", phys_ch->sync_errs);
