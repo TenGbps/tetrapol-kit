@@ -167,6 +167,7 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
 
         link->v_r = 0;
         link->v_s = 0;
+// TODO: close all connections?
 
         if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
             LOG_IF(WTF) {
@@ -176,8 +177,6 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
             }
         }
 
-        LOG(ERR, "TODO: SNRM");
-        // TODO: report SNRM to upper layer
         return 0;
     }
 
