@@ -165,6 +165,9 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
             LOG(INFO, "cmd=SNRM %s", addr_print(buf, &hdlc_fr->addr));
         }
 
+        link->v_r = 0;
+        link->v_s = 0;
+
         if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
             LOG_IF(WTF) {
                 char buf[hdlc_fr->nbits / 8 * 3];
