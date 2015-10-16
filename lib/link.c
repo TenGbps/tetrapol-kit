@@ -162,19 +162,19 @@ int link_push_hdlc_frame(link_t *link, const hdlc_frame_t *hdlc_fr, tsdu_t **tsd
     if (hdlc_fr->command.cmd == COMMAND_UNNUMBERED_SNRM) {
         LOG_IF(INFO) {
             char buf[ADDR_PRINT_BUF_SIZE];
-            LOG(INFO, "cmd=SNMR %s", addr_print(buf, &hdlc_fr->addr));
+            LOG(INFO, "cmd=SNRM %s", addr_print(buf, &hdlc_fr->addr));
         }
 
         if (!cmpzero(hdlc_fr->data, hdlc_fr->nbits / 8)) {
             LOG_IF(WTF) {
                 char buf[hdlc_fr->nbits / 8 * 3];
-                LOG(WTF, "cmd=SNMR, nonzero stuffing: %s",
+                LOG(WTF, "cmd=SNRM, nonzero stuffing: %s",
                         sprint_hex(buf, hdlc_fr->data, hdlc_fr->nbits / 8));
             }
         }
 
-        LOG(ERR, "TODO: SNMR");
-        // TODO: report SNMR to upper layer
+        LOG(ERR, "TODO: SNRM");
+        // TODO: report SNRM to upper layer
         return 0;
     }
 
