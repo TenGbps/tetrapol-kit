@@ -1,4 +1,5 @@
 #define LOG_PREFIX "lsdu_cd"
+
 #include <tetrapol/log.h>
 #include <tetrapol/lsdu_cd.h>
 #include <tetrapol/misc.h>

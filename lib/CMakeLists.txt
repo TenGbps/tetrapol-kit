@@ -23,6 +23,7 @@ add_library (tetrapol
     lsdu_cd.c
     lsdu_vch.c
     misc.c
+    msg_coding.c
     phys_ch.c
     pch.c
     rch.c
@@ -44,6 +45,7 @@ add_library (tetrapol
     tetrapol/log.h
     tetrapol/lsdu_vch.h
     tetrapol/misc.h
+    tetrapol/msg_coding.h
     tetrapol/phys_ch.h
     tetrapol/pch.h
     tetrapol/rch.h
