@@ -37,7 +37,7 @@ class top_block(gr.top_block):
     self.rfgain = options.gain
 
     self.channels = [ int(ch) for ch in options.channels.split(',') if ch ]
-    self.ch_freqs = [ ch * channel_bw + chan0_freq for ch in options.channels ]
+    self.ch_freqs = [ ch * channel_bw + chan0_freq for ch in self.channels ]
     self.ch_freqs.extend(
             [ int(f) for f in options.channels_by_freq.split(',') if f ])
     while len(self.channels) < len(self.ch_freqs):
