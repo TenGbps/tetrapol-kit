@@ -126,7 +126,7 @@ int cch_push_frame(cch_t *cch, const frame_t *fr)
         }
     }
 
-    if (cch->tpol->frame_no % 25 == 14) {
+    if (fn_mod % 25 == 14) {
         if (rch_push_frame(cch->rch, fr)) {
             LOG_IF(INFO) {
                 LOG_("\n");
