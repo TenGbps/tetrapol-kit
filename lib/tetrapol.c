@@ -1,11 +1,13 @@
-#include <tetrapol/tetrapol.h>
+#define LOG_PREFIX "tetrapol"
+
 #include <tetrapol/log.h>
+#include <tetrapol/tetrapol_int.h>
 
 #include <stdlib.h>
 #include <string.h>
 
 struct tetrapol_priv_t {
-    tetrapol_cfg_t cfg;
+    tpol_t tpol;
 };
 
 tetrapol_t *tetrapol_create(const tetrapol_cfg_t *cfg)
@@ -27,7 +29,7 @@ tetrapol_t *tetrapol_create(const tetrapol_cfg_t *cfg)
         return NULL;
     }
 
-    memcpy(&tetrapol->cfg, cfg, sizeof(tetrapol_cfg_t));
+    memcpy(&tetrapol->tpol.cfg, cfg, sizeof(tetrapol_cfg_t));
 
     return tetrapol;
 }
@@ -39,5 +41,10 @@ void tetrapol_destroy(tetrapol_t *tetrapol)
 
 const tetrapol_cfg_t *tetrapol_get_cfg(tetrapol_t *tetrapol)
 {
-    return &tetrapol->cfg;
+    return &tetrapol->tpol.cfg;
+}
+
+tpol_t *tetrapol_get_tpol(tetrapol_t *tetrapol)
+{
+    return (tpol_t *)tetrapol;
 }
