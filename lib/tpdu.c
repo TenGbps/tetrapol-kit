@@ -304,8 +304,6 @@ int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr)
         }
     }
 
-    int ret_val = -1;
-
     if (seg) {
         if (conn->seg_len + payload_len > SIZEOF(connection_t, segbuf)) {
             LOG(WTF, "Too large TPDU, increase buffer size");
@@ -315,8 +313,6 @@ int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr)
         conn->seg_len += payload_len;
         LOG(INFO, "Segmentation part len=%d seg_len=%d dest_ref=%d",
                 payload_len, conn->seg_len, dest_ref);
-
-        ret_val = 0;
     } else {
         if (conn->seg_len) {
             if (conn->seg_len + payload_len > SIZEOF(connection_t, segbuf)) {
@@ -335,7 +331,6 @@ int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr)
             tpol_tsdu.data = conn->segbuf;
             tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
 
-            ret_val = 0;
             conn->seg_len = 0;
         } else {
             if (d) {
@@ -345,8 +340,6 @@ int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr)
                 tpol_tsdu.data_len = payload_len;
                 tpol_tsdu.data = payload;
                 tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
-
-                ret_val = 0;
             }
         }
     }
@@ -368,7 +361,7 @@ int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr)
         }
     }
 
-    return ret_val;
+    return 0;
 }
 
 void tpdu_destroy(tpdu_t *tpdu)
