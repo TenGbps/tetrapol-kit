@@ -545,9 +545,8 @@ static const char *cause_str[256] = {
 
 static void tsdu_base_print(const tsdu_base_t *tsdu)
 {
-    LOGF("\tCODOP=0x%02x (%s)\n\tID_TSAP=%d\n",
-            tsdu->codop, codop_str[tsdu->codop], tsdu->id_tsap);
-    // TODO: print addr
+    LOGF("\tCODOP=0x%02x (%s)\n",
+            tsdu->codop, codop_str[tsdu->codop]);
 }
 
 static void d_ability_mngt_print(const tsdu_d_ability_mngt_t *tsdu)

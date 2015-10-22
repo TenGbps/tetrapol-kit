@@ -134,7 +134,6 @@ enum {
 // do not use directly, this struct must be first member of each TSDU structure
 typedef struct {
     codop_t codop;
-    uint8_t id_tsap;
     int noptionals;     ///< number of optionals
     /**
       In subclassed TSDU structure, noptionals pointers should be present.
@@ -500,10 +499,9 @@ void tsdu_destroy(tsdu_base_t *tsdu);
  * @brief tsdu_d_decode Compose TSDU from TPDUs.
  * @param data TPDU composed data.
  * @param len length of data in bytes
- * @param id_tsap TSAP-id
  * @param tsdu Is set to point o decoded TSDU when available or to NULL
  *   otherwise. Caller is responsible for freeing this TSDU.
  * @return 0 on success, -1 on fail.
  */
-int tsdu_d_decode(const uint8_t *data, int len, int id_tsap, tsdu_t **tsdu);
+int tsdu_d_decode(const uint8_t *data, int len, tsdu_t **tsdu);
 
