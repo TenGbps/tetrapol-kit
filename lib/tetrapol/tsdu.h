@@ -114,6 +114,9 @@ enum {
 };
 typedef uint8_t codop_t;
 
+extern const int CELL_RADIO_PARAM_PWR_TX_ADJUST_TO_DBM[16];
+extern const int CELL_RADIO_PARAM_RX_LEV_ACCESS_TO_DBM[16];
+
 enum {
     IEI_GROUP_ID            = 0x01,
     IEI_CELL_ID_LIST        = 0x02,
@@ -507,6 +510,4 @@ void tsdu_destroy(tsdu_base_t *tsdu);
  */
 int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap,
         tsdu_t **tsdu);
-
-void tsdu_print(const tsdu_t *tsdu);
 

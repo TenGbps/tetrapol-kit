@@ -34,6 +34,7 @@ add_library (tetrapol
     timer.c
     tpdu.c
     tsdu.c
+    tsdu_print.c
     tetrapol/addr.h
     tetrapol/bch.h
     tetrapol/bit_utils.h
@@ -56,7 +57,7 @@ add_library (tetrapol
     tetrapol/tch.h
     tetrapol/timer.h
     tetrapol/tpdu.h
-    tetrapol/tsdu.h
+    tetrapol/tsdu_print.h
 )
 target_link_libraries (tetrapol ${GLIB2_LIBRARIES})
 include_directories(${GLIB2_INCLUDE_DIRS})
