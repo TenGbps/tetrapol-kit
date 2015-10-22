@@ -64,11 +64,11 @@ void tetrapol_evt_tsdu(tpol_t *tpol, const tpol_tsdu_t *tpol_tsdu)
     }
 
     tsdu_t *tsdu = NULL;
-    tsdu_d_decode(tpol_tsdu->data, tpol_tsdu->data_len, tpol_tsdu->prio,
-            tpol_tsdu->tsap_id, &tsdu);
+    tsdu_d_decode(tpol_tsdu->data, tpol_tsdu->data_len, tpol_tsdu->tsap_id, &tsdu);
     if (tsdu) {
         LOG_IF(INFO) {
             LOG_("\n");
+            LOGF("\tPRIO=%d\n", tpol_tsdu->prio);
             tsdu_print(tsdu);
         }
         tsdu_destroy(tsdu);

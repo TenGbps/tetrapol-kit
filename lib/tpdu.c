@@ -443,7 +443,7 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
             tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
 
             if (tsdu) {
-                return tsdu_d_decode(hdlc_fr->data + 2, len, prio, id_tsap, tsdu);
+                return tsdu_d_decode(hdlc_fr->data + 2, len, id_tsap, tsdu);
             }
             return 0;
         }
@@ -455,7 +455,7 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
         tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
 
         if (tsdu) {
-            return tsdu_d_decode(hdlc_fr->data + 1, len, prio, id_tsap, tsdu);
+            return tsdu_d_decode(hdlc_fr->data + 1, len, id_tsap, tsdu);
         }
         return 0;
     }
@@ -575,7 +575,7 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
     tetrapol_evt_tsdu(tpdu->tpol, &tpol_tsdu);
 
     if (tsdu) {
-        return tsdu_d_decode(data, data_len, prio, id_tsap, tsdu);
+        return tsdu_d_decode(data, data_len, id_tsap, tsdu);
     }
     return 0;
 }
