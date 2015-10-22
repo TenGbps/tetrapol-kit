@@ -4,7 +4,6 @@
 #include <tetrapol/tsdu.h>
 #include <tetrapol/misc.h>
 #include <tetrapol/bit_utils.h>
-#include <tetrapol/phys_ch.h>
 #include <tetrapol/misc.h>
 
 #include <stdint.h>
