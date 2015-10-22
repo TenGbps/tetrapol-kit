@@ -1270,7 +1270,6 @@ int tsdu_d_decode(const uint8_t *data, int len, int prio, int id_tsap, tsdu_t **
 
     if (*tsdu) {
         (*tsdu)->codop = codop;
-        (*tsdu)->downlink = true;
         (*tsdu)->prio = prio;
         (*tsdu)->id_tsap = id_tsap;
     }

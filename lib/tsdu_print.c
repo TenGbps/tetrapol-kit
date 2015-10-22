@@ -1052,7 +1052,7 @@ static void d_unknown_print(const tsdu_unknown_codop_t *tsdu)
             sprint_hex(buf, &tsdu->data[1], tsdu->len - 1));
 }
 
-static void tsdu_d_print(const tsdu_t *tsdu)
+void tsdu_print(const tsdu_t *tsdu)
 {
     switch (tsdu->codop) {
         case D_ABILITY_MNGT:
@@ -1205,7 +1205,7 @@ static void tsdu_d_print(const tsdu_t *tsdu)
             break;
 
         default:
-            LOG(WTF, "Undefined downlink codop=0x%02x", tsdu->codop);
+            LOG(WTF, "Undefined codop=0x%02x", tsdu->codop);
 
         case D_ACCESS_DISABLED:
         case D_BACK_CCH:
@@ -1243,26 +1243,9 @@ static void tsdu_d_print(const tsdu_t *tsdu)
         case D_TRAFFIC_DISABLED:
         case D_TRAFFIC_ENABLED:
         case D_TRANSFER_NAK:
-            LOG(WTF, "print not implemented: downlink codop=0x%02x",
+            LOG(WTF, "print not implemented: codop=0x%02x",
                     tsdu->codop);
             d_unknown_print((const tsdu_unknown_codop_t *)tsdu);
     }
 }
 
-static void tsdu_u_print(const tsdu_t *tsdu)
-{
-    switch (tsdu->codop) {
-        default:
-            LOG(WTF, "print not implemented: uplink codop=0x%02x",
-                    tsdu->codop);
-    }
-}
-
-void tsdu_print(const tsdu_t *tsdu)
-{
-    if (tsdu->downlink) {
-        tsdu_d_print(tsdu);
-    } else {
-        tsdu_u_print(tsdu);
-    }
-}

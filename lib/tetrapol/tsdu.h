@@ -136,7 +136,6 @@ typedef struct {
     codop_t codop;
     uint8_t prio;
     uint8_t id_tsap;
-    bool downlink;      ///< set to true for downlink TSDU, false  otherwise
     int noptionals;     ///< number of optionals
     /**
       In subclassed TSDU structure, noptionals pointers should be present.
