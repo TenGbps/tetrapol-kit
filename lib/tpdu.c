@@ -196,6 +196,7 @@ int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr)
 {
     tpol_tsdu_t tpol_tsdu;
     tpol_tsdu.log_ch = LOG_CH_SDCH;
+    tpol_tsdu.tpdu_type = TPDU_TYPE_TPDU;
     tpol_tsdu.prio = 0;
 
     const bool ext              = get_bits(1, hdlc_fr->data, 0);
@@ -423,6 +424,7 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
     const uint8_t id_tsap       = get_bits(4, hdlc_fr->data, 4);
 
     tpol_tsdu_t tpol_tsdu;
+    tpol_tsdu.tpdu_type = TPDU_TYPE_TPDU_UI;
     tpol_tsdu.log_ch = allow_seg ? LOG_CH_SDCH : LOG_CH_BCH ;
     tpol_tsdu.prio = prio;
     tpol_tsdu.tsap_id = id_tsap;

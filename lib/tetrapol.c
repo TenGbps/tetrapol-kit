@@ -58,6 +58,7 @@ void tetrapol_evt_tsdu(tpol_t *tpol, const tpol_tsdu_t *tpol_tsdu)
         if (tpol_tsdu->data_len <= 0) {
             return;
         }
+
         if (tpol_tsdu->data[0] != D_SYSTEM_INFO) {
             return;
         }

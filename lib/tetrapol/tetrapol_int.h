@@ -35,9 +35,15 @@ typedef struct {
     int frame_no;
 } tpol_t;
 
+enum {
+    TPDU_TYPE_TPDU,
+    TPDU_TYPE_TPDU_UI,
+};
+
 typedef struct {
     int log_ch;
     addr_t addr;
+    uint8_t tpdu_type;
     int prio;
     int tsap_id;
     int tsap_ref_swmi;
