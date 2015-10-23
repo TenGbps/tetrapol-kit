@@ -18,20 +18,20 @@ struct link_priv_t {
     bool rx_glitch;
 };
 
-link_t *link_create(tpol_t *tpol)
+link_t *link_create(tpol_t *tpol, int log_ch)
 {
     link_t *link = malloc(sizeof(link_t));
     if (!link) {
         return NULL;
     }
 
-    link->tpdu_ui = tpdu_ui_create(tpol, FRAME_TYPE_DATA);
+    link->tpdu_ui = tpdu_ui_create(tpol, FRAME_TYPE_DATA, log_ch);
     if (!link->tpdu_ui) {
         free(link);
         return NULL;
     }
 
-    link->tpdu = tpdu_create(tpol);
+    link->tpdu = tpdu_create(tpol, LOG_CH_SDCH);
     if (!link->tpdu) {
         tpdu_ui_destroy(link->tpdu_ui);
         free(link);

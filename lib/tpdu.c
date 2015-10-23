@@ -49,12 +49,14 @@ struct tpdu_priv_t {
     // connections are listed by TSAP reference (SwMI side)
     // 8 normal, 7 fast connections
     connection_t conns[8+7];
+    int log_ch;
     tpol_t *tpol;
 };
 
 struct tpdu_priv_ui_t {
     frame_type_t fr_type;
     segmented_du_t *seg_du[128];
+    int log_ch;
     tpol_t *tpol;
 };
 
@@ -177,7 +179,7 @@ static void connection_broken(connection_t *conn)
     conn->state = CONNECTION_STATE_BROKEN;
 }
 
-tpdu_t *tpdu_create(tpol_t *tpol)
+tpdu_t *tpdu_create(tpol_t *tpol, int log_ch)
 {
     tpdu_t *tpdu = calloc(1, sizeof(tpdu_t));
     if (!tpdu) {
@@ -188,6 +190,7 @@ tpdu_t *tpdu_create(tpol_t *tpol)
         connection_reset(&tpdu->conns[i]);
     }
     tpdu->tpol = tpol;
+    tpdu->log_ch = log_ch;
 
     return tpdu;
 }
@@ -195,7 +198,7 @@ tpdu_t *tpdu_create(tpol_t *tpol)
 int tpdu_push_hdlc_frame(tpdu_t *tpdu, const hdlc_frame_t *hdlc_fr)
 {
     tpol_tsdu_t tpol_tsdu;
-    tpol_tsdu.log_ch = LOG_CH_SDCH;
+    tpol_tsdu.log_ch = tpdu->log_ch;
     tpol_tsdu.tpdu_type = TPDU_TYPE_TPDU;
     tpol_tsdu.prio = 0;
 
@@ -378,7 +381,7 @@ static void tpdu_ui_segments_destroy(segmented_du_t *du)
     free(du);
 }
 
-tpdu_ui_t *tpdu_ui_create(tpol_t *tpol, frame_type_t fr_type)
+tpdu_ui_t *tpdu_ui_create(tpol_t *tpol, frame_type_t fr_type, int log_ch)
 {
     if (fr_type != FRAME_TYPE_DATA && fr_type != FRAME_TYPE_HR_DATA) {
         LOG(ERR, "usnupported frame type %d", fr_type);
@@ -389,8 +392,9 @@ tpdu_ui_t *tpdu_ui_create(tpol_t *tpol, frame_type_t fr_type)
     if (!tpdu) {
         return NULL;
     }
-    tpdu->fr_type = fr_type;
     tpdu->tpol = tpol;
+    tpdu->fr_type = fr_type;
+    tpdu->log_ch = log_ch;
 
     return tpdu;
 }
@@ -425,7 +429,7 @@ static int tpdu_ui_push_hdlc_frame_(tpdu_ui_t *tpdu,
 
     tpol_tsdu_t tpol_tsdu;
     tpol_tsdu.tpdu_type = TPDU_TYPE_TPDU_UI;
-    tpol_tsdu.log_ch = allow_seg ? LOG_CH_SDCH : LOG_CH_BCH ;
+    tpol_tsdu.log_ch = tpdu->log_ch;
     tpol_tsdu.prio = prio;
     tpol_tsdu.tsap_id = id_tsap;
     tpol_tsdu.tsap_ref_swmi = TSAP_REF_UNKNOWN;

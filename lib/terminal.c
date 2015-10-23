@@ -15,16 +15,17 @@ struct terminal_priv_t {
 struct terminal_list_priv_t {
     GTree *tree;
     tpol_t *tpol;
+    int log_ch;
 };
 
-static terminal_t* terminal_create(tpol_t *tpol)
+static terminal_t* terminal_create(tpol_t *tpol, int log_ch)
 {
     terminal_t *term = malloc(sizeof(terminal_t));
     if (!term) {
         return NULL;
     }
 
-    term->link = link_create(tpol);
+    term->link = link_create(tpol, log_ch);
     if (!term->link) {
         free(term);
         return NULL;
@@ -72,7 +73,7 @@ static gint addr_cmp(gconstpointer _a1, gconstpointer _a2, gpointer user_data)
     return a2->x - a1->x;
 }
 
-terminal_list_t *terminal_list_create(tpol_t * tpol)
+terminal_list_t *terminal_list_create(tpol_t * tpol, int log_ch)
 {
     terminal_list_t *tlist = malloc(sizeof(terminal_list_t));
     if (!tlist) {
@@ -86,6 +87,7 @@ terminal_list_t *terminal_list_create(tpol_t * tpol)
     }
 
     tlist->tpol = tpol;
+    tlist->log_ch = log_ch;
 
     return tlist;
 }
@@ -103,7 +105,7 @@ terminal_t* terminal_list_lookup(const terminal_list_t* tlist, const addr_t *add
 
 terminal_t* terminal_list_insert(terminal_list_t* tlist, const addr_t *addr)
 {
-    terminal_t *term = terminal_create(tlist->tpol);
+    terminal_t *term = terminal_create(tlist->tpol, tlist->log_ch);
     if (!term) {
         return NULL;
     }

@@ -16,7 +16,7 @@ int terminal_push_hdlc_frame(terminal_t* term, const hdlc_frame_t *hdlc_fr);
 
 typedef struct terminal_list_priv_t terminal_list_t;
 
-terminal_list_t *terminal_list_create(tpol_t *tpol);
+terminal_list_t *terminal_list_create(tpol_t *tpol, int log_ch);
 void terminal_list_destroy(terminal_list_t *tlist);
 
 /**

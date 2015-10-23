@@ -33,7 +33,7 @@ sdch_t *sdch_create(tpol_t *tpol)
         goto err_data_fr;
     }
 
-    sdch->tlist = terminal_list_create(tpol);
+    sdch->tlist = terminal_list_create(tpol, LOG_CH_SDCH);
     if (!sdch->tlist) {
         goto err_tlist;
     }
