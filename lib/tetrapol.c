@@ -64,7 +64,7 @@ void tetrapol_evt_tsdu(tpol_t *tpol, const tpol_tsdu_t *tpol_tsdu)
     }
 
     tsdu_t *tsdu = NULL;
-    tsdu_d_decode(tpol_tsdu->data, tpol_tsdu->data_len, &tsdu);
+    tsdu_decode(tpol_tsdu->data, tpol_tsdu->data_len, &tsdu);
     if (tsdu) {
         LOG_IF(INFO) {
             LOG_("\n");

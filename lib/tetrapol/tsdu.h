@@ -503,5 +503,5 @@ void tsdu_destroy(tsdu_base_t *tsdu);
  *   otherwise. Caller is responsible for freeing this TSDU.
  * @return 0 on success, -1 on fail.
  */
-int tsdu_d_decode(const uint8_t *data, int len, tsdu_t **tsdu);
+int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu);
 

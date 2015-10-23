@@ -1100,7 +1100,7 @@ static tsdu_d_call_connect_t *d_call_connect_decode(const uint8_t *data, int len
     return tsdu;
 }
 
-int tsdu_d_decode(const uint8_t *data, int len, tsdu_t **tsdu)
+int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
 {
     if (len < 1) {
         LOG(ERR, "%d data too short %d < %d", __LINE__, len, 1);
