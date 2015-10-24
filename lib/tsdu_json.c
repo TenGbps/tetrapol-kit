@@ -6,7 +6,7 @@
 
 enum {
     /// buffer large enough to satisfy all internal sprintf
-    SPRINTF_BUF_LEN = 255,
+    SPRINTF_BUF_LEN = 32768,
 };
 
 static const char *addr_json(char *buf, const addr_t *addr)
@@ -62,11 +62,18 @@ void tsdu_json(const tpol_t *tpol, const tpol_tsdu_t *tsdu)
                 printf("\"tsap_ref_swmi\": null, ");
             }
             if (tsdu->tsap_ref_rt != TSAP_REF_UNKNOWN) {
-                printf("\"tsap_ref_rt\": %d ", tsdu->tsap_ref_rt);
+                printf("\"tsap_ref_rt\": %d, ", tsdu->tsap_ref_rt);
             } else {
-                printf("\"tsap_ref_rt\": null ");
+                printf("\"tsap_ref_rt\": null, ");
             }
         } else if (tsdu->tpdu_type == TPDU_TYPE_TPDU_UI) {
+        }
+
+        if ( (2 * tsdu->data_len + 1) <= sizeof(buf)) {
+            printf("\"data\": { \"encoding\": \"hex\", \"value\": \"%s\" } ",
+                    sprint_hex2(buf, tsdu->data, tsdu->data_len));
+        } else {
+            printf("\"data\": null");
         }
     }
     printf("} ");
