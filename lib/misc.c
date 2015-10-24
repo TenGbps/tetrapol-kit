@@ -21,3 +21,18 @@ char *sprint_hex(char *str, const uint8_t *bytes, int n)
     return str;
 }
 
+char *sprint_hex2(char *str, const uint8_t *bytes, int n)
+{
+    for(int i = 0; i < n; ) {
+        // TODO: replace sprintf with straight conversion
+        sprintf(&str[2*i], "%02x", bytes[i]);
+        ++i;
+        if (i == n) {
+            break;
+        }
+    }
+    str[2*n] = 0;
+
+    return str;
+}
+
