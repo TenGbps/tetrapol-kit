@@ -16,8 +16,8 @@ enum {
     LOG_CH_PCH,
     LOG_CH_RACH,
     LOG_CH_RCH,
-    LOG_CH_SDCH,
     LOG_CH_SCH,
+    LOG_CH_SDCH,
     LOG_CH_VCH,
 };
 

@@ -4,6 +4,17 @@
 #include <tetrapol/misc.h>
 #include <tetrapol/tsdu_json.h>
 
+enum {
+    /// buffer large enough to satisfy all internal sprintf
+    SPRINTF_BUF_LEN = 255,
+};
+
+static const char *addr_json(char *buf, const addr_t *addr)
+{
+    sprintf(buf, "{ \"z\": %d, \"y\": %d, \"x\": %d }",
+            addr->z, addr->y, addr->x);
+    return buf;
+}
 
 void tsdu_json(const tpol_t *tpol, const tpol_tsdu_t *tsdu)
 {
@@ -11,6 +22,24 @@ void tsdu_json(const tpol_t *tpol, const tpol_tsdu_t *tsdu)
 
     printf("\"tsdu\": { ");
     {
+        char buf[SPRINTF_BUF_LEN];  ///< buffer for sprintf
+
+        const char *log_ch_str;
+        switch (tsdu->log_ch) {
+            case LOG_CH_BCH:    log_ch_str = "BCH";     break;
+            case LOG_CH_DACH:   log_ch_str = "DACH";    break;
+            case LOG_CH_PCH:    log_ch_str = "PCH";     break;
+            case LOG_CH_RACH:   log_ch_str = "RACH";    break;
+            case LOG_CH_RCH:    log_ch_str = "RCH";     break;
+            case LOG_CH_SDCH:   log_ch_str = "SDCH";    break;
+            case LOG_CH_SCH:    log_ch_str = "SCH";     break;
+            case LOG_CH_VCH:    log_ch_str = "VCH";     break;
+
+            default:
+                log_ch_str = "FIXME";
+        };
+        printf("\"log_ch\": \"%s\", ", log_ch_str);
+        printf("\"addr\": %s ", addr_json(buf, &tsdu->addr));
     }
     printf("} ");
 
