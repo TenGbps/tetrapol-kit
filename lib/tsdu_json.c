@@ -39,7 +39,35 @@ void tsdu_json(const tpol_t *tpol, const tpol_tsdu_t *tsdu)
                 log_ch_str = "FIXME";
         };
         printf("\"log_ch\": \"%s\", ", log_ch_str);
-        printf("\"addr\": %s ", addr_json(buf, &tsdu->addr));
+        printf("\"addr\": %s, ", addr_json(buf, &tsdu->addr));
+
+        const char *tpdu_type;
+        switch (tsdu->tpdu_type) {
+            case TPDU_TYPE_TPDU:    tpdu_type = "TPDU";     break;
+            case TPDU_TYPE_TPDU_UI: tpdu_type = "TPDU_UI";  break;
+            default:                tpdu_type = "FIXME";
+        };
+        printf("\"tpdu_type\": \"%s\", ", tpdu_type);
+
+        if (tsdu->tsap_id != TSAP_ID_UNKNOWN) {
+            printf("\"tsap_id\": %d, ", tsdu->tsap_id);
+        } else {
+            printf("\"tsap_id\": null, ");
+        }
+
+        if (tsdu->tpdu_type == TPDU_TYPE_TPDU) {
+            if (tsdu->tsap_ref_swmi != TSAP_REF_UNKNOWN) {
+                printf("\"tsap_ref_swmi\": %d, ", tsdu->tsap_ref_swmi);
+            } else {
+                printf("\"tsap_ref_swmi\": null, ");
+            }
+            if (tsdu->tsap_ref_rt != TSAP_REF_UNKNOWN) {
+                printf("\"tsap_ref_rt\": %d ", tsdu->tsap_ref_rt);
+            } else {
+                printf("\"tsap_ref_rt\": null ");
+            }
+        } else if (tsdu->tpdu_type == TPDU_TYPE_TPDU_UI) {
+        }
     }
     printf("} ");
 
