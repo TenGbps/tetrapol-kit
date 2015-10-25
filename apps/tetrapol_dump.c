@@ -77,7 +77,7 @@ static int tetrapol_dump_loop(phys_ch_t *phys_ch, int fd)
 static void print_help(const char *prg_name)
 {
     fprintf(stderr,
-            "Usage: %s [-i IN_FILE_PATH] [-b { VHF | UHF } ] [ -t { CCH | TCH } ]\n",
+            "Usage: %s [-i IN_FILE_PATH] [-b { VHF | UHF } ] [ -t { CCH | TCH } ] [ -d { DOWN | UP } ]\n",
             prg_name);
 }
 
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     const char *in = NULL;
 
     int opt;
-    while ((opt = getopt(argc, argv, "b:hi:t:")) != -1) {
+    while ((opt = getopt(argc, argv, "b:hi:t:d:")) != -1) {
         switch (opt) {
             case 'b':
                 if (!strcmp(optarg, "VHF")) {
@@ -123,6 +123,17 @@ int main(int argc, char* argv[])
             case 'h':
                 print_help(argv[0]);
                 exit(0);
+                break;
+
+            case 'd':
+                if (!strcmp("UP", optarg)) {
+                    cfg.dir = DIR_UPLINK;
+                } else if (!strcmp("DOWN", optarg)) {
+                    cfg.dir = DIR_DOWNLINK;
+                } else {
+                    print_help(argv[0]);
+                    exit(EXIT_FAILURE);
+                }
                 break;
 
             default:
