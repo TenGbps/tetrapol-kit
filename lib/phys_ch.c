@@ -297,9 +297,9 @@ static int get_frame(phys_ch_t *phys_ch, uint8_t *fr_data)
 int tetrapol_phys_ch_process(phys_ch_t *phys_ch)
 {
     if (!phys_ch->has_frame_sync) {
-        int n = phys_ch->data_end - phys_ch->data_end;
+        int n = phys_ch->data_end - phys_ch->data_begin;
         phys_ch->has_frame_sync = find_frame_sync(phys_ch);
-        n -= phys_ch->data_end - phys_ch->data_end;
+        n -= phys_ch->data_end - phys_ch->data_begin;
         if (!phys_ch->has_frame_sync) {
             timer_tick(phys_ch->timer, true, n * 20000 / 160);
             return 0;
