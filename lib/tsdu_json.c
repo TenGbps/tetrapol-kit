@@ -19,6 +19,7 @@ static const char *addr_json(char *buf, const addr_t *addr)
 void tsdu_json(const tpol_t *tpol, const tpol_tsdu_t *tsdu)
 {
     printf("{ \"event\": \"tsdu\", ");
+    printf("\"rx_offs\": %lu, ", tpol->rx_offs);
 
     printf("\"tsdu\": { ");
     {
