@@ -25,6 +25,12 @@ void tsdu_json(const tpol_t *tpol, const tpol_tsdu_t *tsdu)
     {
         char buf[SPRINTF_BUF_LEN];  ///< buffer for sprintf
 
+        if (tpol->frame_no != FRAME_NO_UNKNOWN) {
+            printf("\"frame_no\": %d, ", tpol->frame_no);
+        } else {
+            printf("\"frame_no\": null, ");
+        }
+
         const char *log_ch_str;
         switch (tsdu->log_ch) {
             case LOG_CH_BCH:    log_ch_str = "BCH";     break;
