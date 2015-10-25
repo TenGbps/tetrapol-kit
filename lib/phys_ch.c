@@ -160,9 +160,7 @@ static int cmp_frame_sync(const uint8_t *data)
     const uint8_t frame_dsync[] = { 1, 0, 1, 0, 0, 1, 1, };
     int sync_err = 0;
     for(int i = 0; i < sizeof(frame_dsync); ++i) {
-        if (frame_dsync[i] != data[i + 1]) {
-            ++sync_err;
-        }
+        sync_err += frame_dsync[i] ^ data[i + 1];
     }
     return sync_err;
 }
