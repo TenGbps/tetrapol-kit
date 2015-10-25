@@ -11,6 +11,12 @@ enum {
     TETRAPOL_BAND_UHF = 2,
 };
 
+/** Transmission direcion uplink/downlink. */
+enum {
+    DIR_DOWNLINK = 1,
+    DIR_UPLINK = 2,
+};
+
 /** Radio channel type. */
 enum {
     // TETRAPOL_RADIO_AUTO = 0,     // not supported yet
@@ -20,6 +26,7 @@ enum {
 
 typedef struct {
     uint8_t band;
+    uint8_t dir;
     uint8_t radio_ch_type;
 } tetrapol_cfg_t;
 

@@ -24,7 +24,8 @@
 
 struct phys_ch_priv_t {
     int band;           ///< VHF or UHF
-    int radio_ch_type;   ///< control or traffic
+    uint8_t dir;        ///< direction (downlink / uplink)
+    int radio_ch_type;  ///< control or traffic
     int sync_errs;      ///< cumulative no. of errors in frame synchronisation
     bool has_frame_sync;
     int scr;            ///< SCR, scrambling constant
@@ -55,6 +56,7 @@ phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol)
 
     phys_ch->tpol = tetrapol_get_tpol(tetrapol);
     phys_ch->band = cfg->band;
+    phys_ch->dir = cfg->dir;
     phys_ch->radio_ch_type = cfg->radio_ch_type;
     phys_ch->data_begin = phys_ch->data_end = phys_ch->data + DATA_OFFS;
     phys_ch->tpol->rx_offs = DATA_OFFS;
@@ -150,6 +152,12 @@ int tetrapol_phys_ch_recv(phys_ch_t *phys_ch, uint8_t *buf, int len)
 
     memcpy(phys_ch->data_end, buf, len);
     phys_ch->data_end += len;
+
+    if (phys_ch->dir == DIR_UPLINK) {
+        for (uint8_t *b = phys_ch->data_end - len; b < phys_ch->data_end; ++b) {
+            *b ^= 0x01;
+        }
+    }
 
     return len;
 }

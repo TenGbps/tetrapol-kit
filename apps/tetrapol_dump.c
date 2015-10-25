@@ -85,6 +85,7 @@ int main(int argc, char* argv[])
 {
     tetrapol_cfg_t cfg = {
         .band = TETRAPOL_BAND_UHF,
+        .dir = DIR_DOWNLINK,
         .radio_ch_type = TETRAPOL_RADIO_CCH,
     };
 
