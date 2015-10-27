@@ -1,6 +1,8 @@
  * I/O interface for export of processed informations
-   * use Google protocolbuffers?
+ * JSON output for frame errors (Rx statistics, berr)
+ * reimplement and improve error correction
  * receive uplink channel(s)
+ * optimize code for speed a bit
  * support multiple signal sources at least for uplink and downlink
  * Improve demodulator and frame decoder
    * Current implementation causes frame coruption whenever single bit
