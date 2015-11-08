@@ -82,11 +82,11 @@ typedef struct {
     };
     int fr_type;
     /**
-      0 when frame is ok
-      -1 when CRC does not match
-      number of detected errors otherwise
+      0  - Frame does not have uncorrected errors and CRC matches.
+      -1 - CRC Does not match.
+      broken > 0 - Number of uncorrected error syndromes.
       */
-    int errors;
+    int broken;
 } frame_t;
 
 

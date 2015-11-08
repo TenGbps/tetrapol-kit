@@ -103,7 +103,7 @@ static void test_frame_decoder_data_01(void **state)
     frame_decoder_decode(fd, &fr, fr_data);
     assert_int_equal(sizeof(data_exp), sizeof(frame_data_t));
     assert_memory_equal(data_exp, fr.blob_, sizeof(frame_data_t));
-    assert_int_equal(0, fr.errors);
+    assert_int_equal(0, fr.broken);
     frame_decoder_destroy(fd);
 }
 
@@ -143,7 +143,7 @@ static void test_frame_decoder_data_02(void **state)
         frame_decoder_decode(fd, &fr, fr_data);
         assert_int_equal(sizeof(data_exp), sizeof(frame_data_t));
         assert_memory_equal(data_exp, fr.blob_, sizeof(frame_data_t));
-        assert_int_equal(0, fr.errors);
+        assert_int_equal(0, fr.broken);
         fr_data[i] ^= 1;
     }
 
@@ -186,7 +186,7 @@ static void test_frame_decoder_voice_01(void **state)
     frame_decoder_decode(fd, &fr, fr_data);
     assert_int_equal(sizeof(data_exp), sizeof(frame_voice_t));
     assert_memory_equal(data_exp, fr.blob_, sizeof(frame_data_t));
-    assert_int_equal(0, fr.errors);
+    assert_int_equal(0, fr.broken);
     frame_decoder_destroy(fd);
 }
 

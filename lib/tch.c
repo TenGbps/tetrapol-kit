@@ -50,7 +50,7 @@ void tch_destroy(tch_t *tch)
 
 int tch_push_frame(tch_t *tch, const frame_t *fr)
 {
-    if (fr->errors) {
+    if (fr->broken) {
         LOG(INFO, "Broken frame");
         tch->rx_glitch = true;
         return -1;

@@ -17,8 +17,7 @@ void frame_json(tpol_t *tpol, const frame_t *fr)
             printf("\"frame_no\": null, ");
         }
 
-        if (!fr->errors) {
-
+        if (!fr->broken) {
             const char *fr_type;
             switch (fr->fr_type) {
                 case FRAME_TYPE_VOICE:

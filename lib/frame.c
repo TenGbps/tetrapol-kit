@@ -501,7 +501,7 @@ void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_da
             fd->fr_type != FRAME_TYPE_VOICE &&
             fd->fr_type  != FRAME_TYPE_DATA)
     {
-        fr->errors = -1;
+        fr->broken = -2;
         return;
     }
 
@@ -516,32 +516,32 @@ void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_da
     uint8_t fr_errs[FRAME_DATA_LEN];
 
     frame_deinterleave1(fr_data_deint, fr_data_tmp, fd->band);
-    fr->errors = frame_decode1(fr->blob_, fr_errs, fr_data_deint, fd->fr_type);
+    fr->broken = frame_decode1(fr->blob_, fr_errs, fr_data_deint, fd->fr_type);
 
     fr->fr_type = (fd->fr_type == FRAME_TYPE_AUTO) ? fr->d : fd->fr_type;
 
-    if (fr->errors) {
-        fr->errors -= frame_fix_errs(fr->blob_, fr_errs, 26);
-        if (fr->errors > 0) {
+    if (fr->broken) {
+        fr->broken -= frame_fix_errs(fr->blob_, fr_errs, 26);
+        if (fr->broken > 0) {
             return;
         }
     }
 
     frame_deinterleave2(fr_data_deint, fr_data_tmp, fd->band, fr->fr_type);
-    fr->errors = frame_decode2(fr->blob_, fr_errs, fr_data_deint, fr->fr_type);
+    fr->broken = frame_decode2(fr->blob_, fr_errs, fr_data_deint, fr->fr_type);
 
     if (fr->fr_type == FRAME_TYPE_VOICE) {
-        fr->errors = frame_check_crc(fr->blob_, fr->fr_type) ? 0 : -1;
+        fr->broken = frame_check_crc(fr->blob_, fr->fr_type) ? 0 : -1;
         return;
     }
 
-    if (fr->errors) {
-        fr->errors -= frame_fix_errs(fr->blob_ + 26, fr_errs + 26, 50);
-        if (fr->errors > 0) {
+    if (fr->broken) {
+        fr->broken -= frame_fix_errs(fr->blob_ + 26, fr_errs + 26, 50);
+        if (fr->broken > 0) {
             return;
         }
     }
 
-    fr->errors = frame_check_crc(fr->blob_, fr->fr_type) ? 0 : -1;
+    fr->broken = frame_check_crc(fr->blob_, fr->fr_type) ? 0 : -1;
 }
 

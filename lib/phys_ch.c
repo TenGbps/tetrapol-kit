@@ -350,7 +350,7 @@ static void detect_scr(phys_ch_t *phys_ch, const uint8_t *fr_data)
         frame_t fr;
         frame_decoder_reset(phys_ch->fd, phys_ch->band, scr, FRAME_TYPE_AUTO);
         frame_decoder_decode(phys_ch->fd, &fr, fr_data);
-        if (fr.errors) {
+        if (fr.broken) {
             phys_ch->scr_stat[scr] -= 2;
             if (phys_ch->scr_stat[scr] < 0) {
                 phys_ch->scr_stat[scr] = 0;
@@ -398,7 +398,7 @@ static int process_frame(phys_ch_t *phys_ch, const uint8_t *fr_data)
     frame_decoder_reset(phys_ch->fd, phys_ch->band, scr, fr_type);
     frame_decoder_decode(phys_ch->fd, &fr, fr_data);
 
-    if (!fr.errors) {
+    if (!fr.broken) {
         frame_json(phys_ch->tpol, &fr);
     }
 
