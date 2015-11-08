@@ -3,11 +3,23 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/time.h>
+#include <time.h>
 
 void frame_json(tpol_t *tpol, const frame_t *fr)
 {
     printf("{ \"event\": \"frame\", ");
     printf("\"rx_offs\": %lu, ", tpol->rx_offs);
+
+    struct timeval tv;
+    struct tm gmt;
+    gettimeofday(&tv, NULL);
+    gmtime_r(&tv.tv_sec, &gmt);
+
+    printf("\"rx_time\": \"%4d-%02d-%02dT%02d-%02d-%02d.%06ld\", ",
+            gmt.tm_year + 1900, gmt.tm_mon + 1, gmt.tm_mday,
+            gmt.tm_hour, gmt.tm_min, gmt.tm_sec, tv.tv_usec);
+
 
     printf("\"frame\": { ");
     {
