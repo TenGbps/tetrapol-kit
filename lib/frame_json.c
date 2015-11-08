@@ -18,6 +18,10 @@ void frame_json(tpol_t *tpol, const frame_t *fr)
         }
 
         if (!fr->broken) {
+            printf("\"state\": \"ok\", ");
+            printf("\"syndromes\": %d, ", fr->syndromes);
+            printf("\"bits_fixed\": %d ", fr->bits_fixed);
+
             const char *fr_type;
             switch (fr->fr_type) {
                 case FRAME_TYPE_VOICE:
@@ -65,8 +69,14 @@ void frame_json(tpol_t *tpol, const frame_t *fr)
             } else {
                 printf("\"FIXME\": \"FIXME\" ");
             }
+        } else if (fr->broken == -1) {
+            printf("\"state\": \"bad_CRC\", ");
+            printf("\"syndromes\": %d, ", fr->syndromes);
+            printf("\"bits_fixed\": %d ", fr->bits_fixed);
+        } else if (fr->broken > 0) {
+            printf("\"state\": %d, ", fr->broken);
         } else {
-            printf("\"FIXME\": \"FIXME\" ");
+            printf("\"state\": \"FIXME\", ");
         }
     }
     printf("}");
