@@ -84,9 +84,13 @@ typedef struct {
     /**
       0  - Frame does not have uncorrected errors and CRC matches.
       -1 - CRC Does not match.
+      -2 - Invalid data.
       broken > 0 - Number of uncorrected error syndromes.
       */
     int broken;
+
+    /** Total amount of error syndromes in received frame. */
+    int syndromes;
 } frame_t;
 
 

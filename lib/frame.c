@@ -517,6 +517,7 @@ void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_da
 
     frame_deinterleave1(fr_data_deint, fr_data_tmp, fd->band);
     fr->broken = frame_decode1(fr->blob_, fr_errs, fr_data_deint, fd->fr_type);
+    fr->syndromes = fr->broken;
 
     fr->fr_type = (fd->fr_type == FRAME_TYPE_AUTO) ? fr->d : fd->fr_type;
 
@@ -529,6 +530,7 @@ void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_da
 
     frame_deinterleave2(fr_data_deint, fr_data_tmp, fd->band, fr->fr_type);
     fr->broken = frame_decode2(fr->blob_, fr_errs, fr_data_deint, fr->fr_type);
+    fr->syndromes += fr->broken;
 
     if (fr->fr_type == FRAME_TYPE_VOICE) {
         fr->broken = frame_check_crc(fr->blob_, fr->fr_type) ? 0 : -1;
