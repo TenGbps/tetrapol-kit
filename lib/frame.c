@@ -420,7 +420,7 @@ syndrome    correction
     111       001
   10011     00101
   */
-int frame_fix_errs(uint8_t *fr_data, uint8_t *fr_errs, int len)
+int frame_fix_errs(uint8_t *fr_data, uint8_t *fr_errs, int len, int *bits_fixed)
 {
     int nerrs = 0;
     for (int i = 0; i < len; ++i) {
@@ -441,6 +441,7 @@ int frame_fix_errs(uint8_t *fr_data, uint8_t *fr_errs, int len)
             nerrs += 2 + fr_errs[(i + 5) % len] +
                 fr_errs[(i + 6) % len] +
                 fr_errs[(i + 7) % len];
+            *bits_fixed += 2 + fr_errs[(i + 6) % len];
             fr_data[(i + 6) % len] ^= 1;
             fr_data[(i + 7) % len] ^= fr_errs[(i + 6) % len];
             fr_data[(i + 8) % len] ^= 1;
@@ -464,6 +465,7 @@ int frame_fix_errs(uint8_t *fr_data, uint8_t *fr_errs, int len)
                 (fr_errs[(i + 9) % len])
              )) {
             nerrs += 2 + (fr_errs[(i + 4) % len]) + (fr_errs[(i + 5) % len]);
+            *bits_fixed += 2;
             fr_data[(i + 5) % len] ^= 1;
             fr_data[(i + 6) % len] ^= 1;
             fr_errs[(i + 3) % len] = 0;
@@ -483,6 +485,7 @@ int frame_fix_errs(uint8_t *fr_data, uint8_t *fr_errs, int len)
                 (fr_errs[(i + 6) % len])
              )) {
             nerrs += 2 + (fr_errs[(i + 3) % len]);
+            *bits_fixed += 1;
             fr_data[(i + 4) % len] ^= 1;
             fr_errs[(i + 2) % len] = 0;
             fr_errs[(i + 3) % len] = 0;
@@ -505,6 +508,8 @@ void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_da
         return;
     }
 
+    fr->bits_fixed = 0;
+
     uint8_t fr_data_tmp[FRAME_DATA_LEN];
 
     frame_descramble(fr_data_tmp, fr_data, fd->scr);
@@ -522,7 +527,7 @@ void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_da
     fr->fr_type = (fd->fr_type == FRAME_TYPE_AUTO) ? fr->d : fd->fr_type;
 
     if (fr->broken) {
-        fr->broken -= frame_fix_errs(fr->blob_, fr_errs, 26);
+        fr->broken -= frame_fix_errs(fr->blob_, fr_errs, 26, &fr->bits_fixed);
         if (fr->broken > 0) {
             return;
         }
@@ -538,7 +543,7 @@ void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_da
     }
 
     if (fr->broken) {
-        fr->broken -= frame_fix_errs(fr->blob_ + 26, fr_errs + 26, 50);
+        fr->broken -= frame_fix_errs(fr->blob_ + 26, fr_errs + 26, 50, &fr->bits_fixed);
         if (fr->broken > 0) {
             return;
         }

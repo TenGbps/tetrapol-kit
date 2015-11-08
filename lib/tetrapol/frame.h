@@ -91,6 +91,8 @@ typedef struct {
 
     /** Total amount of error syndromes in received frame. */
     int syndromes;
+    /** Number of bits fixed by error correction. */
+    int bits_fixed;
 } frame_t;
 
 
