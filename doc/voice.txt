@@ -1,0 +1,9 @@
+= bit layout in frame
+
+v20 - first 20 bits (protected)
+v100 - unprotected 100 bit
+
+ - decimation value in v20
+   suspicious pattern of 3 columns of size 5b at the end of v20
+   *dd...dd...dd
+
