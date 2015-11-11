@@ -1,2 +1,0 @@
-#grep -ci CODOP `ls -t *log`|grep -v :0$ |grep -v __ |head -20
-grep -ci CODOP `ls -t *log`|grep -v :0$ |head -20

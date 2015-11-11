@@ -94,9 +94,13 @@ class top_block(gr.top_block):
         if fname == -1:
             fname = self.ch_freqs[ch]
         if options.output_pipe is None:
+            if options.output_file.find('%%') == -1:
+                raise ValueError('File name template must contain string "%%"')
             file = options.output_file.replace('%%', str(fname))
             output = blocks.file_sink(gr.sizeof_char, file)
         else:
+            if options.output_pipe.find('%%') == -1:
+                raise ValueError('File name template must contain string "%%"')
             cmd = options.output_pipe.replace('%%', str(fname))
             pipe = subprocess.Popen(cmd, stdin=subprocess.PIPE, shell=True)
             fd = pipe.stdin.fileno()
