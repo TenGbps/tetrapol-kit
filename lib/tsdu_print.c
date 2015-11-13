@@ -1096,6 +1096,12 @@ static void u_authentication_print(const tsdu_u_authentication_t *tsdu)
             sprint_hex(buf, tsdu->result_rt, SIZEOF(tsdu_u_authentication_t, result_rt)));
 }
 
+static void u_terminate_print(const tsdu_u_terminate_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tCAUSE=0x%02x (%s)\n", tsdu->cause, cause_str[tsdu->cause]);
+}
+
 static void d_unknown_print(const tsdu_unknown_codop_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
@@ -1266,6 +1272,10 @@ void tsdu_print(const tsdu_t *tsdu)
 
         case U_AUTHENTICATION:
             u_authentication_print((const tsdu_u_authentication_t *)tsdu);
+            break;
+
+        case U_TERMINATE:
+            u_terminate_print((const tsdu_u_terminate_t *)tsdu);
             break;
 
         default:

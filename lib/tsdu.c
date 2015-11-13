@@ -1159,6 +1159,20 @@ u_authentication_decode(const uint8_t *data, int len)
     return tsdu;
 }
 
+static tsdu_u_terminate_t *
+u_terminate_decode(const uint8_t *data, int len)
+{
+    tsdu_u_terminate_t *tsdu = tsdu_create(tsdu_u_terminate_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+    CHECK_LEN(len, 1, tsdu);
+
+    tsdu->cause           = data[1];
+
+    return tsdu;
+}
+
 int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
 {
     if (len < 1) {
@@ -1332,6 +1346,10 @@ int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
 
         case U_AUTHENTICATION:
             *tsdu = (tsdu_t *)u_authentication_decode(data, len);
+            break;
+
+        case U_TERMINATE:
+            *tsdu = (tsdu_t *)u_terminate_decode(data, len);
             break;
 
         default:
