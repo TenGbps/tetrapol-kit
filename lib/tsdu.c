@@ -1144,6 +1144,21 @@ static tsdu_u_data_request_t *u_data_request_decode(const uint8_t *data, int len
     return tsdu;
 }
 
+static tsdu_u_authentication_t *
+u_authentication_decode(const uint8_t *data, int len)
+{
+    tsdu_u_authentication_t *tsdu = tsdu_create(tsdu_u_authentication_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+    CHECK_LEN(len, 6, tsdu);
+
+    tsdu->val             = data[1];
+    memcpy(tsdu->result_rt, &data[2], sizeof(tsdu->result_rt));
+
+    return tsdu;
+}
+
 int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
 {
     if (len < 1) {
@@ -1313,6 +1328,10 @@ int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
 
         case U_DATA_REQUEST:
             *tsdu = (tsdu_t *)u_data_request_decode(data, len);
+            break;
+
+        case U_AUTHENTICATION:
+            *tsdu = (tsdu_t *)u_authentication_decode(data, len);
             break;
 
         default:

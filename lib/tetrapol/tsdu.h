@@ -468,6 +468,13 @@ typedef struct {
     uint8_t cause;
 } tsdu_d_return_t;
 
+/// PAS 0001-3-2 4.4.82
+typedef struct {
+    tsdu_base_t base;
+    uint8_t val;
+    uint8_t result_rt[4];
+} tsdu_u_authentication_t;
+
 /// PAS 0001-3-2 4.4.71
 typedef struct {
     tsdu_base_t base;

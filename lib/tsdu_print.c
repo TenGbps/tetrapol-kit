@@ -1087,6 +1087,15 @@ static void u_data_request_print(const tsdu_u_data_request_t *tsdu)
     LOGF("\t\tTRANS_PARAM2=0x%04x\n", tsdu->trans_param2);
 }
 
+static void u_authentication_print(const tsdu_u_authentication_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tVAL=%i\n", tsdu->val);
+    char buf[3 * SIZEOF(tsdu_u_authentication_t, result_rt)];
+    LOGF("\t\tVALID_RT=%s\n",
+            sprint_hex(buf, tsdu->result_rt, SIZEOF(tsdu_u_authentication_t, result_rt)));
+}
+
 static void d_unknown_print(const tsdu_unknown_codop_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
@@ -1253,6 +1262,10 @@ void tsdu_print(const tsdu_t *tsdu)
 
         case U_DATA_REQUEST:
             u_data_request_print((const tsdu_u_data_request_t *)tsdu);
+            break;
+
+        case U_AUTHENTICATION:
+            u_authentication_print((const tsdu_u_authentication_t *)tsdu);
             break;
 
         default:
