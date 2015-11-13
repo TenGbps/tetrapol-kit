@@ -1102,6 +1102,15 @@ static void u_terminate_print(const tsdu_u_terminate_t *tsdu)
     LOGF("\t\tCAUSE=0x%02x (%s)\n", tsdu->cause, cause_str[tsdu->cause]);
 }
 
+static void u_call_connect_print(const tsdu_u_call_connect_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tVAL=%i\n", tsdu->val);
+    char buf[3 * SIZEOF(tsdu_u_call_connect_t, result_rt)];
+    LOGF("\t\tVALID_RT=%s\n",
+            sprint_hex(buf, tsdu->result_rt, SIZEOF(tsdu_u_call_connect_t, result_rt)));
+}
+
 static void d_unknown_print(const tsdu_unknown_codop_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
@@ -1276,6 +1285,10 @@ void tsdu_print(const tsdu_t *tsdu)
 
         case U_TERMINATE:
             u_terminate_print((const tsdu_u_terminate_t *)tsdu);
+            break;
+
+        case U_CALL_CONNECT:
+            u_call_connect_print((const tsdu_u_call_connect_t *)tsdu);
             break;
 
         default:

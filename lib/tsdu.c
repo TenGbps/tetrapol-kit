@@ -1173,6 +1173,21 @@ u_terminate_decode(const uint8_t *data, int len)
     return tsdu;
 }
 
+static tsdu_u_call_connect_t *
+u_call_connect_decode(const uint8_t *data, int len)
+{
+    tsdu_u_call_connect_t *tsdu = tsdu_create(tsdu_u_call_connect_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+    CHECK_LEN(len, 6, tsdu);
+
+    tsdu->val             = data[1];
+    memcpy(tsdu->result_rt, &data[2], sizeof(tsdu->result_rt));
+
+    return tsdu;
+}
+
 int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
 {
     if (len < 1) {
@@ -1350,6 +1365,10 @@ int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
 
         case U_TERMINATE:
             *tsdu = (tsdu_t *)u_terminate_decode(data, len);
+            break;
+
+        case U_CALL_CONNECT:
+            *tsdu = (tsdu_t *)u_call_connect_decode(data, len);
             break;
 
         default:
