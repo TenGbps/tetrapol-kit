@@ -1100,6 +1100,34 @@ static tsdu_d_call_connect_t *d_call_connect_decode(const uint8_t *data, int len
     return tsdu;
 }
 
+static tsdu_u_registration_req_t *u_registration_req_decode(const uint8_t *data, int len)
+{
+    tsdu_u_registration_req_t *tsdu = tsdu_create(tsdu_u_registration_req_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    CHECK_LEN(len, 15, tsdu);
+
+    const uint8_t *adr_data = &data[1];
+    if (address_decode(&tsdu->host_adr, &adr_data)) {
+        LOG(ERR, "Only single address ACK is supported");
+    }
+    tsdu->serial_nb[0]          = get_bits(4, data + 7, 0);
+    tsdu->serial_nb[1]          = get_bits(4, data + 7, 4);
+    tsdu->serial_nb[2]          = get_bits(4, data + 8, 0);
+    tsdu->serial_nb[3]          = get_bits(4, data + 8, 4);
+    tsdu->serial_nb[4]          = get_bits(4, data + 9, 0);
+    tsdu->serial_nb[5]          = get_bits(4, data + 9, 4);
+    tsdu->serial_nb[6]          = get_bits(4, data + 10, 0);
+    tsdu->serial_nb[7]          = get_bits(4, data + 10, 4);
+    tsdu->reg_seq               = get_bits(16, data + 11, 0);
+    tsdu->complete_reg          = data[12];
+    tsdu->rt_status._data       = data[13];
+
+    return tsdu;
+}
+
 int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
 {
     if (len < 1) {
@@ -1261,6 +1289,10 @@ int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
 
         case D_GROUP_IDLE:
             *tsdu = (tsdu_t *)d_group_idle_decode(data, len);
+            break;
+
+        case U_REGISTRATION_REQ:
+            *tsdu = (tsdu_t *)u_registration_req_decode(data, len);
             break;
 
         default:

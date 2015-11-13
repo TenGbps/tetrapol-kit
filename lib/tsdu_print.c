@@ -1043,6 +1043,22 @@ static void d_system_info_print(const tsdu_d_system_info_t *tsdu)
     }
 }
 
+static void u_registration_req_print(const tsdu_u_registration_req_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    address_print(&tsdu->host_adr);
+    LOGF("\t\tSYSTEM_ID=%i\n", tsdu->system_id);
+    LOGF("\t\tSERIAL_NB=");
+    for(int i=0; i<8; i++)
+	LOGF("%i", tsdu->serial_nb[i]);
+    LOGF("\n");
+    LOGF("\t\tREG_SEQ COUNT_BN=%i COUNT_RSW=%i\n", tsdu->counter_bn, tsdu->counter_rsw);
+    LOGF("\t\tCOMPLETE_REG=%d\n", tsdu->complete_reg);
+    LOGF("\t\tRT_STATUS FIX=%i PRO=%i CHG=%i REN=%i TRA=%i\n",
+            tsdu->rt_status.fix, tsdu->rt_status.pro, tsdu->rt_status.chg,
+            tsdu->rt_status.ren, tsdu->rt_status.tra);
+}
+
 static void d_unknown_print(const tsdu_unknown_codop_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
@@ -1201,6 +1217,10 @@ void tsdu_print(const tsdu_t *tsdu)
 
         case D_GROUP_IDLE:
             d_group_idle_print((const tsdu_d_group_idle_t *)tsdu);
+            break;
+
+        case U_REGISTRATION_REQ:
+            u_registration_req_print((const tsdu_u_registration_req_t *)tsdu);
             break;
 
         default:

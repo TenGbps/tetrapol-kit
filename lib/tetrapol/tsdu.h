@@ -490,6 +490,20 @@ typedef struct {
     uint16_t channel_id;
 } tsdu_d_system_info_t;
 
+/// PAS 0001-3-2 4.4.117
+typedef struct {
+    tsdu_base_t base;
+    address_t host_adr;
+    uint8_t system_id;
+    uint8_t serial_nb[8];
+    uint8_t counter_bn;
+    uint8_t counter_rsw;
+    uint16_t reg_seq;
+    uint8_t complete_reg;
+    rt_status_t rt_status;
+    
+} tsdu_u_registration_req_t;
+
 // this might change in future
 typedef tsdu_base_t tsdu_t;
 
