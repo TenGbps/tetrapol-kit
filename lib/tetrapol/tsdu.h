@@ -490,6 +490,14 @@ typedef struct {
     uint16_t channel_id;
 } tsdu_d_system_info_t;
 
+/// PAS 0001-3-2 4.4.97
+typedef struct {
+    tsdu_base_t base;
+    trans_mode_t trans_mode;
+    uint16_t trans_param1;
+    uint16_t trans_param2;
+} tsdu_u_data_request_t;
+
 /// PAS 0001-3-2 4.4.117
 typedef struct {
     tsdu_base_t base;

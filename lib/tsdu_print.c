@@ -1059,6 +1059,34 @@ static void u_registration_req_print(const tsdu_u_registration_req_t *tsdu)
             tsdu->rt_status.ren, tsdu->rt_status.tra);
 }
 
+static void u_data_request_print(const tsdu_u_data_request_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+
+    switch (tsdu->trans_mode) {
+        case TRANS_MODE_PDR_HMSW:
+            LOGF("\t\tTRANS_MODE=PDR_HMSW\n");
+            break;
+
+        case TRANS_MODE_PDR_VMSW:
+            LOGF("\t\tTRANS_MODE=PDR_VMSW\n");
+            break;
+
+        case TRANS_MODE_UDP_MSG:
+            LOGF("\t\tTRANS_MODE=UDP_MSG\n");
+            break;
+
+        case TRANS_MODE_UDP_TCP_APP:
+            LOGF("\t\tTRANS_MODE=UDP_TCP_APP\n");
+            break;
+
+        default:
+            LOGF("\t\tTRANS_MODE=0x%0x\n", tsdu->trans_mode);
+    }
+    LOGF("\t\tTRANS_PARAM1=0x%04x\n", tsdu->trans_param1);
+    LOGF("\t\tTRANS_PARAM2=0x%04x\n", tsdu->trans_param2);
+}
+
 static void d_unknown_print(const tsdu_unknown_codop_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
@@ -1221,6 +1249,10 @@ void tsdu_print(const tsdu_t *tsdu)
 
         case U_REGISTRATION_REQ:
             u_registration_req_print((const tsdu_u_registration_req_t *)tsdu);
+            break;
+
+        case U_DATA_REQUEST:
+            u_data_request_print((const tsdu_u_data_request_t *)tsdu);
             break;
 
         default:

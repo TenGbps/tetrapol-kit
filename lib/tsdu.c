@@ -1128,6 +1128,22 @@ static tsdu_u_registration_req_t *u_registration_req_decode(const uint8_t *data,
     return tsdu;
 }
 
+static tsdu_u_data_request_t *u_data_request_decode(const uint8_t *data, int len)
+{
+    CHECK_LEN(len, 5, NULL);
+
+    tsdu_u_data_request_t *tsdu = tsdu_create(tsdu_u_data_request_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+
+    tsdu->trans_mode =      get_bits(4, &data[1], 4);
+    tsdu->trans_param1 =    get_bits(16, &data[2], 0);
+    tsdu->trans_param2 =    get_bits(16, &data[4], 0);
+
+    return tsdu;
+}
+
 int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
 {
     if (len < 1) {
@@ -1293,6 +1309,10 @@ int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
 
         case U_REGISTRATION_REQ:
             *tsdu = (tsdu_t *)u_registration_req_decode(data, len);
+            break;
+
+        case U_DATA_REQUEST:
+            *tsdu = (tsdu_t *)u_data_request_decode(data, len);
             break;
 
         default:
