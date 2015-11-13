@@ -523,7 +523,6 @@ typedef struct {
     uint16_t reg_seq;
     uint8_t complete_reg;
     rt_status_t rt_status;
-    
 } tsdu_u_registration_req_t;
 
 /// PAS 0001-3-2 4.4.121

@@ -1049,8 +1049,9 @@ static void u_registration_req_print(const tsdu_u_registration_req_t *tsdu)
     address_print(&tsdu->host_adr);
     LOGF("\t\tSYSTEM_ID=%i\n", tsdu->system_id);
     LOGF("\t\tSERIAL_NB=");
-    for(int i=0; i<8; i++)
-	LOGF("%i", tsdu->serial_nb[i]);
+    for(int i=0; i<8; i++) {
+        LOGF("%i", tsdu->serial_nb[i]);
+    }
     LOGF("\n");
     LOGF("\t\tREG_SEQ COUNT_BN=%i COUNT_RSW=%i\n", tsdu->counter_bn, tsdu->counter_rsw);
     LOGF("\t\tCOMPLETE_REG=%d\n", tsdu->complete_reg);
@@ -1108,7 +1109,7 @@ static void u_call_connect_print(const tsdu_u_call_connect_t *tsdu)
     LOGF("\t\tVAL=%i\n", tsdu->val);
     char buf[3 * SIZEOF(tsdu_u_call_connect_t, result_rt)];
     LOGF("\t\tVALID_RT=%s\n",
-            sprint_hex(buf, tsdu->result_rt, SIZEOF(tsdu_u_call_connect_t, result_rt)));
+            sprint_hex(buf, tsdu->result_rt, sizeof(tsdu->result_rt)));
 }
 
 static void d_unknown_print(const tsdu_unknown_codop_t *tsdu)
