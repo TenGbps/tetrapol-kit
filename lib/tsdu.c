@@ -1351,24 +1351,24 @@ int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
             *tsdu = (tsdu_t *)d_group_idle_decode(data, len);
             break;
 
-        case U_REGISTRATION_REQ:
-            *tsdu = (tsdu_t *)u_registration_req_decode(data, len);
+        case U_AUTHENTICATION:
+            *tsdu = (tsdu_t *)u_authentication_decode(data, len);
+            break;
+
+        case U_CALL_CONNECT:
+            *tsdu = (tsdu_t *)u_call_connect_decode(data, len);
             break;
 
         case U_DATA_REQUEST:
             *tsdu = (tsdu_t *)u_data_request_decode(data, len);
             break;
 
-        case U_AUTHENTICATION:
-            *tsdu = (tsdu_t *)u_authentication_decode(data, len);
+        case U_REGISTRATION_REQ:
+            *tsdu = (tsdu_t *)u_registration_req_decode(data, len);
             break;
 
         case U_TERMINATE:
             *tsdu = (tsdu_t *)u_terminate_decode(data, len);
-            break;
-
-        case U_CALL_CONNECT:
-            *tsdu = (tsdu_t *)u_call_connect_decode(data, len);
             break;
 
         case D_ACCESS_DISABLED:
