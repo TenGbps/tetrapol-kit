@@ -1272,24 +1272,24 @@ void tsdu_print(const tsdu_t *tsdu)
             d_group_idle_print((const tsdu_d_group_idle_t *)tsdu);
             break;
 
-        case U_REGISTRATION_REQ:
-            u_registration_req_print((const tsdu_u_registration_req_t *)tsdu);
+        case U_AUTHENTICATION:
+            u_authentication_print((const tsdu_u_authentication_t *)tsdu);
+            break;
+
+        case U_CALL_CONNECT:
+            u_call_connect_print((const tsdu_u_call_connect_t *)tsdu);
             break;
 
         case U_DATA_REQUEST:
             u_data_request_print((const tsdu_u_data_request_t *)tsdu);
             break;
 
-        case U_AUTHENTICATION:
-            u_authentication_print((const tsdu_u_authentication_t *)tsdu);
+        case U_REGISTRATION_REQ:
+            u_registration_req_print((const tsdu_u_registration_req_t *)tsdu);
             break;
 
         case U_TERMINATE:
             u_terminate_print((const tsdu_u_terminate_t *)tsdu);
-            break;
-
-        case U_CALL_CONNECT:
-            u_call_connect_print((const tsdu_u_call_connect_t *)tsdu);
             break;
 
         default:
