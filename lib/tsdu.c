@@ -1371,6 +1371,63 @@ int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
             *tsdu = (tsdu_t *)u_call_connect_decode(data, len);
             break;
 
+        case D_ACCESS_DISABLED:
+        case D_BACK_CCH:
+        case D_BROADCAST:
+        case D_BROADCAST_NOTIFICATION:
+        case D_BROADCAST_WAITING:
+        case D_CALL_ACTIVATION:
+        case D_CALL_COMPOSITION:
+        case D_CALL_END:
+        case D_CALL_OVERLOAD_ID:
+        case D_CALL_SWITCH:
+        case D_CALL_WAITING:
+        case D_DATA_DOWN_STATUS:
+        case D_DATA_SERV:
+        case D_DEVIATION_ON:
+        case D_ECCH_DESCRIPTION:
+        case D_ECH_ACTIVATION:
+        case D_ECH_REJECT:
+        case D_EMERGENCY_ACK:
+        case D_EMERGENCY_NAK:
+        case D_EMERGENCY_NOTIFICATION:
+        case D_EXTENDED_STATUS:
+        case D_FUNCTIONAL_SHORT_DATA:
+        case D_GROUP_END:
+        case D_GROUP_OVERLOAD_ID:
+        case D_GROUP_PAGING:
+        case D_CHANNEL_INIT:
+        case D_INFORMATION_DELIVERY:
+        case D_OC_ACTIVATION:
+        case D_OC_PAGING:
+        case D_OC_REJECT:
+        case D_PRIORITY_GRP_ACTIVATION:
+        case D_PRIORITY_GRP_WAITING:
+        case D_SERVICE_DISABLED:
+        case D_TRAFFIC_DISABLED:
+        case D_TRAFFIC_ENABLED:
+        case D_TRANSFER_NAK:
+        case U_ABORT:
+        case U_CALL_ANSWER:
+        case U_CALL_INTRUSION_ECH:
+        case U_CALL_INTRUSION_OCH:
+        case U_CALL_INTRUSION_PC:
+        case U_CALL_RELEASE:
+        case U_CALL_SETUP:
+        case U_DATA_DOWN_ACCEPT:
+        case U_DATA_MSG_UP:
+        case U_DEVIATION_CLEAR:
+        case U_DEVIATION_SET:
+        case U_ECH_CLOSE:
+        case U_ECH_SETUP:
+        case U_EMERGENCY_REQ:
+        case U_END:
+        case U_ERROR_REPORT:
+        case U_EVENT_REPORT:
+        case U_LOCATION_ACTIVITY:
+        case U_OCH_RELEASE:
+        case U_OCH_SETUP:
+        case U_TRANSFER_REQ:
         default:
             *tsdu = (tsdu_t *)d_unknown_parse(data, len);
             LOG(WTF, "unsupported codop 0x%02x", codop);
