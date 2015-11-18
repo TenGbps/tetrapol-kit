@@ -1371,6 +1371,9 @@ int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
             *tsdu = (tsdu_t *)u_terminate_decode(data, len);
             break;
 
+        default:
+            LOG(WTF, "Undefined codop=0x%02x", codop);
+
         case D_ACCESS_DISABLED:
         case D_BACK_CCH:
         case D_BROADCAST:
@@ -1428,9 +1431,8 @@ int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
         case U_OCH_RELEASE:
         case U_OCH_SETUP:
         case U_TRANSFER_REQ:
-        default:
             *tsdu = (tsdu_t *)d_unknown_parse(data, len);
-            LOG(WTF, "unsupported codop 0x%02x", codop);
+            LOG(ERR, "unsupported codop 0x%02x", codop);
     }
 
     if (*tsdu) {
