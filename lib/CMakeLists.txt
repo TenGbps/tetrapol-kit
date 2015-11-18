@@ -17,6 +17,7 @@ add_library (tetrapol
     cch.c
     data_frame.c
     frame.c
+    frame_json.c
     hdlc_frame.c
     link.c
     log.c
@@ -42,6 +43,7 @@ add_library (tetrapol
     tetrapol/data_frame.h
     tetrapol/hdlc_frame.h
     tetrapol/frame.h
+    tetrapol/frame_json.h
     tetrapol/link.h
     tetrapol/log.h
     tetrapol/lsdu_vch.h
