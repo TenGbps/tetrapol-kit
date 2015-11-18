@@ -1331,6 +1331,27 @@ void tsdu_print(const tsdu_t *tsdu)
         case D_TRAFFIC_DISABLED:
         case D_TRAFFIC_ENABLED:
         case D_TRANSFER_NAK:
+        case U_ABORT:
+        case U_CALL_ANSWER:
+        case U_CALL_INTRUSION_ECH:
+        case U_CALL_INTRUSION_OCH:
+        case U_CALL_INTRUSION_PC:
+        case U_CALL_RELEASE:
+        case U_CALL_SETUP:
+        case U_DATA_DOWN_ACCEPT:
+        case U_DATA_MSG_UP:
+        case U_DEVIATION_CLEAR:
+        case U_DEVIATION_SET:
+        case U_ECH_CLOSE:
+        case U_ECH_SETUP:
+        case U_EMERGENCY_REQ:
+        case U_END:
+        case U_ERROR_REPORT:
+        case U_EVENT_REPORT:
+        case U_LOCATION_ACTIVITY:
+        case U_OCH_RELEASE:
+        case U_OCH_SETUP:
+        case U_TRANSFER_REQ:
             LOG(WTF, "print not implemented: codop=0x%02x",
                     tsdu->codop);
             d_unknown_print((const tsdu_unknown_codop_t *)tsdu);
