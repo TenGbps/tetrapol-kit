@@ -864,6 +864,17 @@ static void d_group_list_print(const tsdu_d_group_list_t *tsdu)
     }
 }
 
+static void d_group_paging_print(const tsdu_d_group_paging_t *tsdu)
+{
+    tsdu_base_print(&tsdu->base);
+    LOGF("\t\tACTIVATION_MODE: HOOK=%d TYPE=%d\n",
+            tsdu->activation_mode.hook, tsdu->activation_mode.type);
+    LOGF("\t\tGROUP_ID=%d\n", tsdu->group_id);
+    LOGF("\t\tCOVERAGE_ID=%d\n", tsdu->coverage_id);
+    LOGF("\t\tKEY_REFERENCE: KEY_TYPE=%i KEY_INDEX=%i\n",
+            tsdu->key_reference.key_type, tsdu->key_reference.key_index);
+}
+
 static void d_group_reject_print(const tsdu_d_group_reject_t *tsdu)
 {
     tsdu_base_print(&tsdu->base);
@@ -1220,6 +1231,10 @@ void tsdu_print(const tsdu_t *tsdu)
             d_group_list_print((const tsdu_d_group_list_t *)tsdu);
             break;
 
+        case D_GROUP_PAGING:
+            d_group_paging_print((const tsdu_d_group_paging_t *)tsdu);
+            break;
+
         case D_GROUP_REJECT:
             d_group_reject_print((const tsdu_d_group_reject_t *)tsdu);
             break;
@@ -1319,7 +1334,6 @@ void tsdu_print(const tsdu_t *tsdu)
         case D_FUNCTIONAL_SHORT_DATA:
         case D_GROUP_END:
         case D_GROUP_OVERLOAD_ID:
-        case D_GROUP_PAGING:
         case D_CHANNEL_INIT:
         case D_INFORMATION_DELIVERY:
         case D_OC_ACTIVATION:

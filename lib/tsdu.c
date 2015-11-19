@@ -407,6 +407,22 @@ d_authorisation_decode(const uint8_t *data, int len)
     return tsdu;
 }
 
+static tsdu_d_group_paging_t *d_group_paging_decode(const uint8_t *data, int len)
+{
+    tsdu_d_group_paging_t *tsdu = tsdu_create(tsdu_d_group_paging_t, 0);
+    if (!tsdu) {
+        return NULL;
+    }
+    CHECK_LEN(len, 5, tsdu);
+
+    activation_mode_decode(&tsdu->activation_mode, data[1]);
+    tsdu->group_id              = get_bits(12, &data[1], 4);
+    tsdu->coverage_id           = get_bits(8,  &data[3], 0);
+    tsdu->key_reference._data   = get_bits(8,  &data[4], 0);
+
+    return tsdu;
+}
+
 static tsdu_d_forced_registration_t *
 d_forced_registration_decode(const uint8_t *data, int len)
 {
@@ -1299,6 +1315,10 @@ int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
             *tsdu = (tsdu_t *)d_group_list_decode(data, len);
             break;
 
+        case D_GROUP_PAGING:
+            *tsdu = (tsdu_t *)d_group_paging_decode(data, len);
+            break;
+
         case D_GROUP_REJECT:
             *tsdu = (tsdu_t *)d_group_reject_decode(data, len);
             break;
@@ -1398,7 +1418,6 @@ int tsdu_decode(const uint8_t *data, int len, tsdu_t **tsdu)
         case D_FUNCTIONAL_SHORT_DATA:
         case D_GROUP_END:
         case D_GROUP_OVERLOAD_ID:
-        case D_GROUP_PAGING:
         case D_CHANNEL_INIT:
         case D_INFORMATION_DELIVERY:
         case D_OC_ACTIVATION:
