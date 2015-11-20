@@ -113,3 +113,29 @@ void frame_decoder_set_scr(frame_decoder_t *fd, int scr);
   */
 void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_data);
 
+// == Frame encoder ==
+typedef struct frame_encoder_priv_t frame_encoder_t;
+
+/**
+  Create frame encoder.
+
+  @param band Frequency band: TETRAPOL_BAND_VHF or TETRAPOL_BAND_UHF.
+  @param scr Scramblink constant.
+  @param dir Channel direction: DIR_DOWNLINK or DIR_UPLINK.
+  */
+frame_encoder_t *frame_encoder_create(int band, int scr, int dir);
+void frame_encoder_destroy(frame_encoder_t *fe);
+void frame_encoder_set_scr(frame_encoder_t *fe, int scr);
+
+/**
+  Encode frame in order to send it through air. Result includes synchronisation
+  sequence at the start of frame.
+
+  @param fe
+  @param fr_data Array of 20B where result is stored.
+  @param fr Frame to encode, (CRC and padding is computed by this function).
+
+  @return 0 when sucess -1 when error occured.
+  */
+int frame_encoder_encode(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr);
+

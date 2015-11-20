@@ -18,6 +18,12 @@ struct frame_decoder_priv_t {
     int fr_type;
 };
 
+struct frame_encoder_priv_t {
+    int band;
+    int scr;    ///< scramblink constant
+    int dir;    ///< channel direction - downlink or uplink
+};
+
 /**
   PAS 0001-2 6.1.5.1
   PAS 0001-2 6.2.5.1
@@ -550,5 +556,34 @@ void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_da
     }
 
     fr->broken = frame_check_crc(fr->blob_, fr->fr_type) ? 0 : -1;
+}
+
+frame_encoder_t *frame_encoder_create(int band, int scr, int dir)
+{
+    frame_encoder_t *fe = malloc(sizeof(frame_encoder_t));
+    if (!fe) {
+        return NULL;
+    }
+
+    fe->band = band;
+    fe->scr = scr;
+    fe->dir = dir;
+
+    return fe;
+}
+
+void frame_encoder_destroy(frame_encoder_t *fe)
+{
+    free(fe);
+}
+
+void frame_encoder_set_scr(frame_encoder_t *fe, int scr)
+{
+    fe->scr = scr;
+}
+
+int frame_encoder_encode(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
+{
+    return -1;
 }
 
