@@ -1,6 +1,4 @@
-find_library(CMOCKA_LIBRARY
-    NAMES
-    cmocka)
+find_library(CMOCKA_LIBRARY NAMES cmocka)
 if (NOT CMOCKA_LIBRARY)
     message(FATAL_ERROR "libcmocka unit test framework mising")
 endif(NOT CMOCKA_LIBRARY)
