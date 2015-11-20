@@ -16,7 +16,7 @@ There is still lot of thinks TODO, see TODO for details.
 
 == Installation
   Install libraries and development files for:
-cmocka, glib2
+cmocka, glib2, json-c
 
 Build:
 

@@ -7,14 +7,148 @@
 #include <tetrapol/frame.h>
 #include <tetrapol/tetrapol.h>
 
+#include <json-c/json.h>
+#include <errno.h>
 #include <getopt.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#define PRINT_ERR(fmt, ...) \
+    fprintf(stderr, "Error at line %d: " fmt "\n", __VA_ARGS__)
+
+static int write_frame(const uint8_t *frame, FILE *out)
+{
+    uint8_t buf[160];
+
+    for (uint8_t i = 0; i < 20; ++i) {
+        uint8_t b = frame[i];
+        for (uint8_t j = 0; j < 8; ++j) {
+            buf[i*8 + j] = !!(b & 0x80);
+            b <<= 1;
+        }
+    }
+
+    return fwrite(buf, sizeof(buf), 1, out) != 1;
+}
+
+static int process_data_frame(FILE *out, json_object *json_frame,
+        frame_encoder_t *fe, int line_no)
+{
+    uint8_t frame[20];
+
+    // TODO: buld data frame
+    memset(frame, 0, 20);
+
+    return write_frame(frame, out);
+}
+
+static int process_voice_frame(FILE *out, json_object *json_frame,
+        frame_encoder_t *fe, int line_no)
+{
+    uint8_t frame[20];
+
+    // TODO: buld voice frame
+    memset(frame, 0, 20);
+
+    return write_frame(frame, out);
+}
+
+/**
+  Read lines from input.
+  @return 0 when all lines were processes sucessfully, -1 on error.
+  */
 static int main_loop(FILE *in, FILE *out, frame_encoder_t *fe)
 {
-    return -1;
+    char line[4001];
+    int line_no = 0;
+    int r;
+
+    while ( (r = fscanf(in, "%4000[^\n]\n", line)) != EOF ) {
+        if (r != 1) {
+            PRINT_ERR("fscanf failes - %d != 1", line_no, r);
+            return -1;
+        }
+
+        ++line_no;
+        if (!strlen(line)) {
+            continue;
+        }
+        if (line[0] == '#') {
+            continue;
+        }
+
+        json_object *json = json_tokener_parse(line);
+
+        json_object *json_event;
+        if (!json_object_object_get_ex(json, "event", &json_event)) {
+            PRINT_ERR("missing 'event' key", line_no);
+            json_object_put(json);
+            return -1;
+        }
+
+        const char *event = json_object_get_string(json_event);
+        if (!strcmp("scr", event)) {
+            json_object *json_scr;
+            if (!json_object_object_get_ex(json, "scr", &json_scr)) {
+                PRINT_ERR("missing 'scr' key", line_no);
+                json_object_put(json);
+                return -1;
+            }
+            int scr = json_object_get_int(json_scr);
+            frame_encoder_set_scr(fe, scr);
+            json_object_put(json);
+            continue;
+        }
+
+        if (strcmp("frame", event)) {
+            json_object_put(json);
+            continue;
+        }
+
+        json_object *json_frame;
+        if (!json_object_object_get_ex(json, "frame", &json_frame)) {
+            PRINT_ERR("missing 'frame' key", line_no);
+            json_object_put(json);
+            return -1;
+        }
+
+        json_object *json_frame_type;
+        if (!json_object_object_get_ex(json_frame, "type", &json_frame_type)) {
+            PRINT_ERR("missing 'frame/type' keys", line_no);
+            json_object_put(json);
+            return -1;
+        }
+        const char *frame_type = json_object_get_string(json_frame_type);
+
+        if (!strcmp("DATA", frame_type)) {
+            r = process_data_frame(out, json_frame, fe, line_no);
+            json_object_put(json);
+            if (r) {
+                return r;
+            }
+            continue;
+        }
+
+        if (!strcmp("VOICE", frame_type)) {
+            r = process_voice_frame(out, json_frame, fe, line_no);
+            json_object_put(json);
+            if (r) {
+                return r;
+            }
+            continue;
+        }
+
+        PRINT_ERR("unsupported frame type '%s'", line_no, frame_type);
+        json_object_put(json);
+    }
+
+    if (errno != 0) {
+        perror("Failed to read input file");
+        return -1;
+    }
+    return 0;
 }
 
 static void print_help(const char *prg_name)
