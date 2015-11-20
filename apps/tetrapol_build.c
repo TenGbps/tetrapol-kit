@@ -6,6 +6,7 @@
  */
 #include <tetrapol/frame.h>
 #include <tetrapol/tetrapol.h>
+#include <tetrapol/frame.h>
 
 #include <json-c/json.h>
 #include <errno.h>
@@ -33,13 +34,136 @@ static int write_frame(const uint8_t *frame, FILE *out)
     return fwrite(buf, sizeof(buf), 1, out) != 1;
 }
 
+static int get_frame_data(uint8_t *data, int n, json_object *json_frame, int line_no)
+{
+    json_object *json_frame_data;
+
+    if (!json_object_object_get_ex(json_frame, "data", &json_frame_data)) {
+        PRINT_ERR("missing 'frame/data' keys", line_no);
+        return -1;
+    }
+
+    json_object *json_data_encoding;
+    if (!json_object_object_get_ex(json_frame_data, "encoding", &json_data_encoding)) {
+        PRINT_ERR("faile to get 'frame/data/encoding' key", line_no);
+        return -1;
+    }
+
+    const char *data_encoding = json_object_get_string(json_data_encoding);
+    if (strcmp("hex", data_encoding)) {
+        PRINT_ERR("unsupported data encoding: '%s'",line_no, data_encoding);
+        return -1;
+    }
+
+    json_object *json_value;
+    if (!json_object_object_get_ex(json_frame_data, "value", &json_value)) {
+        PRINT_ERR("faile to get 'frame/data/value' key", line_no);
+        return -1;
+    }
+    const char *value_str = json_object_get_string(json_value);
+
+    if (strlen(value_str) != 2*n) {
+        PRINT_ERR("invalid lenght of frame/data/value content", line_no);
+        return -1;
+    }
+
+    // valudete value_str for hexadecimal
+    if (strlen(value_str) != strspn(value_str, "0123456789abcdefABCDEF")) {
+        PRINT_ERR("illegal data value", line_no);
+        return -1;
+    }
+
+    char value[2*n+1];
+    memcpy(value, value_str, 2*n+1);
+    for (uint8_t i = n; i; ) {
+        --i;
+        data[i] = atoi(&value[2*i]);
+        value[2*i] = 0;
+    }
+
+    return 0;
+}
+
+/// used to get value of ABS and FN
+static int get_2bits(uint8_t *bits, json_object *json, int line_no)
+{
+    json_object *json_val = json_object_array_get_idx(json, 0);
+    if (!json_val) {
+        PRINT_ERR("faile to get json[0]", line_no);
+        return -1;
+    }
+    bits[0] = json_object_get_int(json_val);
+    if (errno != 0) {
+        PRINT_ERR("invalid bits value", line_no);
+        return -1;
+    }
+
+    json_val = json_object_array_get_idx(json, 1);
+    if (!json_val) {
+        PRINT_ERR("faile to get json[1]", line_no);
+        return -1;
+    }
+    bits[1] = json_object_get_int(json_val);
+    if (errno != 0) {
+        PRINT_ERR("invalid bits value", line_no);
+        return -1;
+    }
+
+    return 0;
+}
+
+static int get_asb(uint8_t *asb, json_object *json_frame, int line_no)
+{
+    json_object *json_asb;
+    if (!json_object_object_get_ex(json_frame, "asb", &json_asb)) {
+        PRINT_ERR("failed to get ASB filed", line_no);
+        return -1;
+    }
+
+    return get_2bits(asb, json_asb, line_no);
+}
+
+static int get_fn(uint8_t *fn, json_object *json_frame, int line_no)
+{
+    json_object *json_fn;
+    if (!json_object_object_get_ex(json_frame, "fn", &json_fn)) {
+        PRINT_ERR("failed to get FN", line_no);
+        return -1;
+    }
+
+    return get_2bits(fn, json_fn, line_no);
+}
+
 static int process_data_frame(FILE *out, json_object *json_frame,
         frame_encoder_t *fe, int line_no)
 {
+    frame_t fr;
     uint8_t frame[20];
+    int r;
 
-    // TODO: buld data frame
-    memset(frame, 0, 20);
+    fr.fr_type = FRAME_TYPE_DATA;
+
+    uint8_t fr_data[8];
+    r = get_frame_data(fr_data, sizeof(fr_data), json_frame, line_no);
+    if (r) {
+        return r;
+    }
+    for (uint8_t i = 0; i < 64; ++i) {
+        fr.data.data[i+2] = (fr_data[i / 8] >> (i % 8)) & 0x01;
+    }
+
+    if (get_fn(fr.data.data, json_frame, line_no)) {
+        return -1;
+    }
+
+    if (get_asb(fr.data.asb, json_frame, line_no)) {
+        return -1;
+    }
+
+    if (frame_encoder_encode(fe, frame, &fr) == -1) {
+        PRINT_ERR("data frame encoding failed", line_no);
+        return -1;
+    }
 
     return write_frame(frame, out);
 }
@@ -48,9 +172,31 @@ static int process_voice_frame(FILE *out, json_object *json_frame,
         frame_encoder_t *fe, int line_no)
 {
     uint8_t frame[20];
+    frame_t fr;
+    int r;
 
-    // TODO: buld voice frame
-    memset(frame, 0, 20);
+    fr.fr_type = FRAME_TYPE_VOICE;
+
+    uint8_t fr_data[15];
+    r = get_frame_data(fr_data, sizeof(fr_data), json_frame, line_no);
+    if (r) {
+        return r;
+    }
+    for (uint8_t i = 0; i < 20; ++i) {
+        fr.voice.voice1[i] = (fr_data[i / 8] >> (i % 8)) & 0x01;
+    }
+    for (uint8_t i = 20; i < 120; ++i) {
+        fr.voice.voice2[i - 20] = (fr_data[i / 8] >> (i % 8)) & 0x01;
+    }
+
+    if (get_asb(fr.voice.asb, json_frame, line_no)) {
+        return -1;
+    }
+
+    if (frame_encoder_encode(fe, frame, &fr) == -1) {
+        PRINT_ERR("voice frame encoding error at line", line_no);
+        return -1;
+    }
 
     return write_frame(frame, out);
 }
