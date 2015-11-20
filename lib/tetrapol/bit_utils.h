@@ -48,3 +48,16 @@ static inline int cmpzero(const void *data, int len)
 
     return true;
 }
+
+/**
+  Pack bits from one bit per byte into 8 bits per byte. First bit is held in
+  LSB of firts byte.
+
+  Data are ORed into output, you must initialise @param bytes with zeroes.
+
+  @param bytes Output byte array.
+  @param bits Input array of bits.
+  @param offs Number of bits already used in output.
+  @param nbits Number of bits to pack;
+  */
+void pack_bits(uint8_t *bytes, const uint8_t *bits, int offs, int nbits);

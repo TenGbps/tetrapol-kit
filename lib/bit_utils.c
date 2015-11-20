@@ -35,3 +35,21 @@ bool check_fcs(const uint8_t *data, int nbits)
 
     return !(crc ^ 0xffff);
 }
+
+void pack_bits(uint8_t *bytes, const uint8_t *bits, int offs, int nbits)
+{
+    bytes += offs / 8;
+    offs %= 8;
+
+    while (nbits > 0) {
+        while (offs < 8 && nbits) {
+            *bytes |= (*bits) << offs;
+            ++offs;
+            --nbits;
+            ++bits;
+        }
+        offs = 0;
+        ++bytes;
+    }
+}
+

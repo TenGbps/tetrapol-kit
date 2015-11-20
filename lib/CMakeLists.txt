@@ -65,6 +65,7 @@ target_link_libraries (tetrapol ${GLIB2_LIBRARIES})
 include_directories(${GLIB2_INCLUDE_DIRS})
 
 add_executable (test_data_frame
+    bit_utils.c
     frame.c
     log.c
     test_data_frame.c)

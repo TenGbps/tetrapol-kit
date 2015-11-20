@@ -1,5 +1,6 @@
 #define LOG_PREFIX "data_frame"
 #include <tetrapol/log.h>
+#include <tetrapol/bit_utils.h>
 #include <tetrapol/system_config.h>
 #include <tetrapol/data_frame.h>
 #include <tetrapol/misc.h>
@@ -237,33 +238,6 @@ int data_frame_push_frame(data_frame_t *data_fr, const frame_t *fr)
     LOG(DBG, "MB err");
     data_frame_reset(data_fr);
     return data_frame_push_frame_(data_fr, fr);
-}
-
-/**
-  Pack bits from one bit per byte into 8 bits per byte (TETRAPOL bite order).
-
-  Data are ORed, so do not forrget to initialise output buffer with zeres.
-
-  @param bytes Output byte array.
-  @param bits Input array of bits.
-  @param offs Number of bits already used in output.
-  @param nbits Number of bits to be used;
-  */
-static void pack_bits(uint8_t *bytes, const uint8_t *bits, int offs, int nbits)
-{
-    bytes += offs / 8;
-    offs %= 8;
-
-    while (nbits > 0) {
-        while (offs < 8 && nbits) {
-            *bytes |= (*bits) << offs;
-            ++offs;
-            --nbits;
-            ++bits;
-        }
-        offs = 0;
-        ++bytes;
-    }
 }
 
 int data_frame_get_bytes(data_frame_t *data_fr, uint8_t *data)
