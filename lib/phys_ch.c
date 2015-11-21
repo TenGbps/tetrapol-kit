@@ -59,7 +59,7 @@ phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol)
     phys_ch->dir = cfg->dir;
     phys_ch->radio_ch_type = cfg->radio_ch_type;
     phys_ch->data_begin = phys_ch->data_end = phys_ch->data + DATA_OFFS;
-    phys_ch->tpol->rx_offs = DATA_OFFS;
+    phys_ch->tpol->rx_offs = 0;
     phys_ch->tpol->frame_no = FRAME_NO_UNKNOWN;
     phys_ch->scr = PHYS_CH_SCR_DETECT;
     phys_ch->scr_confidence = 50;
