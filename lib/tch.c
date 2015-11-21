@@ -2,7 +2,6 @@
 #include <tetrapol/tch.h>
 #include <tetrapol/log.h>
 #include <tetrapol/sdch.h>
-#include <tetrapol/frame_json.h>
 #include <stdlib.h>
 
 struct tch_priv_t {
@@ -59,7 +58,6 @@ int tch_push_frame(tch_t *tch, const frame_t *fr)
 
     if (fr->fr_type == FRAME_TYPE_VOICE) {
         LOG(INFO,"VOICE FRAME asb=%i", (fr->voice.asb[0] << 1) | fr->voice.asb[1]);
-        frame_json(tch->tpol, fr);
         return 0;
     }
 
