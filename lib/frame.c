@@ -619,6 +619,17 @@ static void frame_encode1(uint8_t *out_bytes, const uint8_t *in_bits)
     *(uint64_t *)out_bytes = htole64(data ^ data_1 ^ data_2);
 }
 
+static void frame_interleave(uint8_t *out, const uint8_t *in,
+        const uint8_t *int_table)
+{
+    memset(out, 0, FRAME_DATA_LEN / 8);
+    for (uint8_t j = 0; j < FRAME_DATA_LEN; ++j) {
+        uint8_t k = int_table[j];
+        const uint8_t val = (in[j / 8] >> (j % 8)) & 1;
+        out[k / 8] |= val << (k % 8);
+    }
+}
+
 static int encode_voice(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
 {
     fr->voice.d = 0;
@@ -629,6 +640,14 @@ static int encode_voice(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
     frame_encode1(buf, fr->voice.crc_data);
     // PAS 0001-2 6.2.1 - unprotected part
     pack_bits(buf, fr->voice.voice2, 2*26, 100);
+
+    if (fe->band == TETRAPOL_BAND_VHF) {
+        frame_interleave(&fr_data[1], buf, interleave_voice_VHF);
+    } else if (fe->band == TETRAPOL_BAND_UHF) {
+        frame_interleave(&fr_data[1], buf, interleave_voice_UHF);
+    } else {
+        return -1;
+    }
 
     // TODO
 
