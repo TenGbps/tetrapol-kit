@@ -630,6 +630,15 @@ static void frame_interleave(uint8_t *out, const uint8_t *in,
     }
 }
 
+static void frame_diff_enc(uint8_t *fr_data)
+{
+    for (int j = 1; j < FRAME_DATA_LEN; ++j) {
+        const uint8_t j_ = j - diff_precod_UHF[j];
+        const uint8_t val = (fr_data[j_ / 8] >> (j_ % 8)) & 1;
+        fr_data[j / 8] ^= val << (j % 8);
+    }
+}
+
 static int encode_voice(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
 {
     fr->voice.d = 0;
@@ -647,6 +656,10 @@ static int encode_voice(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
         frame_interleave(&fr_data[1], buf, interleave_voice_UHF);
     } else {
         return -1;
+    }
+
+    if (fe->band == TETRAPOL_BAND_UHF) {
+        frame_diff_enc(&fr_data[1]);
     }
 
     // TODO
