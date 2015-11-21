@@ -34,7 +34,20 @@ void frame_json(tpol_t *tpol, const frame_t *fr)
             }
             printf("\"type\": \"%s\", ", fr_type);
 
-            if (fr->fr_type == FRAME_TYPE_VOICE) {
+            if (fr->fr_type == FRAME_TYPE_DATA) {
+                printf("\"asb\": [%d, %d], ", fr->data.asb[0], fr->data.asb[1]);
+                printf("\"fn\": [%d, %d], ", fr->data.data[0], fr->data.data[1]);
+
+                uint8_t data[8];
+                memset(data, 0, sizeof(data));
+                for (int i = 0; i < 8*8; ++i) {
+                    data[i / 8] |= fr->data.data[i + 2] << (i % 8);
+                }
+                char buf[3*sizeof(data)];
+                printf("\"data\": { \"encoding\": \"hex\", \"value\": \"%s\" } ",
+                        sprint_hex2(buf, data, sizeof(data)));
+
+            } else if (fr->fr_type == FRAME_TYPE_VOICE) {
                 printf("\"asb\": [%d, %d], ", fr->voice.asb[0], fr->voice.asb[1]);
                 uint8_t voice[120/8];
                 memset(voice, 0, sizeof(voice));
