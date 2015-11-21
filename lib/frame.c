@@ -28,6 +28,7 @@ struct frame_encoder_priv_t {
     int band;
     int scr;    ///< scramblink constant
     int dir;    ///< channel direction - downlink or uplink
+    uint8_t first_bit;  ///< carry bit for differential frame encoding
 };
 
 /**
@@ -574,6 +575,7 @@ frame_encoder_t *frame_encoder_create(int band, int scr, int dir)
     fe->band = band;
     fe->scr = scr;
     fe->dir = dir;
+    fe->first_bit = 0;
 
     return fe;
 }
@@ -727,6 +729,17 @@ static void frame_scramble(uint8_t *fr_data, int scr)
     }
 }
 
+static uint8_t differential_enc(uint8_t *data, int size, uint8_t first_bit)
+{
+    for (int i = 0; i < size; ++i) {
+        uint8_t top = data[i] >> 7;
+        data[i] ^= (data[i] << 1) | first_bit;
+        first_bit = top;
+    }
+
+    return first_bit;
+}
+
 static int encode_voice(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
 {
     fr->voice.d = 0;
@@ -754,6 +767,8 @@ static int encode_voice(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
 
     // PAS 0001-2 6.1.5.2
     fr_data[0] = 0x46;
+
+    fe->first_bit = differential_enc(fr_data, 20, fe->first_bit);
 
     return 0;
 }
