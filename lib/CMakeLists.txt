@@ -72,6 +72,7 @@ add_executable (test_data_frame
 target_link_libraries (test_data_frame ${CMOCKA_LIBRARY})
 
 add_executable (test_frame
+    bit_utils.c
     log.c
     test_frame.c)
 target_link_libraries (test_frame ${CMOCKA_LIBRARY})

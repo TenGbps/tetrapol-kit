@@ -1,5 +1,11 @@
+// define _BSD_SOURCE should be enough but for htole64 it is not
+#define _BSD_SOURCE 1
+#define __USE_BSD
+#include </usr/include/endian.h>
+
 #define LOG_PREFIX "frame"
 #include <tetrapol/log.h>
+#include <tetrapol/bit_utils.h>
 #include <tetrapol/tetrapol.h>
 #include <tetrapol/frame.h>
 #include <limits.h>
@@ -582,8 +588,64 @@ void frame_encoder_set_scr(frame_encoder_t *fe, int scr)
     fe->scr = scr;
 }
 
+/** Pack bits, duplicate each bit. This prepares data for encoding. */
+static uint64_t pack_2x4b_64(const uint8_t *bits, int len)
+{
+    uint64_t val = 0;
+    while (len) {
+        --len;
+        val <<= 2;
+        val |= bits[len] * 0x03;
+    }
+
+    return val;
+}
+
+// PAS 0001-2 6.1.2 - protected part
+static void frame_encode1(uint8_t *out_bytes, const uint8_t *in_bits)
+{
+    uint64_t data = pack_2x4b_64(in_bits, 26);
+
+    // create data shifted by 1 and 2 (double)bits
+    uint64_t data_1 = data << 2;
+    uint64_t data_2 = data << 4;
+    // fill gaps with bits from frame end
+    data_1 |= data >> (25 * 2);
+    data_2 |= data >> (24 * 2);
+
+    // drop one bit copy from data_1
+    data_1 &= 0x5555555555555555LL;
+
+    *(uint64_t *)out_bytes = htole64(data ^ data_1 ^ data_2);
+}
+
+static int encode_voice(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
+{
+    fr->voice.d = 0;
+    mk_crc3(fr->voice.crc, fr->voice.crc_data, sizeof(fr->voice.crc_data));
+
+    uint8_t buf[19];
+    memset(buf, 0, sizeof(buf));
+    frame_encode1(buf, fr->voice.crc_data);
+    // PAS 0001-2 6.2.1 - unprotected part
+    pack_bits(buf, fr->voice.voice2, 2*26, 100);
+
+    // TODO
+
+    // PAS 0001-2 6.1.5.2
+    fr_data[0] = 0x46;
+
+    return 0;
+}
+
 int frame_encoder_encode(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
 {
+    if (fr->fr_type == FRAME_TYPE_DATA) {
+        return -1;
+    } else if (fr->fr_type == FRAME_TYPE_VOICE) {
+        return encode_voice(fe, fr_data, fr);
+    }
+
     return -1;
 }
 

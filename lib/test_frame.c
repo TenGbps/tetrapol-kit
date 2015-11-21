@@ -219,6 +219,32 @@ static void test_mk_crc5(void **state)
     }
 }
 
+// this test expects the correct frame_decode1 implementation
+static void test_frame_encode1(void **state)
+{
+    const uint8_t sol_exp[26] = {
+        0, 1, 1, 0, 1, 0, 0, 1,
+        1, 1, 0, 0, 0, 1, 0, 1,
+        0, 1, 0, 1, 1, 0, 1, 0,
+        0, 1,
+    };
+    uint8_t sol[8];
+    memset(sol, 0, sizeof(sol));
+    frame_encode1(sol, sol_exp);
+
+    uint8_t bits[52];
+    for (int i = 0; i < sizeof(bits); ++i) {
+        bits[i] = (sol[i / 8] >> (i % 8)) & 1;
+    }
+
+    uint8_t fr_sol[26], fr_errs[26];
+    uint8_t fr_errs_exp[26];
+    memset(fr_errs_exp, 0, sizeof(fr_errs_exp));
+    frame_decode1(fr_sol, fr_errs, bits, FRAME_TYPE_VOICE);
+    assert_memory_equal(fr_errs, fr_errs_exp, sizeof(fr_errs_exp));
+    assert_memory_equal(fr_sol, sol_exp, sizeof(sol_exp));
+}
+
 int main(void)
 {
     const UnitTest tests[] = {
@@ -228,6 +254,7 @@ int main(void)
         unit_test(test_frame_decoder_data_02),
         unit_test(test_frame_decoder_voice_01),
         unit_test(test_mk_crc5),
+        unit_test(test_frame_encode1),
     };
 
     return run_tests(tests);
