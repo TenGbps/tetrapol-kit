@@ -14,7 +14,7 @@ TETRAPOL Specifications; Part 16: Security; Part 3: Mechanisms, messages and alg
 == Cryptography description
 
 kes size: 2^48
-key size for rekeying: 10^10 (9 decimal digits)
+key size for rekeying (direct mode): 10^10 (9 decimal digits)
 
 Multiple keys are used, separate key for:
     * Direct Mode Key (DMK) - common for all stations

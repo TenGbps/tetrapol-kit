@@ -77,7 +77,7 @@ static int tetrapol_dump_loop(phys_ch_t *phys_ch, int fd)
 static void print_help(const char *prg_name)
 {
     fprintf(stderr, "Decode data from demodulated TETRAPOL channel.\n");
-    fprintf(stderr, "Usage: %s\n", prg_name);
+    fprintf(stderr, "Usage: %s [OPTIONS ...]\n", prg_name);
     fprintf(stderr, "    -i <PATH>               input file with demodulated bits\n");
     fprintf(stderr, "    -b { UHF | VHF }        radio band (default is UHF\n");
     fprintf(stderr, "    -t { CCH | TCH }        select betwen control and traffic channel\n");
