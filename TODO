@@ -1,12 +1,9 @@
- * I/O interface for export of processed informations
- * JSON output for frame errors (Rx statistics, berr)
+ * use packed bits instead of one bit per bite
  * reimplement and improve error correction
- * receive uplink channel(s)
- * optimize code for speed a bit
+ * improve uplink reception
+ * optimize code for speed (but keep it understendable!)
  * support multiple signal sources at least for uplink and downlink
  * Improve demodulator and frame decoder
-   * Current implementation causes frame coruption whenever single bit
-     in input stream is broken!
    suggestions:
    * frame decoder should use soft decisions
    * output from demodulator should be something like:
@@ -14,6 +11,5 @@
         radio signal, or
      b) two values, one with <-1, 1> representing probably demodulated value
         and second with "relative signal quality" or something
- * improve logging
  * implement audio codec
 
