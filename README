@@ -1,45 +1,64 @@
-TETRAPOL radio processing kit.
+TETRAPOL radio analysis kit.
 
 For license see file COPYING.
 
 The intention is to create scientific research tool for analysis of TETRAPOL
-radio networks and its warious aspects.
-The project is under constant development, there is no stable release.
+radio networks. The project is under constant development, there is no stable
+release.
 
 With this tools You should be able:
   - find TETRAPOL radio channels and identify base stations
-  - recieve TETRAPOL downlink transmissions
-  - monitor traffic
-  - receive text messages
-  - TODO: detect and decode uplink transmission
-  - TODO: decode received audio
-  - TODO: detect and receive direct calls
+  - recieve and demodulate all TETRAPOL transmissions
+  - analyse traffice metadata
+  - send crafted traffic
 
-Tools are in variou stage of development and usability, compoments marked
-TODO are not implemented at all.
+There is still lot of thinks TODO, see TODO for details.
 
 == Installation
+  Install libraries and development files for:
+cmocka, glib2
 
-You need various libraries, because this software is rapidly changing, no
-list is provided here. You should be able to idetify it by you-self
-(try and failure method).
-
-Use the following magic sequence to build this project.
+Build:
 
 mkdir build
 cd build
 cmake ..
 make
 
-== Usage
+# optionaly if you want TX
+cd ../demod
+grcc tetrapol_tx.grc
 
+== Available toos
+  The package consist of those tools:
+
+=== app/tetrapol_dump
+  This decodes traffic from demodulated TETRAPOL channel.
+
+=== demod/demod.py
+  Demodulator. It allows receive and demodulate arbitrary number of TETRAPOL
+channels.
+
+=== demod/tetrapol_rx.py
+  Another demodulator. It allows more efficient reception of multiple channels
+at the same time, and some other tricks, but does not allow fine tunning for
+each channel etc.
+
+== demod/tetrapol_rx_cli.py
+  Client commandline interface to tetrapol_rx.py.
+
+=== demod/tetrapol_tx.grc
+  GNURadio sketch for transmission of single TETRAPOL channel.
+
+=== run.sh
+  Helper script providing some user interface for tetrapol_rx.py
   * edit ruh.sh as needed
-  * connect SDR (RTL-SDR, BladeRF, HackRF or any other supported by osmo-sdr)
+  * connect SDR (RTL-SDR, BladeRF, HackRF or any SDR supported by osmo-sdr)
   * run the script
 
-./run.sh
+== Usage
+  Easiest way to start is with ./run.sh script. Edit and customize it before
+first usage.
 
-See file run.sh for example of tools usage. This script should give you basic
-inspiration how to use individual tools. If you feel totaly lost you should
-try harder or start playing with something simpler.
+If you feel lost you should try harder or play with something simpler.
 
