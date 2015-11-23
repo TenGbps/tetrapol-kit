@@ -32,7 +32,7 @@ void frame_json(tpol_t *tpol, const frame_t *fr)
         if (!fr->broken) {
             printf("\"state\": \"ok\", ");
             printf("\"syndromes\": %d, ", fr->syndromes);
-            printf("\"bits_fixed\": %d ", fr->bits_fixed);
+            printf("\"bits_fixed\": %d, ", fr->bits_fixed);
 
             const char *fr_type;
             switch (fr->fr_type) {
