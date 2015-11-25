@@ -1,25 +1,39 @@
-= bit layout in voice frame
+= Addenum to TETRAPOL PAS 0001-7; Codec - The missing parts
 
+There are key points missing in original specification required to create
+fully functiona codec. This file tryes to fill this gap. All those
+informations have been obtained trought reverse ingeneering and user should
+handle it with care tey might be incomplete or worse wrong.
 
+== Bit arrangmenet in VOICE frame
 
-== LAR coefficients
+Data are stored as little endian with LSB stored earlier in the frame.
 
-Data in frame are stored as big endian, bellow is bit mapping to individual
-parameters.
+=== LAR coefficients
 
-LAR_0: 0, 23, 22, 21, 20
-LAR_1: 1, 27, 26, 25, 24
-LAR_2: 2, 30, 29, 28
-LAR_3: 3, 33, 32, 31
-LAR_4: 4, 36, 35, 34
-LAR_5: 39, 38, 37
-LAR_6: 42, 41, 40
-LAR_7: 45, 44, 43
-LAR_8: 48, 47, 46
-LAR_0: 51, 50, 49
+LAR values are stored as signed int.
 
-== Other,
+LAR   bit numbers
+idx   MSB ... LSB
 
-There are 3 groups of bits at possitions 5:9, 10:14, 15:19 and then 3 groups of
-bits in range 52:120, namely 52:74, 75:96, 97:119.
+0:    0, 23, 22, 21, 20
+1:    1, 27, 26, 25, 24
+2:    2, 30, 29, 28
+3:    3, 33, 32, 31
+4:    4, 36, 35, 34
+5:    39, 38, 37
+6:    42, 41, 40
+7:    45, 44, 43
+8:    48, 47, 46
+0:    51, 50, 49
+
+=== Other bits
+
+They are grouped probably this way:
+
+5:9, 52:74
+10:14, 75:96
+15:19, 97:119
+
+The protected bits wery likely contains decimation value of stochastic parameteres.
 
