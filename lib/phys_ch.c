@@ -30,6 +30,7 @@ struct phys_ch_priv_t {
     int sync_errs;      ///< cumulative no. of errors in frame synchronisation
     bool has_frame_sync;
     int scr;            ///< SCR, scrambling constant
+    int scr_last;       ///< SCR, used to detech if SRC changes
     int scr_guess;      ///< SCR with best score when guessing SCR
     int scr_confidence; ///< required confidence for SCR detection
     int scr_stat[128];  ///< statistics for SCR detection
@@ -63,6 +64,7 @@ phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol)
     phys_ch->tpol->rx_offs = 0;
     phys_ch->tpol->frame_no = FRAME_NO_UNKNOWN;
     phys_ch->scr = PHYS_CH_SCR_DETECT;
+    phys_ch->scr_last = PHYS_CH_SCR_DETECT;
     phys_ch->scr_confidence = 50;
     phys_ch->timer = timer_create();
 
@@ -390,6 +392,11 @@ static int process_frame(phys_ch_t *phys_ch, const uint8_t *fr_data)
 
     const int scr = (phys_ch->scr == PHYS_CH_SCR_DETECT) ?
         phys_ch->scr_guess : phys_ch->scr;
+
+    if (phys_ch->scr_last != scr) {
+        printf("{ \"event\": \"scr\", \"scr\": %d }\n", scr);
+        phys_ch-> scr_last = scr;
+    }
 
     const int fr_type = (phys_ch->radio_ch_type == TETRAPOL_RADIO_CCH) ?
         FRAME_TYPE_DATA : FRAME_TYPE_AUTO;
