@@ -604,6 +604,7 @@ static uint64_t pack_2x4b_64(const uint8_t *bits, int len)
 }
 
 // PAS 0001-2 6.1.2 - protected part
+// PAS 0001-2 6.2.2 - protected part
 static void frame_encode1(uint8_t *out_bytes, const uint8_t *in_bits)
 {
     uint64_t data = pack_2x4b_64(in_bits, 26);
@@ -619,6 +620,38 @@ static void frame_encode1(uint8_t *out_bytes, const uint8_t *in_bits)
     data_1 &= 0x5555555555555555LL;
 
     *(uint64_t *)out_bytes = htole64(data ^ data_1 ^ data_2);
+}
+
+/**
+  Encode second part of data for data frame. Bits already encoded by
+  frame_encode1 are skipped.
+  */
+static void frame_encode2(uint8_t *out_bytes, const uint8_t *in_bits)
+{
+    in_bits += 26;
+
+    uint64_t data_a = pack_2x4b_64(in_bits, 18);
+    uint64_t data_b = pack_2x4b_64(in_bits + 18, 32);
+
+    // create data with shifted by -1 and -2
+    uint64_t data_a_1 = data_a << 2;
+    uint64_t data_b_1 = data_b << 2;
+    uint64_t data_a_2 = data_a << 4;
+    uint64_t data_b_2 = data_b << 4;
+
+    data_a_1 |= data_b >> (2*32 - 2);
+    data_a_2 |= data_b >> (2*32 - 4);
+    data_b_1 |= data_a >> (2*18 - 2);
+    data_b_2 |= data_a >> (2*18 - 4);
+
+    // drop one bit copy from data_*_1
+    data_a_1 &= 0x5555555555555555LL;
+    data_b_1 &= 0x5555555555555555LL;
+
+    uint64_t data_ra = htole64((data_a ^ data_a_1 ^ data_a_2) & ((1LL << (2*18)) - 1));
+    uint64_t data_rb = htole64(data_b ^ data_b_1 ^ data_b_2);
+    *(uint64_t *)(&out_bytes[2*26/8]) |= data_ra << 4;
+    *(uint64_t *)(&out_bytes[(2*26+2*18)/8]) |= data_rb;
 }
 
 static void frame_interleave(uint8_t *out, const uint8_t *in,
@@ -740,6 +773,40 @@ static uint8_t differential_enc(uint8_t *data, int size, uint8_t first_bit)
     return first_bit;
 }
 
+static int encode_data(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
+{
+    fr->data.d = 1;
+    mk_crc5(fr->data.crc, fr->data.crc_data, sizeof(fr->data.crc_data));
+
+    memset(fr->data.zero, 0, sizeof(fr->data.zero));
+
+    uint8_t buf[19];
+    memset(buf, 0, sizeof(buf));
+    frame_encode1(buf, fr->blob_);
+    frame_encode2(buf, fr->blob_);
+
+    if (fe->band == TETRAPOL_BAND_VHF) {
+        frame_interleave(&fr_data[1], buf, interleave_data_VHF);
+    } else if (fe->band == TETRAPOL_BAND_UHF) {
+        frame_interleave(&fr_data[1], buf, interleave_data_UHF);
+    } else {
+        return -1;
+    }
+
+    if (fe->band == TETRAPOL_BAND_UHF) {
+        frame_diff_enc(&fr_data[1]);
+    }
+
+    frame_scramble(&fr_data[1], fe->scr);
+
+    // PAS 0001-2 6.2.5.2
+    fr_data[0] = 0x46;
+
+    fe->first_bit = differential_enc(fr_data, 20, fe->first_bit);
+
+    return 0;
+}
+
 static int encode_voice(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
 {
     fr->voice.d = 0;
@@ -776,7 +843,7 @@ static int encode_voice(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
 int frame_encoder_encode(frame_encoder_t *fe, uint8_t *fr_data, frame_t *fr)
 {
     if (fr->fr_type == FRAME_TYPE_DATA) {
-        return -1;
+        return encode_data(fe, fr_data, fr);;
     } else if (fr->fr_type == FRAME_TYPE_VOICE) {
         return encode_voice(fe, fr_data, fr);
     }
