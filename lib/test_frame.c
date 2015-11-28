@@ -245,6 +245,39 @@ static void test_frame_encode1(void **state)
     assert_memory_equal(fr_sol, sol_exp, sizeof(sol_exp));
 }
 
+// this test expects the correct frame_decode2 implementation
+static void test_frame_encode2(void **state)
+{
+    const uint8_t frame_dec[26+50] = {
+        1, 0, 0, 1, 1, 0, 0, 0,
+        0, 0, 1, 1, 1, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 0, 0,
+        0, 1,
+        0, 1, 1, 0, 1, 0, 0, 1,
+        1, 1, 0, 0, 0, 1, 0, 1,
+        0, 1, 0, 1, 1, 0, 1, 0,
+        0, 0, 1, 0, 1, 1, 1, 1,
+        1, 0, 0, 0, 0, 0, 1, 1,
+        0, 0, 0, 1, 0, 0, 1, 0,
+        0, 0
+    };
+    uint8_t frame_enc[19];
+    memset(frame_enc, 0, sizeof(frame_enc));
+    frame_encode2(frame_enc, frame_dec);
+
+    uint8_t bits[152];
+    for (int i = 2*26; i < sizeof(bits); ++i) {
+        bits[i] = (frame_enc[i / 8] >> (i % 8)) & 1;
+    }
+
+    uint8_t frame_dec2[26+50], frame_errs[26+50];
+    uint8_t fr_errs_exp[50];
+    memset(fr_errs_exp, 0, sizeof(fr_errs_exp));
+    frame_decode2(frame_dec2, frame_errs, bits, FRAME_TYPE_DATA);
+    assert_memory_equal(fr_errs_exp, frame_errs+26, sizeof(fr_errs_exp));
+    assert_memory_equal(frame_dec2+26, frame_dec+26, 50);
+}
+
 int main(void)
 {
     const UnitTest tests[] = {
@@ -255,6 +288,7 @@ int main(void)
         unit_test(test_frame_decoder_voice_01),
         unit_test(test_mk_crc5),
         unit_test(test_frame_encode1),
+        unit_test(test_frame_encode2),
     };
 
     return run_tests(tests);
