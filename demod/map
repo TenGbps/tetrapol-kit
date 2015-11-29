@@ -50,7 +50,7 @@ do
 	COUNT=$(( $COUNT + 1 ))
 	if [ $COUNT -eq 20 ]
 	then
-		./calibrate >cal
+		./calibrate.sh >cal
 		COUNT=0
 	fi
 	sleep 1
