@@ -17,6 +17,7 @@ if ! [ -d "${OUT_DIR}" ]; then
     exit 1
 fi
 
+echo "Detecting TETRAPOL channels"
 python2 tetrapol_detector.py \
     -f ${FREQ} \
     -g ${GAIN} \
@@ -27,6 +28,7 @@ python2 tetrapol_detector.py \
 
 FREQS=`grep freq tmp/channels.json  | sed -e 's/.*freq": //' -e 's/\\..*//' | head -n ${MAX_CHANNELS} | tr \\\\012 ,`
 
+echo "Receiving selected TETRAPOL channels"
 timeout ${TIMEOUT} \
     python2 demod.py \
         -g ${GAIN} \
