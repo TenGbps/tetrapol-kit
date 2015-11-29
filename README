@@ -8,8 +8,8 @@ release.
 
 With this tools You should be able:
   - find TETRAPOL radio channels and identify base stations
-  - recieve and demodulate all TETRAPOL transmissions
-  - analyse traffice metadata
+  - receive and demodulate TETRAPOL transmissions
+  - analyse traffic data
   - send crafted traffic
 
 There is still lot of thinks TODO, see TODO for details.
@@ -29,11 +29,13 @@ make
 cd ../demod
 grcc tetrapol_tx.grc
 
-== Available toos
-  The package consist of those tools:
+== Tools description
+
+== app/tetrapol_build
+  Build channel for transmission from input file with frames.
 
 === app/tetrapol_dump
-  This decodes traffic from demodulated TETRAPOL channel.
+  Decode traffic from demodulated TETRAPOL channel.
 
 === demod/demod.py
   Demodulator. It allows receive and demodulate arbitrary number of TETRAPOL
