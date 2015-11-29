@@ -36,7 +36,7 @@ COUNT=19
 while true
 do
 	date
-	sh scan |sort -rnk2 |head -30 |sort |cut -f1 -d' ' >channels1
+	sh scan.sh |sort -rnk2 |head -30 |sort |cut -f1 -d' ' >channels1
 	date
   touch bablbam.log
 	grep -A 40 D_NEIGHBOURING_CELL `find . -name \*.log -cmin -60 ` |tr ' ' \\n |grep CHANNEL_ID=|cut -f2 -d=|sort |uniq >>channels1
