@@ -39,26 +39,11 @@ grcc tetrapol_tx.grc
   Demodulator. It allows receive and demodulate arbitrary number of TETRAPOL
 channels.
 
-=== demod/tetrapol_rx.py
-  Another demodulator. It allows more efficient reception of multiple channels
-at the same time, and some other tricks, but does not allow fine tunning for
-each channel etc.
-
-== demod/tetrapol_rx_cli.py
-  Client commandline interface to tetrapol_rx.py.
-
 === demod/tetrapol_tx.grc
   GNURadio sketch for transmission of single TETRAPOL channel.
 
-=== run.sh
-  Helper script providing some user interface for tetrapol_rx.py
-  * edit ruh.sh as needed
-  * connect SDR (RTL-SDR, BladeRF, HackRF or any SDR supported by osmo-sdr)
-  * run the script
-
 == Usage
-  Easiest way to start is with ./run.sh script. Edit and customize it before
-first usage.
+  Edit parameters in tetrapol_detector.sh and run it.
 
 If you feel lost you should try harder or play with something simpler.
 
