@@ -72,6 +72,15 @@ class top_block(gr.top_block):
 
     self.tuners = []
     self.afc_probes = []
+    if len(self.channels) != 1:
+        if options.output_file:
+            if options.output_file.find('%%') == -1:
+                raise ValueError('Output name template missing "%%".')
+        elif options.output_pipe:
+            if options.output_pipe.find('%%') == -1:
+                raise ValueError('Output name template missing "%%".')
+        else:
+            raise ValueError('WTF')
     for ch in range(0,len(self.channels)):
         bw = (9200 + options.afc_ppm_threshold)/2
         taps = filter.firdes.low_pass(1.0, sample_rate, bw, bw*options.transition_width, filter.firdes.WIN_HANN)
@@ -88,13 +97,9 @@ class top_block(gr.top_block):
         if fname == -1:
             fname = self.ch_freqs[ch]
         if options.output_pipe is None:
-            if options.output_file.find('%%') == -1:
-                raise ValueError('File name template must contain string "%%"')
             file = options.output_file.replace('%%', str(fname))
             output = blocks.file_sink(gr.sizeof_char, file)
         else:
-            if options.output_pipe.find('%%') == -1:
-                raise ValueError('File name template must contain string "%%"')
             cmd = options.output_pipe.replace('%%', str(fname))
             pipe = subprocess.Popen(cmd, stdin=subprocess.PIPE, shell=True)
             fd = pipe.stdin.fileno()
