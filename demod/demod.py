@@ -1,14 +1,8 @@
 #!/usr/bin/env python
 
-# Copyright 2012 Dimitri Stolnikov <horiz0n@gmx.net>
-
 # Usage:
-# src$ ./demod/python/osmosdr-tetra_demod_fft.py -o /dev/stdout | ./float_to_bits /dev/stdin /dev/stdout | ./tetra-rx /dev/stdin
 #
 # Adjust the center frequency (-f) and gain (-g) according to your needs.
-# Use left click in Wideband Spectrum window to roughly select a TETRA carrier.
-# In Wideband Spectrum you can also tune by 1/4 of the bandwidth by clicking on the rightmost/leftmost spectrum side.
-# Use left click in Channel Spectrum windows to fine tune the carrier by clicking on the left or right side of the spectrum.
 
 
 import sys
