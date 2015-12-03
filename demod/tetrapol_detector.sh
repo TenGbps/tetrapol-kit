@@ -1,12 +1,15 @@
 #!/bin/sh
 
-CH_BW=12500
 FREQ=393e6
-SAMP_RATE=2400000
-OUT_DIR=tmp
-CHANNELS_FILE=channels.json
-MAX_CHANNELS=8
 GAIN=30.4
+MAX_CHANNELS=8
+OUT_DIR=tmp
+SAMP_RATE=2400000
+# set lenght of record in seconds, use 0 for infinity
+TIMEOUT=20
+
+CH_BW=12500
+CHANNELS_FILE=channels.json
 
 
 if ! [ -d "${OUT_DIR}" ]; then
@@ -24,7 +27,7 @@ python2 tetrapol_detector.py \
 
 FREQS=`grep freq tmp/channels.json  | sed -e 's/.*freq": //' -e 's/\\..*//' | head -n ${MAX_CHANNELS} | tr \\\\012 ,`
 
-timeout 30 \
+timeout ${TIMEOUT} \
     python2 demod.py \
         -g ${GAIN} \
         -s ${SAMP_RATE} \
