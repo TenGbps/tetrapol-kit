@@ -53,8 +53,11 @@ static int tetrapol_dump_loop(phys_ch_t *phys_ch, int fd)
     while (ret == 0 && !do_exit) {
         if (sizeof(data) - data_len > 0) {
             const int rsize = do_read(fd, data + data_len, sizeof(data) - data_len);
-            if (rsize <= 0) {
+            if (rsize < 0) {
                 return rsize;
+            }
+            if (!rsize && !data_len) {
+                return 0;
             }
             data_len += rsize;
         }
