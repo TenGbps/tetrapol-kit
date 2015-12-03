@@ -6,7 +6,7 @@ MAX_CHANNELS=8
 OUT_DIR=tmp
 SAMP_RATE=2400000
 # set lenght of record in seconds, use 0 for infinity
-TIMEOUT=20
+TIMEOUT=30
 
 CH_BW=12500
 CHANNELS_FILE=channels.json
@@ -37,6 +37,8 @@ timeout ${TIMEOUT} \
         -l "${FREQS}"
 
 for f in `echo "${FREQS}" | tr , ' '`; do
-    ../build/apps/tetrapol_dump -t CCH -i ${OUT_DIR}/channel${f}.bits 2>${OUT_DIR}/cch_${f}.log
-    ../build/apps/tetrapol_dump -t TCH -i ${OUT_DIR}/channel${f}.bits 2>${OUT_DIR}/tch_${f}.log
+    ../build/apps/tetrapol_dump -t CCH -i ${OUT_DIR}/channel${f}.bits \
+            >${OUT_DIR}/cch_${f}.json 2>${OUT_DIR}/cch_${f}.log
+    ../build/apps/tetrapol_dump -t TCH -i ${OUT_DIR}/channel${f}.bits \
+            >${OUT_DIR}/tch_${f}.json 2>${OUT_DIR}/tch_${f}.log
 done
