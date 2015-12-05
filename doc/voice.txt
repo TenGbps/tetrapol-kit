@@ -27,12 +27,6 @@ idx   MSB ... LSB
 8:    48, 47, 46
 0:    51, 50, 49
 
-=== Stochastic gain
-
-gain1: 8, 64, 63, 62, 61
-gain2: 13, 87, 86, 85, 84
-gain3: 18, 109, 108, 107, 106
-
 === Other bits
 
 They are grouped probably this way:
@@ -40,6 +34,30 @@ They are grouped probably this way:
 5:9, 52:74
 10:14, 75:96
 15:19, 97:119
+
+=== LTP_lag+LTP_gain
+
+The order is unknown  yet.
+
+2 bits are in protected area
+
+lg1: 52..60
+lg2: 75..83
+lg3: 97..105
+
+=== Stochastic gain
+
+gain1: 8, 64, 63, 62, 61
+gain2: 13, 87, 86, 85, 84
+gain3: 18, 109, 108, 107, 106
+
+=== Stochastic sign+phase
+
+The order is unknown  yet.
+
+1: 65..75
+2: 88..98
+3: 109..119
 
 The protected bits wery likely contains decimation value of stochastic parameteres.
 
