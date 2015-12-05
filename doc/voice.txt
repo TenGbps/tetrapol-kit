@@ -11,7 +11,7 @@ Data are stored as little endian with LSB stored earlier in the frame.
 
 === LAR coefficients
 
-LAR values are stored as signed int.
+LAR values are stored as (?un?)signed int.
 
 LAR   bit numbers
 idx   MSB ... LSB
