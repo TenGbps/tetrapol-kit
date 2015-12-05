@@ -29,7 +29,7 @@ idx   MSB ... LSB
 
 === Stochastic gain
 
-gain1: 8, 63, 62, 61, 60
+gain1: 8, 64, 63, 62, 61
 gain2: 13, 87, 86, 85, 84
 gain3: 18, 109, 108, 107, 106
 
