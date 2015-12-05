@@ -1,4 +1,5 @@
 *.o
+*.pyc
 apps/tetrapol_build
 apps/tetrapol_dump
 build/
