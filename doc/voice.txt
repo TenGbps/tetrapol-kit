@@ -27,6 +27,12 @@ idx   MSB ... LSB
 8:    48, 47, 46
 0:    51, 50, 49
 
+=== Stochastic gain
+
+gain1: 8, 63, 62, 61, 60
+gain2: 13, 87, 86, 85, 84
+gain3: 18, 109, 108, 107, 106
+
 === Other bits
 
 They are grouped probably this way:
