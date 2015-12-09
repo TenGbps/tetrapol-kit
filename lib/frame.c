@@ -1,7 +1,8 @@
-// define _BSD_SOURCE should be enough but for htole64 it is not
+// Various defs for various versions of glibc to make endian.h working
 #define _BSD_SOURCE 1
 #define __USE_BSD
-#include </usr/include/endian.h>
+#define __USE_MISC
+#include <endian.h>
 
 #define LOG_PREFIX "frame"
 #include <tetrapol/log.h>
