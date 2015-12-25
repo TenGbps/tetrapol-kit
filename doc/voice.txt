@@ -11,61 +11,58 @@ Data are stored as little endian with LSB stored earlier in the frame.
 
 === LAR coefficients
 
-LAR values are stored as (?un?)signed int (it should be coefficient index).
+They are stored in 38 bits (not 37), 6 bits is in protected area.
+
+LAR values are stored as (?un?)signed int (it should be index of coefficient).
 
 LAR   bit numbers
 idx   MSB ... LSB
 
-1:    0, 23, 22, 21, 20
-2:    1, 27, 26, 25, 24
-3:    2, 30, 29, 28
-4:    3, 32, 31, 33
-5:    4, 36, 35, 34
-6:    5, 39, 38, 37
+1:    1, 0, 23, 22, 21, 20
+2:    2, 27, 26, 25, 24
+3:    3, 30, 29, 28
+4:    4, 32, 31, 33
+5:    5, 36, 35, 34
+6:    39, 38, 37
 7:    42, 41, 40
 8:    45, 44, 43
 9:    47, 46, 48
-10:   50, 49
-
-=== Other bits
-
-They are grouped probably this way:
-
-6:9, 51:74
-10:14, 75:96
-15:19, 97:119
-
-=== LTP_lag+LTP_gain
-
-  * The order is unknown yet.
-  * There is small chance TPL and stochastic coefficients are swaped
-
-2 bits are in protected area, probably the MSB of lag
-It should be the first 3x2 b in 3x5 b protected area
-
-LTP1: 51:60 + 1 b in protected area
-LTP2: 75:83 + 2 b in protected area
-LTP3: 97:105 + 2 b in protected area
+10:   51, 50, 49
 
 === Stochastic gain
 
-  * Verified, should be OK
+  * Verified, should be OK (even LSB should be ok, with 99.5% certainity)
 
 gain1: 8, 63, 62, 61, 64
 gain2: 13, 87, 86, 85, 84
 gain3: 18, 109, 108, 107, 106
 
-=== Stochastic sign+phase, decimation
+=== Other bits
 
-  * There is small chance TPL and stochastic coefficients are swaped
-  * decimatinou should be 2 bits in protected area
+range - leng (bits in protected area)
 
-sign+phase1:         71, 70, 69, 68, 67, 66, 65 + 3 bits
-    65:74
+52:60 - 8 b (+2 b)
+65:83 - 19 b (+4 b)
+88:105 - 18 b (+4 b)
+110:119 - 10 b (+1 b)
 
-sign+phase2:         88, 89, 90, 91, 92, 96 + 3 more bits
-    88:96
+=== Signs + Phase
 
-sign+phase3:         112, 113, 114, 115, 116, 117, 118 + 3 more bits
-    110:119
+Stored as one big concatenated number.
+
+65:74 - sig1+phase1
+phase | sign: 71, 70, 69, 68, 67, 66, 65, 74, 73, 72
+
+88:96 - sig2+phase2
+phase | signs: 95, 94, 93 | 92, 91, 90, 89, 88, 96
+
+110:119 - sig2+phase3
+(somewhere is the 1b of decimation, 112 is the best candidate)
+phase | signs: 111, 110, 119, 118, 117, 116, 115, 114, 113, 112
+
+=== LTP
+
+52:60   [56]
+75:83   [80]
+97:105  [104]
 
