@@ -66,3 +66,17 @@ phase | signs: 111, 110, 119, 118, 117, 116, 115, 114, 113, 112
 75:83   [80]
 97:105  [104]
 
+
+== Reversing notes
+
+By modifying bits in streams where the stochastic gain is (almost) for every
+frame set to zero was found position of other stochastic bits, the remaining are LTP.
+
+LTP1: 52 - 60
+ST1: 65 - 73
+LTP2: 74 - 83
+ST2: 88 - 96
+LTP3: 97 - 105
+ST3: 110 - 119
+
+
