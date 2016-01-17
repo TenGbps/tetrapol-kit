@@ -1,6 +1,7 @@
 #include <tetrapol/frame_json.h>
 #include <tetrapol/misc.h>
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
@@ -9,7 +10,7 @@
 void frame_json(tpol_t *tpol, const frame_t *fr)
 {
     printf("{ \"event\": \"frame\", ");
-    printf("\"rx_offs\": %lu, ", tpol->rx_offs);
+    printf("\"rx_offs\": %" PRIu64 ", ", tpol->rx_offs);
 
     struct timeval tv;
     struct tm gmt;
