@@ -1,19 +1,19 @@
 = Addenum to TETRAPOL PAS 0001-7; Codec - The missing parts
 
 There are key points missing in original specification required to create
-fully functiona codec. This file tryes to fill this gap. All those
-informations have been obtained trought reverse ingeneering and user should
-handle it with care tey might be incomplete or worse wrong.
+fully functiona codec. This file tryes to fill those gaps. All informations
+have been obtained hrough reverse ingeneering and should be
+handled with care, they might be incomplete or even worse completelywrong.
 
 == Bit arrangmenet in VOICE frame
 
-Data are stored as little endian with LSB stored earlier in the frame.
+Data are stored as little endian with LSB stored first in the frame bits.
 
 === LAR coefficients
 
-They are stored in 38 bits (not 37), 6 bits is in protected area.
+They are stored in 38 b (not 37 b), 6 b is in protected area.
 
-LAR values are stored as (?un?)signed int (it should be index of coefficient).
+LAR values are stored as unsigned int (it should be index of coefficient).
 
 LAR   bit numbers
 idx   MSB ... LSB
@@ -28,6 +28,8 @@ idx   MSB ... LSB
 8:    45, 44, 43
 9:    47, 46, 48
 10:   51, 50, 49
+
+TODO: add conversion from LAR index to LAR coefficient
 
 === Stochastic gain
 
@@ -73,12 +75,12 @@ By modifying bits in streams where the stochastic gain is (almost) for every
 frame set to zero was found position of other stochastic bits, the remaining are LTP.
 
 LTP1: 52 - 60
- - LTP gain is only in last 2 bits of LTP (is not in protected area)
+ - LTP gain is in last 2 bits of LTP (1b in protected area - 7?)
 ST1: 65 - 73
-LTP2: 74 - 83
- - LTP gain is only in last 2 bits of LTP (is not in protected area)
+LTP2: 75 - 83
+ - LTP gain is in last 2 bits of LTP (1b in protected area - 12?)
 ST2: 88 - 96
 LTP3: 97 - 105
- - LTP gain is only in last 2 bits of LTP (is not in protected area)
+ - LTP gain is in last 2 bits of LTP (1b in protected area - 18?)
 ST3: 110 - 119
 
