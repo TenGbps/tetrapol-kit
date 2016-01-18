@@ -38,6 +38,9 @@ Data are organized in 3 blocks, each representing a subframe.
 Decimation idx: 00 - minimal decimation (max. number of pulses),
     11 - maximal decimation (1 pulse)
 
+LAR lag: value -1 (all bits set to 1) have special meaning, it indicate zero
+    gain. When all gain bits are set to zero the gain is small but nonzero.
+
 ==== Suframe 1
 
 LTP
