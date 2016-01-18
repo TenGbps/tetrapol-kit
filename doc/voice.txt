@@ -31,56 +31,43 @@ idx   MSB ... LSB
 
 TODO: add conversion from LAR index to LAR coefficient
 
-=== Stochastic gain
+=== Subframes
 
-  * Verified, should be OK (even LSB should be ok, with 99.5% certainity)
+Data are organized in 3 blocks, each representing a subframe.
 
-gain1: 8, 63, 62, 61, 64
-gain2: 13, 87, 86, 85, 84
-gain3: 18, 109, 108, 107, 106
+Decimation idx: 00 - minimal decimation (max. number of pulses),
+    11 - maximal decimation (1 pulse)
 
-=== Other bits
+==== Suframe 1
 
-range - leng (bits in protected area)
+LTP
+lag: 6, 55, 54, 53, 52, 58, 57, 56
+gain: 7, 60, 59
 
-52:60 - 8 b (+2 b)
-65:83 - 19 b (+4 b)
-88:105 - 18 b (+4 b)
-110:119 - 10 b (+1 b)
+Stochastic parameters
+gain: 8, 63, 62, 61, 64
+decimation idx: 10, 9
+sign+phase: 71, 70, 69, 68, 67, 66, 65, 74, 73, 72
 
-=== Signs + Phase
+==== Suframe 2
 
-Stored as one big concatenated number.
+LTP
+lag: 11, 79, 78, 77, 76, 75, 81, 80
+gain: 12, 83, 82
 
-65:74 - sig1+phase1
-phase | sign: 71, 70, 69, 68, 67, 66, 65, 74, 73, 72
+Stochastic parameters
+gain: 13, 87, 86, 85, 84
+decimation idx: 15, 14
+sign+phase: 95, 94, 93, 92, 91, 90, 89, 88, 96
 
-88:96 - sig2+phase2
-phase | signs: 95, 94, 93 | 92, 91, 90, 89, 88, 96
+==== Suframe 3
 
-110:119 - sig2+phase3
-(somewhere is the 1b of decimation, 112 is the best candidate)
-phase | signs: 111, 110, 119, 118, 117, 116, 115, 114, 113, 112
+LTP
+lag: 16, 103, 102, 101, 100, 99, 98, 97
+gain: 17, 105, 104
 
-=== LTP
-
-52:60   [56]
-75:83   [80]
-97:105  [104]
-
-
-== Reversing notes
-
-By modifying bits in streams where the stochastic gain is (almost) for every
-frame set to zero was found position of other stochastic bits, the remaining are LTP.
-
-LTP1: 52 - 60
- - LTP gain is in last 2 bits of LTP (1b in protected area - 7?)
-ST1: 65 - 73
-LTP2: 75 - 83
- - LTP gain is in last 2 bits of LTP (1b in protected area - 12?)
-ST2: 88 - 96
-LTP3: 97 - 105
- - LTP gain is in last 2 bits of LTP (1b in protected area - 18?)
-ST3: 110 - 119
+Stochastic parameters
+gain: 18, 109, 108, 107, 106
+decimation idx: 19, 119
+sign+phase: 111, 110, 118, 117, 116, 115, 114, 113, 112
 
