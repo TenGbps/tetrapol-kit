@@ -73,10 +73,12 @@ By modifying bits in streams where the stochastic gain is (almost) for every
 frame set to zero was found position of other stochastic bits, the remaining are LTP.
 
 LTP1: 52 - 60
+ - LTP gain is only in last 2 bits of LTP (is not in protected area)
 ST1: 65 - 73
 LTP2: 74 - 83
+ - LTP gain is only in last 2 bits of LTP (is not in protected area)
 ST2: 88 - 96
 LTP3: 97 - 105
+ - LTP gain is only in last 2 bits of LTP (is not in protected area)
 ST3: 110 - 119
-
 
