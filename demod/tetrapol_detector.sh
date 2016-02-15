@@ -1,15 +1,28 @@
 #!/bin/sh
 
+# Center frequency of tunner
 FREQ=393e6
+
+# RX Gain
 GAIN=30.4
+
+# Channels processed in paralel, accustome to your CPU speed
 MAX_CHANNELS=8
+
+# Scan results and channel recordings are stored here
 OUT_DIR=tmp
+
+# SDR sample rate, accustom to your SDR device
 SAMP_RATE=2400000
-# set lenght of record in seconds, use 0 for infinity
+
+# Length of channel RX records in seconds, use 0 for infinity
 TIMEOUT=30
 
-CH_BW=12500
+# File where is stored list of TETRAPOL channel candidates
 CHANNELS_FILE=channels.json
+
+# TETRAPOL channel band width, 12500 or 10000
+CH_BW=12500
 
 
 if ! [ -d "${OUT_DIR}" ]; then
