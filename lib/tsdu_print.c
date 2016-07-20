@@ -850,7 +850,7 @@ static void d_group_list_print(const tsdu_d_group_list_t *tsdu)
     if (tsdu->ngroup) {
         LOGF("\t\tGROUP\n");
         for (int i = 0; i < tsdu->ngroup; ++i) {
-            LOGF("\t\t\tCOVERAGE_ID=%d NEIGHBOURING_CALL=%d\n",
+            LOGF("\t\t\tCOVERAGE_ID=%d NEIGHBOURING_CELL=%d\n",
                     tsdu->group[i].coverage_id, tsdu->group[i].neighbouring_cell);
         }
     }

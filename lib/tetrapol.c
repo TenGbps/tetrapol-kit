@@ -2,6 +2,7 @@
 
 #include <tetrapol/log.h>
 #include <tetrapol/tetrapol_int.h>
+#include <tetrapol/tsdu_json.h>
 #include <tetrapol/tsdu_print.h>
 
 #include <stdlib.h>
@@ -74,4 +75,6 @@ void tetrapol_evt_tsdu(tpol_t *tpol, const tpol_tsdu_t *tpol_tsdu)
         }
         tsdu_destroy(tsdu);
     }
+
+    tsdu_json(tpol, tpol_tsdu);
 }
