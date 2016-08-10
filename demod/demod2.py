@@ -14,6 +14,7 @@ import osmosdr
 import time
 import threading
 import subprocess
+import string
 
 # applies frequency translation, resampling and demodulation
 
@@ -55,8 +56,9 @@ class top_block(gr.top_block):
     self.src.set_sample_rate(options.sample_rate)
     self.src.set_freq_corr(options.ppm, 0)
 
-    sys.stderr.write('./fcl'+ '-n'+ '%i'%n+ '-s'+ '%i'%s+ '-t'+ '2'+ '-c'+ '%s'%c+ '-f'+ './fir.py 2000000 7900 2000 rcos'+ '-o'+ '/dev/stdout')
-    self.fcl = subprocess.Popen(['./fcl', '-n', '%i'%n, '-s', '%i'%s, '-t', '2', '-c', '%s'%c, '-f', './fir.py 2000000 7900 2000 rcos', '-o', '/dev/stdout'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    fcl_args = ['./fcl', '-n', '%i'%n, '-s', '%i'%s, '-t', '2', '-c', '%s'%c, '-f', './fir.py %i 7900 2000 rcos'%options.sample_rate, '-o', '/dev/stdout']
+    sys.stderr.write(string.join(fcl_args))
+    self.fcl = subprocess.Popen(fcl_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     self.fcl_in = blocks.file_descriptor_sink(gr.sizeof_gr_complex*1, self.fcl.stdin.fileno())
     self.fcl_out = blocks.file_descriptor_source(gr.sizeof_gr_complex*1, self.fcl.stdout.fileno(), False)
     self.deinterleave = blocks.deinterleave(gr.sizeof_gr_complex*1, 1)
