@@ -48,7 +48,7 @@ class top_block(gr.top_block):
     s = options.sample_rate / bitrate / 2
     c = ''
     for ch in range(0,len(self.channels)):
-        c = c + '%i,'%(self.channels[ch] - ch0)
+        c = c + '%i,'%((self.channels[ch] - ch0)%n)
     c=c[:-1]
 
     self.src = osmosdr.source(options.args)
