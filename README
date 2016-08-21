@@ -1,13 +1,13 @@
-TETRAPOL radio analysis kit.
+Kit for analysing of TETRAPOL radio networks.
 
-For license see file COPYING.
+For license see COPYING.
 
-The intention is to create scientific research tool for analysis of TETRAPOL
-radio networks. The project is under constant development, there is no stable
-release.
+The intention is to create scientific and research tool for analysis of
+TETRAPOL radio networks. The project is under heavy (but slow) development,
+there is no stable release yet.
 
 With this tools You should be able:
-  - find TETRAPOL radio channels and identify base stations
+  - find and identify base stations
   - receive and demodulate TETRAPOL transmissions
   - analyse traffic data
   - send crafted traffic
@@ -29,6 +29,11 @@ make
 cd ../demod
 grcc tetrapol_tx.grc
 
+== Usage
+  Edit parameters in tetrapol_detector.sh and run it.
+
+If you feel lost you should try harder or play with something simpler.
+
 == Tools description
 
 == app/tetrapol_build
@@ -43,9 +48,4 @@ channels.
 
 === demod/tetrapol_tx.grc
   GNURadio sketch for transmission of single TETRAPOL channel.
-
-== Usage
-  Edit parameters in tetrapol_detector.sh and run it.
-
-If you feel lost you should try harder or play with something simpler.
 
