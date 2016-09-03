@@ -68,14 +68,14 @@ static void cell_id_decode1(cell_id_t *cell_id, const uint8_t *data)
     int type = get_bits(2, data, 0);
     if (type == CELL_ID_FORMAT_0) {
         cell_id->bs_id = get_bits(6, data, 2);
-        cell_id->rws_id = get_bits(4, data, 8);
+        cell_id->rsw_id = get_bits(4, data, 8);
     } else if (type == CELL_ID_FORMAT_1) {
         cell_id->bs_id = get_bits(4, data, 8);
-        cell_id->rws_id = get_bits(6, data, 2);
+        cell_id->rsw_id = get_bits(6, data, 2);
     } else {
         LOG(WTF, "unknown cell_id_type (%d)", type);
         cell_id->bs_id = -1;
-        cell_id->rws_id = -1;
+        cell_id->rsw_id = -1;
     }
 }
 
@@ -85,14 +85,14 @@ static void cell_id_decode2(cell_id_t *cell_id, const uint8_t *data)
     int type = get_bits(2, data, 8);
     if (type == CELL_ID_FORMAT_0) {
         cell_id->bs_id = get_bits(6, data, 10);
-        cell_id->rws_id = get_bits(4, data, 4);;
+        cell_id->rsw_id = get_bits(4, data, 4);;
     } else if (type == CELL_ID_FORMAT_1) {
         cell_id->bs_id = get_bits(4, data, 4);;
-        cell_id->rws_id = get_bits(6, data, 10);;
+        cell_id->rsw_id = get_bits(6, data, 10);;
     } else {
         LOG(WTF, "unknown cell_id_type (%d)", type);
         cell_id->bs_id = -1;
-        cell_id->rws_id = -1;
+        cell_id->rsw_id = -1;
     }
 }
 

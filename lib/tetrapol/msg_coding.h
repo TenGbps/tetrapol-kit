@@ -190,7 +190,7 @@ enum {
 
 typedef struct {
     uint8_t bs_id;
-    uint8_t rws_id;
+    uint8_t rsw_id;
 } cell_id_t;
 
 typedef struct {

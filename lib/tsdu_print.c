@@ -769,7 +769,7 @@ static void d_ech_overload_id_print(const tsdu_d_ech_overload_id_t *tsdu)
             tsdu->activation_mode.hook, tsdu->activation_mode.type);
     LOGF("\t\tGROUP_ID=%d", tsdu->group_id);
     LOGF("\t\tCELL_ID: BS_ID=%d RSW_ID=%d\n",
-            tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
+            tsdu->cell_id.bs_id, tsdu->cell_id.rsw_id);
     LOGF("\t\tORGANISATION=%d\n", tsdu->organisation);
 }
 
@@ -859,7 +859,7 @@ static void d_group_list_print(const tsdu_d_group_list_t *tsdu)
         LOGF("\t\t\tEMERGENCY\n");
         for (int i = 0; i < tsdu->nemergency; ++i) {
             LOGF("\t\t\tCELL_ID.BS_ID=%d CELL_ID.RSW_ID=%d\n",
-                    tsdu->emergency[i].cell_id.bs_id, tsdu->emergency[i].cell_id.rws_id);
+                    tsdu->emergency[i].cell_id.bs_id, tsdu->emergency[i].cell_id.rsw_id);
         }
     }
 }
@@ -922,7 +922,7 @@ static void d_neighbouring_cell_print(const tsdu_d_neighbouring_cell_t *tsdu)
         for (int i = 0; i < tsdu->cell_ids->len; ++i) {
             LOGF("\t\t\tCELL_ID BS_ID=%d RSW_ID=%d\n",
                     tsdu->cell_ids->cell_ids[i].bs_id,
-                    tsdu->cell_ids->cell_ids[i].rws_id);
+                    tsdu->cell_ids->cell_ids[i].rsw_id);
         }
     }
     if (tsdu->cell_bns) {
@@ -967,7 +967,7 @@ static void d_registration_nak_print(const tsdu_d_registration_nak_t *tsdu)
     address_print(&tsdu->host_adr);
     LOGF("\t\tBN_ID=%d\n", tsdu->bn_id);
     LOGF("\t\tCELL_ID: BS_ID=%d RSW_ID=%d\n",
-            tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
+            tsdu->cell_id.bs_id, tsdu->cell_id.rsw_id);
 }
 
 static void d_reject_print(const tsdu_d_reject_t *tsdu)
@@ -1016,7 +1016,7 @@ static void d_system_info_print(const tsdu_d_system_info_t *tsdu)
         LOGF("\t\tBN_ID=%d\n", tsdu->bn_id);
         LOGF("\t\tCELL_ID=%d%d%d-%d-%d\n",
                 tsdu->cell_bn.r1,tsdu->cell_bn.r2,tsdu->cell_bn.r3,
-                tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
+                tsdu->cell_id.bs_id, tsdu->cell_id.rsw_id);
         LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
         LOGF("\t\tCELL_RADIO_PARAM\n");
         LOGF("\t\t\tTX_MAX=%d\n", tsdu->cell_radio_param.tx_max);
@@ -1036,7 +1036,7 @@ static void d_system_info_print(const tsdu_d_system_info_t *tsdu)
                 tsdu->cell_access.min_reg_class);
         LOGF("\t\tSUPERFRAME_CPT=%d\n", tsdu->superframe_cpt);
     } else {
-        LOGF("\t\tCELL_ID=%d-%d\n", tsdu->cell_id.bs_id, tsdu->cell_id.rws_id);
+        LOGF("\t\tCELL_ID=%d-%d\n", tsdu->cell_id.bs_id, tsdu->cell_id.rsw_id);
         LOGF("\t\tBN_ID=%d\n", tsdu->bn_id);
         LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
         LOGF("\t\tCELL_RADIO_PARAM\n");
