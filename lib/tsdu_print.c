@@ -1016,7 +1016,7 @@ static void d_system_info_print(const tsdu_d_system_info_t *tsdu)
         LOGF("\t\tBN_ID=%d\n", tsdu->bn_id);
         LOGF("\t\tCELL_ID=%d%d%d-%d-%d\n",
                 tsdu->cell_bn.r1,tsdu->cell_bn.r2,tsdu->cell_bn.r3,
-                tsdu->cell_id.bs_id, tsdu->cell_id.rsw_id);
+                tsdu->cell_id.rsw_id, tsdu->cell_id.bs_id);
         LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
         LOGF("\t\tCELL_RADIO_PARAM\n");
         LOGF("\t\t\tTX_MAX=%d\n", tsdu->cell_radio_param.tx_max);
