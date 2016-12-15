@@ -178,7 +178,7 @@ if __name__ == '__main__':
     parser = OptionParser(option_class=eng_option, usage="%prog: [options]")
     parser.add_option("-b", "--bins", dest="fft_nbins", type="intx",
         help="Number of bins for signal spectrum analysis.")
-    parser.add_option("-c", "--channel_bw", dest="channel_bw", type="intx",
+    parser.add_option("-B", "--channel_bw", dest="channel_bw", type="intx",
         default=12500, help="Channel band width [Hz] (10kHz or 12.5kHz)")
     parser.add_option("-d", "--decimation", dest="decimation", type="intx",
         help="How much FFT result average for one detection run.")

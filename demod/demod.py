@@ -21,13 +21,11 @@ class top_block(gr.top_block):
   def __init__(self):
     gr.top_block.__init__(self)
 
-    bitrate = 8000
-    channel_bw = 12500
-    chan0_freq = 358399864
-
-
     options = get_options()
 
+    bitrate = 8000
+    channel_bw = options.channel_bandwidth
+    chan0_freq = 358399864
     self.rfgain = options.gain
 
     self.channels = [ int(ch) for ch in options.channels.split(',') if ch ]
@@ -146,6 +144,7 @@ def get_options():
     parser.add_option("-s", "--sample-rate", type="eng_float", default=1024000, help="receiver sample rate (default %default)")
     parser.add_option("-f", "--frequency", type="eng_float", default=None, help="receiver center frequency (default %default)")
     parser.add_option("-g", "--gain", type="eng_float", default=None, help="set receiver gain")
+    parser.add_option("-B", "--channel_bandwidth", type="eng_float", default=12500, help="set channel bandwidth (12500 or 10000)")
     parser.add_option("-c", "--channels", type="string", default="", help="channel numbers")
     parser.add_option("-p", "--ppm", dest="ppm", type="eng_float", default=eng_notation.num_to_str(0), help="Frequency correction")
     parser.add_option("-t", "--transition-width", type="eng_float", default=0.2, help="low pass transition width (default %default)")

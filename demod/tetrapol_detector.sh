@@ -33,6 +33,7 @@ fi
 echo "Detecting TETRAPOL channels"
 python2 tetrapol_detector.py \
     -f ${FREQ} \
+    -B ${CH_BW} \
     -g ${GAIN} \
     -i osmo-sdr:// \
     -o "${OUT_DIR}/${CHANNELS_FILE}"  \
@@ -46,6 +47,7 @@ timeout ${TIMEOUT} \
     python2 demod.py \
         -g ${GAIN} \
         -s ${SAMP_RATE} \
+        -B ${CH_BW} \
         -o ${OUT_DIR}/channel%%.bits \
         -l "${FREQS}"
 
