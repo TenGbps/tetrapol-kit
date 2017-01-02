@@ -1307,9 +1307,6 @@ void tsdu_print(const tsdu_t *tsdu)
             u_terminate_print((const tsdu_u_terminate_t *)tsdu);
             break;
 
-        default:
-            LOG(WTF, "Undefined codop=0x%02x", tsdu->codop);
-
         case D_ACCESS_DISABLED:
         case D_BACK_CCH:
         case D_BROADCAST:
@@ -1366,9 +1363,15 @@ void tsdu_print(const tsdu_t *tsdu)
         case U_OCH_RELEASE:
         case U_OCH_SETUP:
         case U_TRANSFER_REQ:
-            LOG(WTF, "print not implemented: codop=0x%02x",
+            LOG(WTF, "TODO: print not implemented: codop=0x%02x",
                     tsdu->codop);
             d_unknown_print((const tsdu_unknown_codop_t *)tsdu);
+            break;
+
+        default:
+            d_unknown_print((const tsdu_unknown_codop_t *)tsdu);
+            break;
+
     }
 }
 
