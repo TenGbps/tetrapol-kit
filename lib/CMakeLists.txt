@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.6)
+
 find_library(CMOCKA_LIBRARY NAMES cmocka)
 if (NOT CMOCKA_LIBRARY)
     message(FATAL_ERROR "libcmocka unit test framework mising")
