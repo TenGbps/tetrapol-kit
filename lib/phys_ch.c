@@ -7,7 +7,7 @@
 #include <tetrapol/tsdu.h>
 #include <tetrapol/misc.h>
 #include <tetrapol/phys_ch.h>
-#include <tetrapol/timer.h>
+#include <tetrapol/tp_timer.h>
 #include <tetrapol/frame.h>
 #include <tetrapol/cch.h>
 #include <tetrapol/tch.h>

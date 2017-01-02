@@ -1,7 +1,7 @@
 #pragma once
 #include <tetrapol/frame.h>
 #include <tetrapol/tetrapol_int.h>
-#include <tetrapol/timer.h>
+#include <tetrapol/tp_timer.h>
 
 typedef struct cch_priv_t cch_t;
 

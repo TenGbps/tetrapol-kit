@@ -32,7 +32,7 @@ add_library (tetrapol
     tch.c
     terminal.c
     tetrapol.c
-    timer.c
+    tp_timer.c
     tpdu.c
     tsdu.c
     tsdu_json.c
@@ -58,7 +58,7 @@ add_library (tetrapol
     tetrapol/tch.h
     tetrapol/tetrapol.h
     tetrapol/terminal.h
-    tetrapol/timer.h
+    tetrapol/tp_timer.h
     tetrapol/tpdu.h
     tetrapol/tsdu_json.h
     tetrapol/tsdu_print.h
@@ -85,7 +85,7 @@ target_link_libraries (test_bit_utils ${CMOCKA_LIBRARY})
 
 add_executable (test_timer
     log.c
-    test_timer.c)
+    test_tp_timer.c)
 target_link_libraries (test_timer ${CMOCKA_LIBRARY})
 
 add_test(test_data_frame ${CMAKE_CURRENT_BINARY_DIR}/test_data_frame)

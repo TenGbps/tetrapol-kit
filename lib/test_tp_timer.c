@@ -4,7 +4,7 @@
 #include <cmocka.h>
 
 // include, we are testing static methods
-#include "timer.c"
+#include "tp_timer.c"
 
 static struct timeval tv_exp1;
 void callback1(time_evt_t *te, void *ptr)

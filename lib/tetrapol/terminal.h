@@ -2,7 +2,7 @@
 
 #include <tetrapol/addr.h>
 #include <tetrapol/hdlc_frame.h>
-#include <tetrapol/timer.h>
+#include <tetrapol/tp_timer.h>
 #include <tetrapol/tetrapol_int.h>
 
 typedef struct terminal_priv_t terminal_t;

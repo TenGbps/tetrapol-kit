@@ -1,7 +1,7 @@
 #pragma once
 
 #include <tetrapol/hdlc_frame.h>
-#include <tetrapol/timer.h>
+#include <tetrapol/tp_timer.h>
 #include <tetrapol/tetrapol_int.h>
 
 typedef struct link_priv_t link_t;

@@ -4,7 +4,7 @@
 #include <tetrapol/data_frame.h>
 #include <tetrapol/tetrapol_int.h>
 #include <tetrapol/tsdu.h>
-#include <tetrapol/timer.h>
+#include <tetrapol/tp_timer.h>
 
 #include <stdbool.h>
 #include <stdint.h>

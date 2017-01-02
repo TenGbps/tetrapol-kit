@@ -1,6 +1,6 @@
 #define LOG_PREFIX "timer"
 #include "tetrapol/log.h"
-#include "tetrapol/timer.h"
+#include "tetrapol/tp_timer.h"
 
 #include <stdlib.h>
 #include <string.h>

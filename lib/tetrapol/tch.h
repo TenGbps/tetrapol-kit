@@ -2,7 +2,7 @@
 
 #include <tetrapol/frame.h>
 #include <tetrapol/tetrapol_int.h>
-#include <tetrapol/timer.h>
+#include <tetrapol/tp_timer.h>
 
 typedef struct tch_priv_t tch_t;
 
