@@ -38,29 +38,29 @@ static void test_t1(void **state)
     tv_exp2.tv_sec = 0;
     tv_exp2.tv_usec = 0;
 
-    timer_t *timer = timer_create();
+    tp_timer_t *timer = tp_timer_create();
     assert_non_null(timer);
 
-    assert_true(timer_register(timer, callback1, (void *)1000));
+    assert_true(tp_timer_register(timer, callback1, (void *)1000));
     tv_exp1.tv_usec = 1;
-    timer_tick(timer, false, 1);
-    timer_cancel(timer, callback1, (void *)1000);
+    tp_timer_tick(timer, false, 1);
+    tp_timer_cancel(timer, callback1, (void *)1000);
 
-    assert_true(timer_register(timer, callback1, (void *)1000));
-    assert_false(timer_register(timer, callback1, (void *)1000));
+    assert_true(tp_timer_register(timer, callback1, (void *)1000));
+    assert_false(tp_timer_register(timer, callback1, (void *)1000));
 
-    assert_true(timer_register(timer, callback2, (void *)0x100));
-    assert_true(timer_register(timer, callback2, (void *)0x200));
+    assert_true(tp_timer_register(timer, callback2, (void *)0x100));
+    assert_true(tp_timer_register(timer, callback2, (void *)0x200));
 
-    timer_cancel(timer, callback1, (void *)1000);
-    timer_cancel(timer, callback1, (void *)1000);
+    tp_timer_cancel(timer, callback1, (void *)1000);
+    tp_timer_cancel(timer, callback1, (void *)1000);
 
     tv_exp1.tv_usec = -1;
     tv_exp2.tv_usec = 3;
-    timer_tick(timer, false, 2);
+    tp_timer_tick(timer, false, 2);
     assert_int_equal(ptr_exp2, 0x300);
 
-    timer_destroy(timer);
+    tp_timer_destroy(timer);
 }
 
 int main(void)

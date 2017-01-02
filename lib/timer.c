@@ -10,15 +10,15 @@ typedef struct {
     void *ptr;
 } callback_t;
 
-struct timer_priv_t {
+struct tp_timer_priv_t {
     int ncallbacks;
     callback_t *callbacks;
     time_evt_t te;
 };
 
-timer_t *timer_create(void)
+tp_timer_t *tp_timer_create(void)
 {
-    timer_t *timer = calloc(1, sizeof(timer_t));
+    tp_timer_t *timer = calloc(1, sizeof(tp_timer_t));
     if (!timer) {
         return NULL;
     }
@@ -26,7 +26,7 @@ timer_t *timer_create(void)
     return timer;
 }
 
-void timer_destroy(timer_t *timer)
+void tp_timer_destroy(tp_timer_t *timer)
 {
     if (!timer) {
         return;
@@ -35,7 +35,7 @@ void timer_destroy(timer_t *timer)
     free(timer);
 }
 
-void timer_tick(timer_t *timer, bool rx_glitch, int usec)
+void tp_timer_tick(tp_timer_t *timer, bool rx_glitch, int usec)
 {
     timer->te.tv.tv_usec += usec;
     timer->te.tv.tv_sec += timer->te.tv.tv_usec / 1000000;
@@ -47,7 +47,7 @@ void timer_tick(timer_t *timer, bool rx_glitch, int usec)
     }
 }
 
-bool timer_register(timer_t *timer, timer_callback_t timer_func, void *ptr)
+bool tp_timer_register(tp_timer_t *timer, timer_callback_t timer_func, void *ptr)
 {
     // check for double-registration
     for (int i = 0; i < timer->ncallbacks; ++i) {
@@ -71,7 +71,7 @@ bool timer_register(timer_t *timer, timer_callback_t timer_func, void *ptr)
     return true;
 }
 
-void timer_cancel(timer_t *timer, timer_callback_t timer_func, void *ptr)
+void tp_timer_cancel(tp_timer_t *timer, timer_callback_t timer_func, void *ptr)
 {
     for (int i = 0; i < timer->ncallbacks; ++i) {
         if (timer->callbacks[i].func == timer_func &&

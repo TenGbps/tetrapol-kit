@@ -39,7 +39,7 @@ struct phys_ch_priv_t {
     uint8_t data[10*FRAME_LEN];
     frame_decoder_t *fd;
     // CCH specific data, will be union with traffich CH specicic data
-    timer_t *timer;
+    tp_timer_t *tp_timer;
     cch_t *cch;
     tch_t *tch;
     tpol_t *tpol;
@@ -66,11 +66,11 @@ phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol)
     phys_ch->scr = PHYS_CH_SCR_DETECT;
     phys_ch->scr_last = PHYS_CH_SCR_DETECT;
     phys_ch->scr_confidence = 50;
-    phys_ch->timer = timer_create();
+    phys_ch->tp_timer = tp_timer_create();
 
     phys_ch->fd = frame_decoder_create(cfg->band, 0, FRAME_TYPE_AUTO);
     if (!phys_ch->fd) {
-        timer_destroy(phys_ch->timer);
+        tp_timer_destroy(phys_ch->tp_timer);
         free(phys_ch);
         return NULL;
     }
@@ -78,7 +78,7 @@ phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol)
     if (cfg->radio_ch_type == TETRAPOL_RADIO_CCH) {
         phys_ch->cch = cch_create(phys_ch->tpol);
         if (phys_ch->cch) {
-            timer_register(phys_ch->timer, cch_tick, phys_ch->cch);
+            tp_timer_register(phys_ch->tp_timer, cch_tick, phys_ch->cch);
             return phys_ch;
         }
     }
@@ -86,13 +86,13 @@ phys_ch_t *tetrapol_phys_ch_create(tetrapol_t *tetrapol)
     if (cfg->radio_ch_type == TETRAPOL_RADIO_TCH) {
         phys_ch->tch = tch_create(phys_ch->tpol);
         if (phys_ch->tch) {
-            timer_register(phys_ch->timer, tch_tick, phys_ch->tch);
+            tp_timer_register(phys_ch->tp_timer, tch_tick, phys_ch->tch);
             return phys_ch;
         }
     }
 
     frame_decoder_destroy(phys_ch->fd);
-    timer_destroy(phys_ch->timer);
+    tp_timer_destroy(phys_ch->tp_timer);
     free(phys_ch);
 
     return NULL;
@@ -107,7 +107,7 @@ void tetrapol_phys_ch_destroy(phys_ch_t *phys_ch)
         tch_destroy(phys_ch->tch);
     }
     frame_decoder_destroy(phys_ch->fd);
-    timer_destroy(phys_ch->timer);
+    tp_timer_destroy(phys_ch->tp_timer);
     free(phys_ch);
 }
 
@@ -310,7 +310,7 @@ int tetrapol_phys_ch_process(phys_ch_t *phys_ch)
         phys_ch->has_frame_sync = find_frame_sync(phys_ch);
         n -= phys_ch->data_end - phys_ch->data_begin;
         if (!phys_ch->has_frame_sync) {
-            timer_tick(phys_ch->timer, true, n * 20000 / 160);
+            tp_timer_tick(phys_ch->tp_timer, true, n * 20000 / 160);
             return 0;
         }
         LOG(INFO, "Frame sync found");
@@ -324,7 +324,7 @@ int tetrapol_phys_ch_process(phys_ch_t *phys_ch)
     uint8_t fr_data[FRAME_DATA_LEN];
     while ((r = get_frame(phys_ch, fr_data)) > 0) {
         process_frame(phys_ch, fr_data);
-        timer_tick(phys_ch->timer, false, 20000);
+        tp_timer_tick(phys_ch->tp_timer, false, 20000);
         if (phys_ch->tpol->frame_no != FRAME_NO_UNKNOWN) {
             phys_ch->tpol->frame_no = (phys_ch->tpol->frame_no + 1) % 200;
         }
