@@ -10,7 +10,6 @@
 from gnuradio import blocks
 from gnuradio import gr
 from gnuradio.eng_option import eng_option
-from grc_gnuradio import blks2 as grc_blks2
 from json import dumps
 from optparse import OptionParser
 from signal_detector import signal_detector, mk_cos_taps
