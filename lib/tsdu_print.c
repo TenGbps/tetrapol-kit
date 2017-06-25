@@ -972,8 +972,23 @@ static void d_registration_nak_print(const tsdu_d_registration_nak_t *tsdu)
 
 static void d_reject_print(const tsdu_d_reject_t *tsdu)
 {
+    const char *cause_txt = "";
+
+    switch (tsdu->cause) {
+        case 0x41:
+            cause_txt = " (terminal not registered into network)";
+            break;
+
+        case 0x44:
+            cause_txt = " (terminal does not exists)";
+            break;
+
+        default:
+            break;
+    }
+
     tsdu_base_print(&tsdu->base);
-    LOGF("\tCAUSE=0x%2x\n", tsdu->cause);
+    LOGF("\tCAUSE=0x%2x%s\n", tsdu->cause, cause_txt);
 }
 
 static void d_release_print(const tsdu_d_release_t *tsdu)
