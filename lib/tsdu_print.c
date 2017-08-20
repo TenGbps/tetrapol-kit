@@ -983,7 +983,7 @@ static void d_reject_print(const tsdu_d_reject_t *tsdu)
             cause_txt = " (terminal does not exists)";
             break;
 
-        case cause 0x05:
+        case 0x05:
             cause_txt = "(rejected by user)";
             break;
 
