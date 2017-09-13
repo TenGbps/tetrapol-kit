@@ -41,7 +41,7 @@ Decimation idx: 00 - minimal decimation (max. number of pulses),
 LAR lag: value -1 (all bits set to 1) have special meaning, it indicate zero
     gain. When all gain bits are set to zero the gain is small but nonzero.
 
-==== Suframe 1
+==== Subframe 1
 
 LTP
 lag: 6, 55, 54, 53, 52, 58, 57, 56
@@ -52,7 +52,7 @@ gain: 8, 63, 62, 61, 64
 decimation idx: 10, 9
 sign+phase: 71, 70, 69, 68, 67, 66, 65, 74, 73, 72
 
-==== Suframe 2
+==== Subframe 2
 
 LTP
 lag: 11, 79, 78, 77, 76, 75, 81, 80
@@ -63,7 +63,7 @@ gain: 13, 87, 86, 85, 84
 decimation idx: 15, 14
 sign+phase: 95, 94, 93, 92, 91, 90, 89, 88, 96
 
-==== Suframe 3
+==== Subframe 3
 
 LTP
 lag: 16, 103, 102, 101, 100, 99, 98, 97
