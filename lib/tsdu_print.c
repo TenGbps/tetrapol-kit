@@ -972,19 +972,24 @@ static void d_registration_nak_print(const tsdu_d_registration_nak_t *tsdu)
 
 static void d_reject_print(const tsdu_d_reject_t *tsdu)
 {
-    const char *cause_txt = "";
+    const char *cause_txt = " (UNKNOWN)";
 
     switch (tsdu->cause) {
+        case 0x05:
+            cause_txt = " (rejected by user)";
+            break;
+
+        case 0x11:
+        case 0x40:
+            cause_txt = " (call timeout after 30 sec ???)";
+            break;
+
         case 0x41:
             cause_txt = " (terminal not registered into network)";
             break;
 
         case 0x44:
             cause_txt = " (terminal does not exists)";
-            break;
-
-        case 0x05:
-            cause_txt = "(rejected by user)";
             break;
 
         default:
