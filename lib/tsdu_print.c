@@ -1060,7 +1060,7 @@ static void d_system_info_print(const tsdu_d_system_info_t *tsdu)
                 tsdu->cell_access.min_reg_class);
         LOGF("\t\tSUPERFRAME_CPT=%d\n", tsdu->superframe_cpt);
     } else {
-        LOGF("\t\tCELL_ID=%d-%d\n", tsdu->cell_id.bs_id, tsdu->cell_id.rsw_id);
+        LOGF("\t\tCELL_ID=%d-%d\n", tsdu->cell_id.rsw_id, tsdu->cell_id.bs_id);
         LOGF("\t\tBN_ID=%d\n", tsdu->bn_id);
         LOGF("\t\tU_CH_SCRAMBLING=%d\n", tsdu->u_ch_scrambling);
         LOGF("\t\tCELL_RADIO_PARAM\n");
