@@ -25,7 +25,7 @@ class top_block(gr.top_block):
 
     bitrate = 8000
     channel_bw = options.channel_bandwidth
-    chan0_freq = 358399864
+    chan0_freq = 358400000
     self.rfgain = options.gain
 
     self.channels = [ int(ch) for ch in options.channels.split(',') if ch ]
