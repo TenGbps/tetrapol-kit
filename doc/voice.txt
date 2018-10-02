@@ -11,18 +11,17 @@ Data are stored as little endian with LSB stored first in the frame bits.
 
 === LAR coefficients
 
-They are stored in 38 b (not 37 b), 6 b is in protected area.
-
 LAR values are stored as unsigned int (it should be index of coefficient).
+6 b out of 37 is stored in protected area.
 
 LAR   bit numbers
 idx   MSB ... LSB
 
-1:    1, 0, 23, 22, 21, 20
-2:    2, 27, 26, 25, 24
-3:    3, 30, 29, 28
-4:    4, 31, 33, 32
-5:    5, 36, 35, 34
+1:     1, 0,  23, 22, 21
+2:     2, 27, 26, 25, 24
+3:     3, 30, 29, 28
+4:     4, 31, 33, 32
+5:     5, 36, 35, 34
 6:    39, 38, 37
 7:    42, 41, 40
 8:    45, 44, 43
@@ -71,6 +70,6 @@ gain: 17, 105, 104
 
 Stochastic parameters
 gain: 18, 109, 108, 107, 106
-decimation idx: 19, 119
-sign+phase: 111, 110, 118, 117, 116, 115, 114, 113, 112
+decimation idx: 20, 19
+sign+phase: 111, 110, 119, 118, 117, 116, 115, 114, 113, 112
 
