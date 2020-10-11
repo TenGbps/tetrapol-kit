@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Usage:
 #
@@ -57,7 +57,7 @@ class top_block(gr.top_block):
     self.src.set_freq_corr(options.ppm, 0)
 
     fcl_args = ['./fcl', '-n', '%i'%n, '-s', '%i'%s, '-t', '2', '-c', '%s'%c, '-f', './fir.py %i 7900 2000 rcos'%options.sample_rate, '-o', '/dev/stdout']
-    sys.stderr.write(string.join(fcl_args))
+    sys.stderr.write(' '.join(fcl_args))
     self.fcl = subprocess.Popen(fcl_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     self.fcl_in = blocks.file_descriptor_sink(gr.sizeof_gr_complex*1, self.fcl.stdin.fileno())
     self.fcl_out = blocks.file_descriptor_source(gr.sizeof_gr_complex*1, self.fcl.stdout.fileno(), False)
@@ -179,7 +179,7 @@ def get_options():
     (options, args) = parser.parse_args()
     if len(args) != 0:
         parser.print_help()
-        raise SystemExit, 1
+        raise SystemExit(1)
 
     return (options)
 

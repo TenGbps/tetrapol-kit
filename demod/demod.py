@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Usage:
 #
@@ -157,7 +157,7 @@ def get_options():
     (options, args) = parser.parse_args()
     if len(args) != 0:
         parser.print_help()
-        raise SystemExit, 1
+        raise SystemExit(1)
 
     return (options)
 
