@@ -56,7 +56,7 @@ class top_block(gr.top_block):
     self.src.set_sample_rate(options.sample_rate)
     self.src.set_freq_corr(options.ppm, 0)
 
-    fcl_args = ['./fcl', '-n', '%i'%n, '-s', '%i'%s, '-t', '2', '-c', '%s'%c, '-f', './fir.py %i 7900 2000 rcos'%options.sample_rate, '-o', '/dev/stdout']
+    fcl_args = ['./fcl', '-n', '%i'%n, '-s', '%i'%s, '-t', '2', '-c', '%s'%c, '-f', 'python3 ./fir.py %i 7900 2000 rcos'%options.sample_rate, '-o', '/dev/stdout']
     sys.stderr.write(' '.join(fcl_args))
     self.fcl = subprocess.Popen(fcl_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     self.fcl_in = blocks.file_descriptor_sink(gr.sizeof_gr_complex*1, self.fcl.stdin.fileno())
