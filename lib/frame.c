@@ -512,6 +512,49 @@ int frame_fix_errs(uint8_t *fr_data, uint8_t *fr_errs, int len, int *bits_fixed)
     return nerrs;
 }
 
+/**
+  Fix errors in frame, using the Viterbi algorithm.
+  */
+int frame_viterbi(uint8_t *dec,const uint8_t *in_bits,int size)
+{
+  static unsigned char viterbi_table[8]={0,3,1,2,3,0,2,1};
+  int mi=999;
+  for(int s=0;s<4;s++) {
+    int back[size][4];
+    int tab[4],tab2[4];
+    memset(back,-1,sizeof(back));
+    for(int i=0;i<4;i++)
+      tab[i]=9999;
+    tab[s]=0;
+    for(int p=size-1;p>=0;p--) {
+      for(int i=0;i<4;i++) tab2[i]=9999;
+      for(int u=0;u<4;u++) {
+        for(int x=0;x<2;x++) {
+          int v=(u<<1)|x;
+          int e=viterbi_table[v];           //auto e=(encode64(v)>>4)&3;
+          int r=tab[u];
+          if(in_bits[2*p]!=(e&1)) r++;
+          if(in_bits[2*p+1]!=((e>>1)&1)) r++;
+          if(tab2[v%4]>r) {
+            tab2[v%4]=r;
+            back[p][v%4]=u;
+          }
+        }
+      }
+      memcpy(tab,tab2,sizeof(tab));
+    }
+    if(mi>tab[s]) {
+      mi=tab[s];
+      int z=s;
+      for(int p=0;p<size;p++) {
+        dec[(size+p-2)%size]=(z&1);
+        z=back[p][z];
+      }
+    }
+  }
+  return mi;
+}
+
 void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_data)
 {
     if (fd->fr_type != FRAME_TYPE_AUTO &&
@@ -532,6 +575,7 @@ void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_da
     }
 
     uint8_t fr_data_deint[FRAME_DATA_LEN];
+#if 0
     uint8_t fr_errs[FRAME_DATA_LEN];
 
     frame_deinterleave1(fr_data_deint, fr_data_tmp, fd->band);
@@ -562,6 +606,27 @@ void frame_decoder_decode(frame_decoder_t *fd, frame_t *fr, const uint8_t *fr_da
             return;
         }
     }
+
+#else
+    fr->broken=0;
+    frame_deinterleave1(fr_data_deint, fr_data_tmp, fd->band);
+    int f1=frame_viterbi(fr->blob_,fr_data_deint,26);
+    fr->bits_fixed+=f1;
+    if(f1>=6) fr->broken=1; //if too many bits are fixed, we suppose that the packet is broken
+
+    fr->fr_type = (fd->fr_type == FRAME_TYPE_AUTO) ? (frame_type_t)fr->d : fd->fr_type;
+
+    frame_deinterleave2(fr_data_deint, fr_data_tmp, fd->band, fr->fr_type);
+    if (fr->broken==0 && fr->fr_type != FRAME_TYPE_VOICE) {
+      int f2=frame_viterbi(fr->blob_+26,fr_data_deint+52,50);
+      if(f2>=11) fr->broken=1;
+      fr->bits_fixed+=f2;
+    }
+    else {
+      memcpy(fr->blob_+26,fr_data_deint+52,100);
+    }
+    if(fr->broken) return;
+#endif
 
     fr->broken = frame_check_crc(fr->blob_, fr->fr_type) ? 0 : -1;
 }
